@@ -1,0 +1,300 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans:
+        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ========================================
+   LIGHT MODE — Green / Purple / Red
+   ======================================== */
+:root {
+    /* Base */
+    --background: #f8faf8;
+    --foreground: #1a1a2e;
+
+    /* Cards */
+    --card: #ffffff;
+    --card-foreground: #1a1a2e;
+
+    /* Popover */
+    --popover: #ffffff;
+    --popover-foreground: #1a1a2e;
+
+    /* Primary — Emerald Green */
+    --primary: #059669;
+    --primary-foreground: #ffffff;
+
+    /* Secondary — Soft Purple */
+    --secondary: #f3f0ff;
+    --secondary-foreground: #6d28d9;
+
+    /* Muted */
+    --muted: #f1f5f1;
+    --muted-foreground: #64748b;
+
+    /* Accent — Purple */
+    --accent: #ede9fe;
+    --accent-foreground: #5b21b6;
+
+    /* Destructive — Red */
+    --destructive: #dc2626;
+    --destructive-foreground: #dc2626;
+
+    /* Borders & Inputs */
+    --border: #e2e8e2;
+    --input: #e2e8e2;
+    --ring: #059669;
+
+    /* Charts */
+    --chart-1: #059669;
+    --chart-2: #7c3aed;
+    --chart-3: #dc2626;
+    --chart-4: #10b981;
+    --chart-5: #8b5cf6;
+
+    --radius: 0.75rem;
+
+    /* Sidebar — Light Green */
+    --sidebar: #f0fdf4;
+    --sidebar-foreground: #14532d;
+    --sidebar-primary: #059669;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #dcfce7;
+    --sidebar-accent-foreground: #166534;
+    --sidebar-border: #bbf7d0;
+    --sidebar-ring: #059669;
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+.dark {
+    /* Base */
+    --background: #0f1a14;
+    --foreground: #ecfdf5;
+
+    /* Cards */
+    --card: #132a1f;
+    --card-foreground: #ecfdf5;
+
+    /* Popover */
+    --popover: #132a1f;
+    --popover-foreground: #ecfdf5;
+
+    /* Primary — Bright Green */
+    --primary: #34d399;
+    --primary-foreground: #052e16;
+
+    /* Secondary — Deep Purple */
+    --secondary: #2e1065;
+    --secondary-foreground: #c4b5fd;
+
+    /* Muted */
+    --muted: #1a2e22;
+    --muted-foreground: #94a3b8;
+
+    /* Accent — Purple */
+    --accent: #3b0764;
+    --accent-foreground: #c4b5fd;
+
+    /* Destructive — Red */
+    --destructive: #991b1b;
+    --destructive-foreground: #fca5a5;
+
+    /* Borders & Inputs */
+    --border: #1e3a2a;
+    --input: #1e3a2a;
+    --ring: #34d399;
+
+    /* Charts */
+    --chart-1: #34d399;
+    --chart-2: #a78bfa;
+    --chart-3: #f87171;
+    --chart-4: #6ee7b7;
+    --chart-5: #c084fc;
+
+    /* Sidebar */
+    --sidebar: #052e16;
+    --sidebar-foreground: #ecfdf5;
+    --sidebar-primary: #34d399;
+    --sidebar-primary-foreground: #052e16;
+    --sidebar-accent: #14532d;
+    --sidebar-accent-foreground: #d1fae5;
+    --sidebar-border: #166534;
+    --sidebar-ring: #34d399;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    html {
+        direction: rtl;
+    }
+
+    html[dir='ltr'] {
+        direction: ltr;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-family: 'Vazirmatn', var(--font-sans);
+    }
+}
+
+/* RTL-specific overrides */
+[dir='rtl'] .ml-auto {
+    margin-left: unset;
+    margin-right: auto;
+}
+
+[dir='rtl'] .ml-1 {
+    margin-left: unset;
+    margin-right: 0.25rem;
+}
+
+[dir='rtl'] .space-x-3 > :not(:first-child) {
+    margin-left: unset;
+    margin-right: 0.75rem;
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+    /* Hide everything except the print area */
+    body * {
+        visibility: hidden;
+    }
+
+    .print-area,
+    .print-area * {
+        visibility: visible !important;
+    }
+
+    .print-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 80mm;
+        margin: 0 auto;
+        padding: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #000 !important;
+        background: #fff !important;
+    }
+
+    /* Hide non-print elements */
+    .no-print,
+    nav,
+    aside,
+    header,
+    footer,
+    button,
+    .sidebar,
+    [data-sidebar] {
+        display: none !important;
+    }
+
+    /* Receipt table styles */
+    .print-area table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .print-area th,
+    .print-area td {
+        padding: 2px 4px;
+        text-align: start;
+        font-size: 11px;
+    }
+
+    .print-area .receipt-divider {
+        border-top: 1px dashed #000;
+        margin: 6px 0;
+    }
+
+    .print-area .receipt-header {
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .print-area .receipt-footer {
+        text-align: center;
+        margin-top: 8px;
+        font-size: 10px;
+    }
+
+    /* Remove colors and shadows for print */
+    .print-area * {
+        color: #000 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    @page {
+        size: 80mm auto;
+        margin: 2mm;
+    }
+}
