@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Users as UsersIcon } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
@@ -11,87 +11,31 @@ import { UserDeleteDialog } from '@/modules/users/components/user-delete-dialog'
 import { UserFilters } from '@/modules/users/components/user-filters';
 import type { UserData, Role, UserFormData } from '@/modules/users/types';
 
-// Demo data — will be replaced by backend props
-const demoRoles: Role[] = [
-    { id: 1, name: 'admin' },
-    { id: 2, name: 'manager' },
-    { id: 3, name: 'waiter' },
-    { id: 4, name: 'chef' },
-    { id: 5, name: 'cashier' },
-];
-
-const demoUsers: UserData[] = [
-    {
-        id: 1,
-        name: 'احمد رحمانی',
-        email: 'ahmad@restaurant.com',
-        email_verified_at: '2026-01-01',
-        is_active: true,
-        roles: [{ id: 1, name: 'admin' }],
-        created_at: '2026-01-01T00:00:00Z',
-        updated_at: '2026-01-01T00:00:00Z',
-    },
-    {
-        id: 2,
-        name: 'محمد علی',
-        email: 'mali@restaurant.com',
-        email_verified_at: '2026-01-15',
-        is_active: true,
-        roles: [{ id: 2, name: 'manager' }],
-        created_at: '2026-01-15T00:00:00Z',
-        updated_at: '2026-01-15T00:00:00Z',
-    },
-    {
-        id: 3,
-        name: 'فرهاد حسینی',
-        email: 'farhad@restaurant.com',
-        email_verified_at: '2026-02-01',
-        is_active: true,
-        roles: [{ id: 3, name: 'waiter' }],
-        created_at: '2026-02-01T00:00:00Z',
-        updated_at: '2026-02-01T00:00:00Z',
-    },
-    {
-        id: 4,
-        name: 'کریم احمدی',
-        email: 'karim@restaurant.com',
-        email_verified_at: '2026-02-10',
-        is_active: true,
-        roles: [{ id: 4, name: 'chef' }],
-        created_at: '2026-02-10T00:00:00Z',
-        updated_at: '2026-02-10T00:00:00Z',
-    },
-    {
-        id: 5,
-        name: 'نادیا صمدی',
-        email: 'nadia@restaurant.com',
-        email_verified_at: null,
-        is_active: false,
-        roles: [{ id: 5, name: 'cashier' }],
-        created_at: '2026-03-01T00:00:00Z',
-        updated_at: '2026-03-01T00:00:00Z',
-    },
-];
+interface Props extends Record<string, unknown> {
+    users: UserData[];
+    roles: Role[];
+}
 
 export default function UsersIndex() {
     const { t } = useTranslation();
+    const { users, roles } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
         { title: t('sidebar.users'), href: '/users' },
     ];
 
-    // State
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [formOpen, setFormOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [deletingUser, setDeletingUser] = useState<UserData | null>(null);
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
-    // Filter users
     const filteredUsers = useMemo(() => {
-        return demoUsers.filter((user) => {
+        return users.filter((user) => {
             const matchesSearch =
                 !search ||
                 user.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -101,7 +45,7 @@ export default function UsersIndex() {
                 user.roles.some((r) => r.name === roleFilter);
             return matchesSearch && matchesRole;
         });
-    }, [search, roleFilter]);
+    }, [users, search, roleFilter]);
 
     const handleEdit = (user: UserData) => {
         setEditingUser(user);
@@ -113,20 +57,33 @@ export default function UsersIndex() {
         setDeleteOpen(true);
     };
 
-    const handleFormSubmit = (_data: UserFormData) => {
-        // TODO: Inertia.post/put to backend
-        setFormOpen(false);
-        setEditingUser(null);
+    const handleFormSubmit = (data: UserFormData) => {
+        setProcessing(true);
+        if (editingUser) {
+            router.put(`/users/${editingUser.id}`, { ...data }, {
+                onSuccess: () => { setFormOpen(false); setEditingUser(null); setErrors({}); },
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        } else {
+            router.post('/users', { ...data }, {
+                onSuccess: () => { setFormOpen(false); setErrors({}); },
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        }
     };
 
     const handleDeleteConfirm = () => {
-        // TODO: Inertia.delete to backend
-        setDeleteOpen(false);
-        setDeletingUser(null);
+        if (!deletingUser) return;
+        router.delete(`/users/${deletingUser.id}`, {
+            onSuccess: () => { setDeleteOpen(false); setDeletingUser(null); },
+        });
     };
 
     const handleAddNew = () => {
         setEditingUser(null);
+        setErrors({});
         setFormOpen(true);
     };
 
@@ -144,7 +101,7 @@ export default function UsersIndex() {
                         <div>
                             <h1 className="text-xl font-bold">{t('users.title')}</h1>
                             <p className="text-sm text-muted-foreground">
-                                {t('common.showing')} {filteredUsers.length} {t('common.of')} {demoUsers.length} {t('common.results')}
+                                {t('common.showing')} {filteredUsers.length} {t('common.of')} {users.length} {t('common.results')}
                             </p>
                         </div>
                     </div>
@@ -164,7 +121,7 @@ export default function UsersIndex() {
                     onSearchChange={setSearch}
                     roleFilter={roleFilter}
                     onRoleFilterChange={setRoleFilter}
-                    roles={demoRoles}
+                    roles={roles}
                 />
 
                 {/* Table */}
@@ -173,34 +130,23 @@ export default function UsersIndex() {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                 />
-
-                {/* Pagination placeholder */}
-                {filteredUsers.length > 0 && (
-                    <div className="flex items-center justify-center text-sm text-muted-foreground">
-                        {t('common.showing')} {filteredUsers.length} {t('common.of')} {demoUsers.length} {t('common.results')}
-                    </div>
-                )}
             </div>
 
             {/* Form Dialog */}
             <UserFormDialog
                 open={formOpen}
-                onClose={() => {
-                    setFormOpen(false);
-                    setEditingUser(null);
-                }}
+                onClose={() => { setFormOpen(false); setEditingUser(null); setErrors({}); }}
                 onSubmit={handleFormSubmit}
                 user={editingUser}
-                roles={demoRoles}
+                roles={roles}
+                processing={processing}
+                errors={errors}
             />
 
             {/* Delete Dialog */}
             <UserDeleteDialog
                 open={deleteOpen}
-                onClose={() => {
-                    setDeleteOpen(false);
-                    setDeletingUser(null);
-                }}
+                onClose={() => { setDeleteOpen(false); setDeletingUser(null); }}
                 onConfirm={handleDeleteConfirm}
                 user={deletingUser}
             />

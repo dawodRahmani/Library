@@ -19,16 +19,18 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { ShamsiDateInput } from '@/components/ui/shamsi-date-input';
 import type { Employee, EmployeeFormData } from '../types';
+
+interface Role { id: number; name: string; }
 
 interface EmployeeFormDialogProps {
     open: boolean;
     onClose: () => void;
     onSubmit: (data: EmployeeFormData) => void;
     employee?: Employee | null;
+    roles: Role[];
 }
-
-const roles = ['manager', 'waiter', 'chef', 'cashier'] as const;
 
 const defaultFormData: EmployeeFormData = {
     name: '',
@@ -43,6 +45,7 @@ export function EmployeeFormDialog({
     onClose,
     onSubmit,
     employee,
+    roles,
 }: EmployeeFormDialogProps) {
     const { t } = useTranslation();
     const isEditing = !!employee;
@@ -107,8 +110,8 @@ export function EmployeeFormDialog({
                             </SelectTrigger>
                             <SelectContent>
                                 {roles.map((role) => (
-                                    <SelectItem key={role} value={role}>
-                                        {t(`employees.roles.${role}`)}
+                                    <SelectItem key={role.id} value={role.name}>
+                                        {role.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -133,16 +136,11 @@ export function EmployeeFormDialog({
 
                     {/* Hire Date */}
                     <div className="space-y-2">
-                        <Label htmlFor="emp-hire-date" className="font-medium">
-                            {t('employees.hireDate')}
-                        </Label>
-                        <Input
-                            id="emp-hire-date"
-                            value={form.hire_date}
-                            onChange={(e) => setForm({ ...form, hire_date: e.target.value })}
-                            required
-                            className="h-10"
-                            placeholder="1403-01-01"
+                        <Label className="font-medium">{t('employees.hireDate')}</Label>
+                        <ShamsiDateInput
+                            value={form.hire_date ?? ''}
+                            onChange={(val) => setForm({ ...form, hire_date: val })}
+                            className="w-full"
                         />
                     </div>
 

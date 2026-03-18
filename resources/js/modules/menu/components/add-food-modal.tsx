@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import {
     Dialog,
@@ -10,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Select,
     SelectContent,
@@ -17,8 +19,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { FoodImage } from '@/components/food-image';
 import type { FoodItem, Category } from '@/data/mock/types';
-import { ToggleLeft, ToggleRight } from 'lucide-react';
+import { ImagePlus, ToggleLeft, ToggleRight, X } from 'lucide-react';
 
 interface AddFoodModalProps {
     open: boolean;
@@ -34,25 +37,75 @@ export function AddFoodModal({ open, onOpenChange, item, categories }: AddFoodMo
     const [categoryId, setCategoryId] = useState('');
     const [price, setPrice] = useState('');
     const [isAvailable, setIsAvailable] = useState(true);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        if (item) {
-            setName(item.name);
-            setCategoryId(String(item.category_id));
-            setPrice(String(item.price));
-            setIsAvailable(item.is_available);
-        } else {
-            setName('');
-            setCategoryId('');
-            setPrice('');
-            setIsAvailable(true);
+        if (open) {
+            if (item) {
+                setName(item.name);
+                setCategoryId(String(item.category_id));
+                setPrice(String(item.price));
+                setIsAvailable(item.is_available);
+                setImagePreview(item.image || null);
+            } else {
+                setName('');
+                setCategoryId('');
+                setPrice('');
+                setIsAvailable(true);
+                setImagePreview(null);
+            }
+            setImageFile(null);
+            setErrors({});
         }
     }, [item, open]);
 
+    function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function removeImage() {
+        setImageFile(null);
+        setImagePreview(null);
+    }
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (!name.trim() || !price.trim()) return;
-        onOpenChange(false);
+        setProcessing(true);
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('category_id', categoryId);
+        formData.append('price', price);
+        formData.append('is_available', isAvailable ? '1' : '0');
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+
+        if (item) {
+            formData.append('_method', 'PATCH');
+            router.post(`/menu/items/${item.id}`, formData, {
+                forceFormData: true,
+                onSuccess: () => onOpenChange(false),
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        } else {
+            router.post('/menu/items', formData, {
+                forceFormData: true,
+                onSuccess: () => onOpenChange(false),
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        }
     }
 
     return (
@@ -65,6 +118,36 @@ export function AddFoodModal({ open, onOpenChange, item, categories }: AddFoodMo
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Image upload */}
+                    <div className="space-y-2">
+                        <Label>{t('menu.foodImage')}</Label>
+                        <div className="flex items-center gap-4">
+                            {imagePreview ? (
+                                <div className="relative">
+                                    <FoodImage src={imagePreview} alt={name || 'preview'} size="sm" className="rounded-xl" />
+                                    <button
+                                        type="button"
+                                        onClick={removeImage}
+                                        className="absolute -top-2 -end-2 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm"
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <label className="flex size-16 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors">
+                                    <ImagePlus className="size-6 text-muted-foreground/50" />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                    />
+                                </label>
+                            )}
+                        </div>
+                        {errors.image && <p className="text-xs text-red-500">{errors.image}</p>}
+                    </div>
+
                     <div className="space-y-2">
                         <Label htmlFor="food-name">{t('menu.foodName')}</Label>
                         <Input
@@ -73,11 +156,12 @@ export function AddFoodModal({ open, onOpenChange, item, categories }: AddFoodMo
                             onChange={(e) => setName(e.target.value)}
                             required
                         />
+                        {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="food-category">{t('menu.category')}</Label>
-                        <Select value={categoryId} onValueChange={setCategoryId}>
+                        <Select value={categoryId} onValueChange={setCategoryId} required>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder={t('menu.selectCategory')} />
                             </SelectTrigger>
@@ -89,6 +173,7 @@ export function AddFoodModal({ open, onOpenChange, item, categories }: AddFoodMo
                                 ))}
                             </SelectContent>
                         </Select>
+                        {errors.category_id && <p className="text-xs text-red-500">{errors.category_id}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -101,6 +186,7 @@ export function AddFoodModal({ open, onOpenChange, item, categories }: AddFoodMo
                             onChange={(e) => setPrice(e.target.value)}
                             required
                         />
+                        {errors.price && <p className="text-xs text-red-500">{errors.price}</p>}
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -122,10 +208,11 @@ export function AddFoodModal({ open, onOpenChange, item, categories }: AddFoodMo
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={processing}>
                             {t('common.cancel')}
                         </Button>
-                        <Button type="submit">
+                        <Button type="submit" disabled={processing}>
+                            {processing && <Spinner className="me-2" />}
                             {item ? t('common.save') : t('common.add')}
                         </Button>
                     </DialogFooter>

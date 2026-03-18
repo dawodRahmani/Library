@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Users as UsersIcon } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
@@ -9,11 +9,18 @@ import { EmployeeTable } from '@/modules/employees/components/employee-table';
 import { EmployeeFormDialog } from '@/modules/employees/components/employee-form-dialog';
 import { EmployeeDeleteDialog } from '@/modules/employees/components/employee-delete-dialog';
 import { EmployeeFilters } from '@/modules/employees/components/employee-filters';
-import { mockEmployees } from '@/data/mock';
 import type { Employee, EmployeeFormData } from '@/modules/employees/types';
+
+interface Role { id: number; name: string; }
+
+interface Props extends Record<string, unknown> {
+    employees: Employee[];
+    roles: Role[];
+}
 
 export default function EmployeesIndex() {
     const { t } = useTranslation();
+    const { employees, roles } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -28,7 +35,7 @@ export default function EmployeesIndex() {
     const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null);
 
     const filteredEmployees = useMemo(() => {
-        return mockEmployees.filter((emp) => {
+        return employees.filter((emp) => {
             const matchesSearch =
                 !search ||
                 emp.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -37,7 +44,7 @@ export default function EmployeesIndex() {
                 roleFilter === 'all' || emp.role === roleFilter;
             return matchesSearch && matchesRole;
         });
-    }, [search, roleFilter]);
+    }, [employees, search, roleFilter]);
 
     const handleEdit = (employee: Employee) => {
         setEditingEmployee(employee);
@@ -49,14 +56,23 @@ export default function EmployeesIndex() {
         setDeleteOpen(true);
     };
 
-    const handleFormSubmit = (_data: EmployeeFormData) => {
-        setFormOpen(false);
-        setEditingEmployee(null);
+    const handleFormSubmit = (data: EmployeeFormData) => {
+        if (editingEmployee) {
+            router.patch(`/employees/${editingEmployee.id}`, { ...data }, {
+                onSuccess: () => { setFormOpen(false); setEditingEmployee(null); },
+            });
+        } else {
+            router.post('/employees', { ...data }, {
+                onSuccess: () => { setFormOpen(false); },
+            });
+        }
     };
 
     const handleDeleteConfirm = () => {
-        setDeleteOpen(false);
-        setDeletingEmployee(null);
+        if (!deletingEmployee) return;
+        router.delete(`/employees/${deletingEmployee.id}`, {
+            onSuccess: () => { setDeleteOpen(false); setDeletingEmployee(null); },
+        });
     };
 
     const handleAddNew = () => {
@@ -78,7 +94,7 @@ export default function EmployeesIndex() {
                         <div>
                             <h1 className="text-xl font-bold">{t('employees.title')}</h1>
                             <p className="text-sm text-muted-foreground">
-                                {t('common.showing')} {filteredEmployees.length} {t('common.of')} {mockEmployees.length} {t('common.results')}
+                                {t('common.showing')} {filteredEmployees.length} {t('common.of')} {employees.length} {t('common.results')}
                             </p>
                         </div>
                     </div>
@@ -98,6 +114,7 @@ export default function EmployeesIndex() {
                     onSearchChange={setSearch}
                     roleFilter={roleFilter}
                     onRoleFilterChange={setRoleFilter}
+                    roles={roles}
                 />
 
                 {/* Table */}
@@ -109,7 +126,7 @@ export default function EmployeesIndex() {
 
                 {filteredEmployees.length > 0 && (
                     <div className="flex items-center justify-center text-sm text-muted-foreground">
-                        {t('common.showing')} {filteredEmployees.length} {t('common.of')} {mockEmployees.length} {t('common.results')}
+                        {t('common.showing')} {filteredEmployees.length} {t('common.of')} {employees.length} {t('common.results')}
                     </div>
                 )}
             </div>
@@ -122,6 +139,7 @@ export default function EmployeesIndex() {
                 }}
                 onSubmit={handleFormSubmit}
                 employee={editingEmployee}
+                roles={roles}
             />
 
             <EmployeeDeleteDialog

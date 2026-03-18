@@ -9,8 +9,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { formatPrice } from '@/data/mock';
 import type { Salary } from '../types';
+
+function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 
 interface SalaryDeleteDialogProps {
     open: boolean;

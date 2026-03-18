@@ -12,6 +12,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { Employee } from '../types';
+import { formatShamsiDate } from '@/lib/date';
 
 interface EmployeeTableProps {
     employees: Employee[];
@@ -67,7 +68,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                                     variant="outline"
                                     className={`text-xs font-medium ${roleColors[employee.role] || ''}`}
                                 >
-                                    {t(`employees.roles.${employee.role}`)}
+                                    {employee.role}
                                 </Badge>
                             </TableCell>
                             <TableCell>
@@ -76,7 +77,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                                 </span>
                             </TableCell>
                             <TableCell>
-                                <span className="text-sm text-muted-foreground">{employee.hire_date}</span>
+                                <span className="text-sm text-muted-foreground">{formatShamsiDate(employee.hire_date)}</span>
                             </TableCell>
                             <TableCell>
                                 {employee.is_active ? (

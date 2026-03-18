@@ -8,8 +8,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { formatPrice } from '@/data/mock';
 import type { OrderItem } from '@/data/mock/types';
+
+function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 
 interface OrderItemsTableProps {
     items: OrderItem[];
@@ -33,7 +34,7 @@ export function OrderItemsTable({ items, totalAmount }: OrderItemsTableProps) {
             <TableBody>
                 {items.map((item) => (
                     <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.food_item.name}</TableCell>
+                        <TableCell className="font-medium">{item.food_item?.name ?? '—'}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
                         <TableCell>{formatPrice(item.unit_price)}</TableCell>
                         <TableCell>{formatPrice(item.subtotal)}</TableCell>

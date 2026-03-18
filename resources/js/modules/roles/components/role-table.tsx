@@ -11,6 +11,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { RoleData } from '../types';
+import { formatShamsiDate } from '@/lib/date';
 
 interface RoleTableProps {
     roles: RoleData[];
@@ -70,7 +71,7 @@ export function RoleTable({ roles, onEdit, onDelete, onAssignPermissions }: Role
                             </TableCell>
                             <TableCell>
                                 <span className="text-sm text-muted-foreground" dir="ltr">
-                                    {new Date(role.created_at).toLocaleDateString()}
+                                    {formatShamsiDate(role.created_at)}
                                 </span>
                             </TableCell>
                             <TableCell>

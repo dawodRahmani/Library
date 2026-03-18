@@ -1,4 +1,4 @@
-import type { Category, FoodItem, RestaurantTable, Order, OrderItem, Employee, Salary, Expense } from './types';
+import type { Category, FoodItem, RestaurantTable, TableFloor, Order, OrderItem, Employee, Salary, Expense } from './types';
 
 // ── Categories ──────────────────────────────────────────────
 export const mockCategories: Category[] = [
@@ -11,43 +11,51 @@ export const mockCategories: Category[] = [
 // ── Food Items ──────────────────────────────────────────────
 export const mockFoodItems: FoodItem[] = [
     // پیش غذا (Appetizers)
-    { id: 1, category_id: 1, category: mockCategories[0], name: 'بولانی', price: 100, is_available: true, sort_order: 1 },
-    { id: 2, category_id: 1, category: mockCategories[0], name: 'سلاطه', price: 80, is_available: true, sort_order: 2 },
-    { id: 3, category_id: 1, category: mockCategories[0], name: 'آش', price: 120, is_available: false, sort_order: 3 },
+    { id: 1, category_id: 1, category: mockCategories[0], name: 'بولانی', price: 100, image: '/images/food/bolani.jpg', is_available: true, sort_order: 1 },
+    { id: 2, category_id: 1, category: mockCategories[0], name: 'سلاطه', price: 80, image: '/images/food/salad.jpg', is_available: true, sort_order: 2 },
+    { id: 3, category_id: 1, category: mockCategories[0], name: 'آش', price: 120, image: '/images/food/aush.jpg', is_available: false, sort_order: 3 },
     // غذای اصلی (Main Dishes)
-    { id: 4, category_id: 2, category: mockCategories[1], name: 'کابلی پلو', price: 300, is_available: true, sort_order: 1 },
-    { id: 5, category_id: 2, category: mockCategories[1], name: 'چلو کباب', price: 350, is_available: true, sort_order: 2 },
-    { id: 6, category_id: 2, category: mockCategories[1], name: 'مرغ کبابی', price: 400, is_available: true, sort_order: 3 },
-    { id: 7, category_id: 2, category: mockCategories[1], name: 'قابلی ازبکی', price: 280, is_available: true, sort_order: 4 },
+    { id: 4, category_id: 2, category: mockCategories[1], name: 'کابلی پلو', price: 300, image: '/images/food/kabuli.jpg', is_available: true, sort_order: 1 },
+    { id: 5, category_id: 2, category: mockCategories[1], name: 'چلو کباب', price: 350, image: '/images/food/kabab.jpg', is_available: true, sort_order: 2 },
+    { id: 6, category_id: 2, category: mockCategories[1], name: 'مرغ کبابی', price: 400, image: '/images/food/chicken.jpg', is_available: true, sort_order: 3 },
+    { id: 7, category_id: 2, category: mockCategories[1], name: 'قابلی ازبکی', price: 280, image: '/images/food/qabuli.jpg', is_available: true, sort_order: 4 },
     // نوشیدنی (Drinks)
-    { id: 8, category_id: 3, category: mockCategories[2], name: 'چای سبز', price: 50, is_available: true, sort_order: 1 },
-    { id: 9, category_id: 3, category: mockCategories[2], name: 'چای سیاه', price: 50, is_available: true, sort_order: 2 },
-    { id: 10, category_id: 3, category: mockCategories[2], name: 'دوغ', price: 60, is_available: true, sort_order: 3 },
+    { id: 8, category_id: 3, category: mockCategories[2], name: 'چای سبز', price: 50, image: '/images/food/green-tea.jpg', is_available: true, sort_order: 1 },
+    { id: 9, category_id: 3, category: mockCategories[2], name: 'چای سیاه', price: 50, image: '/images/food/black-tea.jpg', is_available: true, sort_order: 2 },
+    { id: 10, category_id: 3, category: mockCategories[2], name: 'دوغ', price: 60, image: '/images/food/doogh.jpg', is_available: true, sort_order: 3 },
     // دسر (Desserts)
-    { id: 11, category_id: 4, category: mockCategories[3], name: 'فرنی', price: 100, is_available: true, sort_order: 1 },
-    { id: 12, category_id: 4, category: mockCategories[3], name: 'شیر یخ', price: 120, is_available: true, sort_order: 2 },
+    { id: 11, category_id: 4, category: mockCategories[3], name: 'فرنی', price: 100, image: '/images/food/firni.jpg', is_available: true, sort_order: 1 },
+    { id: 12, category_id: 4, category: mockCategories[3], name: 'شیر یخ', price: 120, image: '/images/food/sheer-yakh.jpg', is_available: true, sort_order: 2 },
+];
+
+// ── Floors ──────────────────────────────────────────────────
+export const mockFloors: TableFloor[] = [
+    { id: 1, name: 'طبقه اول', description: 'سالن اصلی', color: 'emerald', order: 1 },
+    { id: 2, name: 'طبقه دوم', description: 'سالن بالایی', color: 'blue', order: 2 },
+    { id: 3, name: 'تراس', description: 'فضای باز', color: 'amber', order: 3 },
+    { id: 4, name: 'VIP', description: 'اتاق خصوصی', color: 'purple', order: 4 },
 ];
 
 // ── Tables ──────────────────────────────────────────────────
 export const mockTables: RestaurantTable[] = [
-    { id: 1, number: 1, capacity: 4, status: 'available' },
-    { id: 2, number: 2, capacity: 4, status: 'occupied', active_order_id: 1024 },
-    { id: 3, number: 3, capacity: 6, status: 'available' },
-    { id: 4, number: 4, capacity: 4, status: 'available' },
-    { id: 5, number: 5, name: 'VIP 1', capacity: 8, status: 'occupied', active_order_id: 1025 },
-    { id: 6, number: 6, capacity: 2, status: 'available' },
-    { id: 7, number: 7, capacity: 4, status: 'occupied', active_order_id: 1023 },
-    { id: 8, number: 8, capacity: 4, status: 'available' },
-    { id: 9, number: 9, capacity: 6, status: 'available' },
-    { id: 10, number: 10, capacity: 2, status: 'available' },
+    { id: 1, number: 1, capacity: 4, status: 'available', floor_id: 1, floor_name: 'طبقه اول' },
+    { id: 2, number: 2, capacity: 4, status: 'occupied', active_order_id: 1024, floor_id: 1, floor_name: 'طبقه اول' },
+    { id: 3, number: 3, capacity: 6, status: 'available', floor_id: 1, floor_name: 'طبقه اول' },
+    { id: 4, number: 4, capacity: 4, status: 'available', floor_id: 1, floor_name: 'طبقه اول' },
+    { id: 5, number: 5, capacity: 4, status: 'available', floor_id: 2, floor_name: 'طبقه دوم' },
+    { id: 6, number: 6, capacity: 6, status: 'available', floor_id: 2, floor_name: 'طبقه دوم' },
+    { id: 7, number: 7, capacity: 4, status: 'occupied', active_order_id: 1023, floor_id: 2, floor_name: 'طبقه دوم' },
+    { id: 8, number: 8, capacity: 4, status: 'available', floor_id: 3, floor_name: 'تراس' },
+    { id: 9, number: 9, capacity: 6, status: 'available', floor_id: 3, floor_name: 'تراس' },
+    { id: 10, number: 10, name: 'VIP 1', capacity: 8, status: 'occupied', active_order_id: 1025, floor_id: 4, floor_name: 'VIP' },
 ];
 
 // ── Employees ───────────────────────────────────────────────
 export const mockEmployees: Employee[] = [
-    { id: 1, name: 'احمد حسینی', role: 'manager', phone: '0799123456', hire_date: '1403-01-01', is_active: true },
-    { id: 2, name: 'محمد رضایی', role: 'waiter', phone: '0788654321', hire_date: '1403-03-15', is_active: true },
-    { id: 3, name: 'علی احمدی', role: 'chef', phone: '0777111222', hire_date: '1403-02-01', is_active: true },
-    { id: 4, name: 'حسن نوری', role: 'cashier', phone: '0766333444', hire_date: '1403-06-01', is_active: true },
+    { id: 1, name: 'احمد حسینی', role: 'manager', phone: '0799123456', hire_date: '1403-01-01', is_active: true, base_salary: 25000 },
+    { id: 2, name: 'محمد رضایی', role: 'waiter', phone: '0788654321', hire_date: '1403-03-15', is_active: true, base_salary: 15000 },
+    { id: 3, name: 'علی احمدی', role: 'chef', phone: '0777111222', hire_date: '1403-02-01', is_active: true, base_salary: 20000 },
+    { id: 4, name: 'حسن نوری', role: 'cashier', phone: '0766333444', hire_date: '1403-06-01', is_active: true, base_salary: 18000 },
 ];
 
 // ── Orders ──────────────────────────────────────────────────
@@ -156,18 +164,21 @@ export const mockOrders: Order[] = [
 
 // ── Salaries ───────────────────────────────────────────────
 export const mockSalaries: Salary[] = [
-    { id: 1, employee_id: 1, amount: 25000, payment_date: '1404-12-10', month: '1404-12', notes: 'معاش ماه حوت' },
-    { id: 2, employee_id: 2, amount: 15000, payment_date: '1404-12-10', month: '1404-12' },
-    { id: 3, employee_id: 3, amount: 20000, payment_date: '1404-12-10', month: '1404-12' },
-    { id: 4, employee_id: 4, amount: 18000, payment_date: '1404-12-10', month: '1404-12' },
-    { id: 5, employee_id: 1, amount: 25000, payment_date: '1404-11-10', month: '1404-11' },
-    { id: 6, employee_id: 2, amount: 15000, payment_date: '1404-11-10', month: '1404-11' },
-    { id: 7, employee_id: 3, amount: 20000, payment_date: '1404-11-10', month: '1404-11' },
-    { id: 8, employee_id: 4, amount: 18000, payment_date: '1404-11-10', month: '1404-11' },
-    { id: 9, employee_id: 1, amount: 25000, payment_date: '1404-10-10', month: '1404-10' },
-    { id: 10, employee_id: 2, amount: 15000, payment_date: '1404-10-10', month: '1404-10' },
-    { id: 11, employee_id: 3, amount: 20000, payment_date: '1404-10-10', month: '1404-10' },
-    { id: 12, employee_id: 4, amount: 18000, payment_date: '1404-10-10', month: '1404-10' },
+    // Current month (1404-12) — 2 paid, 1 partial, 1 pending
+    { id: 1, employee_id: 1, base_amount: 25000, bonuses: 3000, deductions: 0, amount: 28000, status: 'paid', payment_date: '1404-12-10', month: '1404-12', notes: 'معاش ماه حوت + پاداش' },
+    { id: 2, employee_id: 2, base_amount: 15000, bonuses: 0, deductions: 2000, amount: 13000, status: 'paid', payment_date: '1404-12-10', month: '1404-12', notes: 'کسر غیرحاضری' },
+    { id: 3, employee_id: 3, base_amount: 20000, bonuses: 0, deductions: 0, amount: 10000, status: 'partial', payment_date: '1404-12-12', month: '1404-12', notes: 'نیمی پرداخت شد' },
+    { id: 4, employee_id: 4, base_amount: 18000, bonuses: 0, deductions: 0, amount: 0, status: 'pending', month: '1404-12' },
+    // Previous month (1404-11) — all paid
+    { id: 5, employee_id: 1, base_amount: 25000, bonuses: 0, deductions: 0, amount: 25000, status: 'paid', payment_date: '1404-11-10', month: '1404-11' },
+    { id: 6, employee_id: 2, base_amount: 15000, bonuses: 1000, deductions: 0, amount: 16000, status: 'paid', payment_date: '1404-11-10', month: '1404-11', notes: 'پاداش اضافه‌کاری' },
+    { id: 7, employee_id: 3, base_amount: 20000, bonuses: 0, deductions: 0, amount: 20000, status: 'paid', payment_date: '1404-11-10', month: '1404-11' },
+    { id: 8, employee_id: 4, base_amount: 18000, bonuses: 0, deductions: 0, amount: 18000, status: 'paid', payment_date: '1404-11-10', month: '1404-11' },
+    // Older month (1404-10) — all paid
+    { id: 9, employee_id: 1, base_amount: 25000, bonuses: 0, deductions: 0, amount: 25000, status: 'paid', payment_date: '1404-10-10', month: '1404-10' },
+    { id: 10, employee_id: 2, base_amount: 15000, bonuses: 0, deductions: 0, amount: 15000, status: 'paid', payment_date: '1404-10-10', month: '1404-10' },
+    { id: 11, employee_id: 3, base_amount: 20000, bonuses: 2000, deductions: 0, amount: 22000, status: 'paid', payment_date: '1404-10-10', month: '1404-10' },
+    { id: 12, employee_id: 4, base_amount: 18000, bonuses: 0, deductions: 1000, amount: 17000, status: 'paid', payment_date: '1404-10-10', month: '1404-10', notes: 'کسر تاخیر' },
 ];
 
 // ── Expenses ───────────────────────────────────────────────

@@ -11,19 +11,19 @@ interface KitchenOrderCardProps {
 
 const columnColors: Record<string, { border: string; bg: string; header: string }> = {
     pending: {
-        border: 'border-yellow-400 dark:border-yellow-600',
-        bg: 'bg-yellow-50 dark:bg-yellow-950',
-        header: 'bg-yellow-100 dark:bg-yellow-900',
+        border: 'border-slate-300 dark:border-slate-600',
+        bg: 'bg-slate-50 dark:bg-slate-950',
+        header: 'bg-slate-100 dark:bg-slate-900',
     },
     in_kitchen: {
-        border: 'border-orange-400 dark:border-orange-600',
-        bg: 'bg-orange-50 dark:bg-orange-950',
-        header: 'bg-orange-100 dark:bg-orange-900',
+        border: 'border-amber-400 dark:border-amber-600',
+        bg: 'bg-amber-50 dark:bg-amber-950',
+        header: 'bg-amber-100 dark:bg-amber-900',
     },
     ready: {
-        border: 'border-green-400 dark:border-green-600',
-        bg: 'bg-green-50 dark:bg-green-950',
-        header: 'bg-green-100 dark:bg-green-900',
+        border: 'border-emerald-400 dark:border-emerald-600',
+        bg: 'bg-emerald-50 dark:bg-emerald-950',
+        header: 'bg-emerald-100 dark:bg-emerald-900',
     },
 };
 
@@ -45,8 +45,9 @@ export function KitchenOrderCard({ order, onStatusChange }: KitchenOrderCardProp
                 <div className="flex items-center gap-3">
                     <span className="text-2xl font-black">{order.order_number}</span>
                     <span className="text-lg font-semibold opacity-80">
-                        {t('kitchen.table')} {order.table.number}
-                        {order.table.name ? ` (${order.table.name})` : ''}
+                        {order.table
+                            ? `${t('kitchen.table')} ${order.table.number}${order.table.name ? ` (${order.table.name})` : ''}`
+                            : t('orders.takeaway')}
                     </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm font-medium opacity-70">
@@ -61,7 +62,7 @@ export function KitchenOrderCard({ order, onStatusChange }: KitchenOrderCardProp
                     <div key={item.id} className="flex items-center justify-between text-lg">
                         <div className="flex items-center gap-2">
                             <UtensilsCrossed className="h-4 w-4 opacity-50" />
-                            <span className="font-medium">{item.food_item.name}</span>
+                            <span className="font-medium">{item.food_item?.name ?? '—'}</span>
                         </div>
                         <span className="font-bold text-xl">x{item.quantity}</span>
                     </div>
@@ -70,7 +71,7 @@ export function KitchenOrderCard({ order, onStatusChange }: KitchenOrderCardProp
                     <div className="mt-2 pt-2 border-t border-current/10">
                         {order.items.filter(i => i.notes).map((item) => (
                             <p key={item.id} className="text-sm opacity-70">
-                                {item.food_item.name}: {item.notes}
+                                {item.food_item?.name ?? '—'}: {item.notes}
                             </p>
                         ))}
                     </div>
@@ -81,7 +82,7 @@ export function KitchenOrderCard({ order, onStatusChange }: KitchenOrderCardProp
             <div className="px-4 pb-4">
                 {order.status === 'pending' && (
                     <Button
-                        className="w-full h-12 text-lg font-bold bg-orange-500 hover:bg-orange-600 text-white"
+                        className="w-full h-12 text-lg font-bold bg-amber-500 hover:bg-amber-600 text-white"
                         onClick={() => onStatusChange(order.id, 'in_kitchen')}
                     >
                         {t('kitchen.startPreparing')}
@@ -89,7 +90,7 @@ export function KitchenOrderCard({ order, onStatusChange }: KitchenOrderCardProp
                 )}
                 {order.status === 'in_kitchen' && (
                     <Button
-                        className="w-full h-12 text-lg font-bold bg-green-500 hover:bg-green-600 text-white"
+                        className="w-full h-12 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
                         onClick={() => onStatusChange(order.id, 'ready')}
                     >
                         {t('kitchen.markReady')}
@@ -97,7 +98,7 @@ export function KitchenOrderCard({ order, onStatusChange }: KitchenOrderCardProp
                 )}
                 {order.status === 'ready' && (
                     <Button
-                        className="w-full h-12 text-lg font-bold bg-blue-500 hover:bg-blue-600 text-white"
+                        className="w-full h-12 text-lg font-bold bg-sky-500 hover:bg-sky-600 text-white"
                         onClick={() => onStatusChange(order.id, 'served')}
                     >
                         {t('kitchen.markServed')}

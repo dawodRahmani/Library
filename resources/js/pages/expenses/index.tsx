@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Plus, CreditCard } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
@@ -9,11 +9,19 @@ import { ExpenseTable } from '@/modules/expenses/components/expense-table';
 import { ExpenseFormDialog } from '@/modules/expenses/components/expense-form-dialog';
 import { ExpenseDeleteDialog } from '@/modules/expenses/components/expense-delete-dialog';
 import { ExpenseFilters } from '@/modules/expenses/components/expense-filters';
-import { mockExpenses, formatPrice } from '@/data/mock';
 import type { Expense, ExpenseFormData } from '@/modules/expenses/types';
+
+function formatPrice(amount: number): string {
+    return `${amount.toLocaleString()} ؋`;
+}
+
+interface Props extends Record<string, unknown> {
+    expenses: Expense[];
+}
 
 export default function ExpensesIndex() {
     const { t } = useTranslation();
+    const { expenses } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -28,7 +36,7 @@ export default function ExpensesIndex() {
     const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
 
     const filteredExpenses = useMemo(() => {
-        return mockExpenses.filter((expense) => {
+        return expenses.filter((expense) => {
             const matchesSearch =
                 !search ||
                 expense.description.toLowerCase().includes(search.toLowerCase());
@@ -36,7 +44,7 @@ export default function ExpensesIndex() {
                 categoryFilter === 'all' || expense.category === categoryFilter;
             return matchesSearch && matchesCategory;
         });
-    }, [search, categoryFilter]);
+    }, [expenses, search, categoryFilter]);
 
     const totalAmount = useMemo(() => {
         return filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -52,14 +60,23 @@ export default function ExpensesIndex() {
         setDeleteOpen(true);
     };
 
-    const handleFormSubmit = (_data: ExpenseFormData) => {
-        setFormOpen(false);
-        setEditingExpense(null);
+    const handleFormSubmit = (data: ExpenseFormData) => {
+        if (editingExpense) {
+            router.patch(`/expenses/${editingExpense.id}`, { ...data }, {
+                onSuccess: () => { setFormOpen(false); setEditingExpense(null); },
+            });
+        } else {
+            router.post('/expenses', { ...data }, {
+                onSuccess: () => { setFormOpen(false); },
+            });
+        }
     };
 
     const handleDeleteConfirm = () => {
-        setDeleteOpen(false);
-        setDeletingExpense(null);
+        if (!deletingExpense) return;
+        router.delete(`/expenses/${deletingExpense.id}`, {
+            onSuccess: () => { setDeleteOpen(false); setDeletingExpense(null); },
+        });
     };
 
     const handleAddNew = () => {
@@ -81,7 +98,7 @@ export default function ExpensesIndex() {
                         <div>
                             <h1 className="text-xl font-bold">{t('expenses.title')}</h1>
                             <p className="text-sm text-muted-foreground">
-                                {t('common.showing')} {filteredExpenses.length} {t('common.of')} {mockExpenses.length} {t('common.results')}
+                                {t('common.showing')} {filteredExpenses.length} {t('common.of')} {expenses.length} {t('common.results')}
                             </p>
                         </div>
                     </div>
@@ -119,7 +136,7 @@ export default function ExpensesIndex() {
 
                 {filteredExpenses.length > 0 && (
                     <div className="flex items-center justify-center text-sm text-muted-foreground">
-                        {t('common.showing')} {filteredExpenses.length} {t('common.of')} {mockExpenses.length} {t('common.results')}
+                        {t('common.showing')} {filteredExpenses.length} {t('common.of')} {expenses.length} {t('common.results')}
                     </div>
                 )}
             </div>

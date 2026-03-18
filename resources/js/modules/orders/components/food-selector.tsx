@@ -5,8 +5,10 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatPrice } from '@/data/mock';
+import { FoodImage } from '@/components/food-image';
 import type { FoodItem, Category } from '@/data/mock/types';
+
+function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 
 interface FoodSelectorProps {
     items: FoodItem[];
@@ -52,16 +54,17 @@ export function FoodSelector({ items, categories, onAddItem }: FoodSelectorProps
 
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                 {filteredItems.map((item) => (
-                    <Card key={item.id} className="transition-shadow hover:shadow-md">
-                        <CardContent className="flex flex-col gap-2 p-4">
+                    <Card key={item.id} className="overflow-hidden transition-shadow hover:shadow-md gap-0 py-0">
+                        <FoodImage src={item.image} alt={item.name} size="md" />
+                        <CardContent className="flex flex-col gap-2 p-3">
                             <div className="flex items-start justify-between gap-2">
-                                <span className="font-medium">{item.name}</span>
-                                <Badge variant="secondary" className="shrink-0">
+                                <span className="font-medium text-sm">{item.name}</span>
+                                <Badge variant="secondary" className="shrink-0 text-xs">
                                     {item.category.name}
                                 </Badge>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground text-sm">
+                                <span className="font-bold">
                                     {formatPrice(item.price)}
                                 </span>
                                 <Button size="sm" onClick={() => onAddItem(item)}>

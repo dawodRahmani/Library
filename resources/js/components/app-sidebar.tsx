@@ -1,21 +1,30 @@
 import { Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import {
+    BookOpen,
     ChefHat,
     ClipboardList,
     CreditCard,
     KeyRound,
+    Landmark,
     LayoutGrid,
+    Monitor,
+    Package,
+    PackageSearch,
+    QrCode,
     ScrollText,
     Settings,
     Shield,
     ShieldCheck,
+    Smartphone,
     SquareMenu,
+    Truck,
     Users,
     UtensilsCrossed,
     Wallet,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
+import { NavGroup } from '@/components/nav-group';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -33,11 +42,16 @@ import type { NavItem } from '@/types';
 export function AppSidebar() {
     const { t } = useTranslation();
 
-    const mainNavItems: NavItem[] = [
+    const coreNavItems: NavItem[] = [
         {
             title: t('sidebar.dashboard'),
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: t('sidebar.pos'),
+            href: '/pos',
+            icon: Monitor,
         },
         {
             title: t('sidebar.orders'),
@@ -59,48 +73,95 @@ export function AppSidebar() {
             href: '/kitchen',
             icon: ChefHat,
         },
+    ];
+
+    const inventoryGroups = [
         {
-            title: t('sidebar.expenses'),
-            href: '/expenses',
-            icon: CreditCard,
-        },
-        {
-            title: t('sidebar.employees'),
-            href: '/employees',
-            icon: Users,
-        },
-        {
-            title: t('sidebar.salaries'),
-            href: '/salaries',
-            icon: Wallet,
-        },
-        {
-            title: t('sidebar.reports'),
-            href: '/reports',
-            icon: ScrollText,
+            title: t('sidebar.inventoryGroup'),
+            icon: Package,
+            items: [
+                {
+                    title: t('sidebar.inventory'),
+                    href: '/inventory',
+                    icon: Package,
+                },
+                {
+                    title: t('sidebar.suppliers'),
+                    href: '/inventory/suppliers',
+                    icon: Truck,
+                },
+                {
+                    title: t('sidebar.purchaseOrders'),
+                    href: '/inventory/purchase-orders',
+                    icon: PackageSearch,
+                },
+            ],
         },
     ];
 
-    const adminNavItems: NavItem[] = [
+    const financeGroups = [
         {
-            title: t('sidebar.users'),
-            href: '/users',
-            icon: ShieldCheck,
+            title: t('sidebar.financeGroup'),
+            icon: Landmark,
+            items: [
+                {
+                    title: t('sidebar.accounting'),
+                    href: '/accounting',
+                    icon: BookOpen,
+                },
+                {
+                    title: t('sidebar.expenses'),
+                    href: '/expenses',
+                    icon: CreditCard,
+                },
+                {
+                    title: t('sidebar.reports'),
+                    href: '/reports',
+                    icon: ScrollText,
+                },
+            ],
         },
         {
-            title: t('sidebar.roles'),
-            href: '/roles',
-            icon: Shield,
+            title: t('sidebar.hrGroup'),
+            icon: Users,
+            items: [
+                {
+                    title: t('sidebar.employees'),
+                    href: '/employees',
+                    icon: Users,
+                },
+                {
+                    title: t('sidebar.salaries'),
+                    href: '/salaries',
+                    icon: Wallet,
+                },
+            ],
         },
+    ];
+
+    const settingsGroups = [
         {
-            title: t('sidebar.permissions'),
-            href: '/permissions',
-            icon: KeyRound,
-        },
-        {
-            title: t('sidebar.settings'),
-            href: '/settings/profile',
+            title: t('sidebar.settingsGroup'),
             icon: Settings,
+            items: [
+                { title: t('sidebar.users'), href: '/users', icon: ShieldCheck },
+                { title: t('sidebar.roles'), href: '/roles', icon: Shield },
+                { title: t('sidebar.permissions'), href: '/permissions', icon: KeyRound },
+                { title: t('sidebar.settings'), href: '/settings/profile', icon: Settings },
+            ],
+        },
+    ];
+
+    const customerNavItems: NavItem[] = [
+        {
+            title: t('sidebar.kiosk'),
+            href: '/kiosk',
+            icon: Smartphone,
+        },
+        {
+            title: t('sidebar.digitalMenu'),
+            href: '/digital-menu',
+            icon: QrCode,
         },
     ];
 
@@ -119,8 +180,11 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
-                <NavMain items={adminNavItems} label={t('sidebar.settings')} />
+                <NavMain items={coreNavItems} />
+                <NavGroup groups={inventoryGroups} label={t('sidebar.inventorySection')} />
+                <NavGroup groups={financeGroups} label={t('sidebar.financeSection')} />
+                <NavMain items={customerNavItems} label={t('sidebar.customerPages')} />
+                <NavGroup groups={settingsGroups} />
             </SidebarContent>
 
             <SidebarFooter>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import {
     Dialog,
@@ -10,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 import type { Category } from '@/data/mock/types';
 
 interface AddCategoryModalProps {
@@ -21,19 +23,33 @@ interface AddCategoryModalProps {
 export function AddCategoryModal({ open, onOpenChange, category }: AddCategoryModalProps) {
     const { t } = useTranslation();
     const [name, setName] = useState('');
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        if (category) {
-            setName(category.name);
-        } else {
-            setName('');
+        if (open) {
+            setName(category?.name ?? '');
+            setErrors({});
         }
     }, [category, open]);
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (!name.trim()) return;
-        onOpenChange(false);
+        setProcessing(true);
+
+        if (category) {
+            router.put(`/menu/categories/${category.id}`, { name }, {
+                onSuccess: () => onOpenChange(false),
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        } else {
+            router.post('/menu/categories', { name }, {
+                onSuccess: () => onOpenChange(false),
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        }
     }
 
     return (
@@ -54,13 +70,15 @@ export function AddCategoryModal({ open, onOpenChange, category }: AddCategoryMo
                             onChange={(e) => setName(e.target.value)}
                             required
                         />
+                        {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={processing}>
                             {t('common.cancel')}
                         </Button>
-                        <Button type="submit">
+                        <Button type="submit" disabled={processing}>
+                            {processing && <Spinner className="me-2" />}
                             {category ? t('common.save') : t('common.add')}
                         </Button>
                     </DialogFooter>

@@ -1,18 +1,20 @@
-import { useState, useMemo } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { FoodItem } from '@/data/mock/types';
-import { mockFoodItems, mockCategories } from '@/data/mock';
+import type { FoodItem, Category } from '@/data/mock/types';
 import { FoodItemGrid } from '@/modules/menu/components/food-item-grid';
 import { AddFoodModal } from '@/modules/menu/components/add-food-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Grid3X3 } from 'lucide-react';
 
+interface Props extends Record<string, unknown> { items: FoodItem[]; categories: Category[] }
+
 export default function MenuPage() {
     const { t } = useTranslation();
+    const { items: mockFoodItems, categories: mockCategories } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -24,6 +26,10 @@ export default function MenuPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<FoodItem | undefined>(undefined);
     const [items, setItems] = useState(mockFoodItems);
+
+    useEffect(() => {
+        setItems(mockFoodItems);
+    }, [mockFoodItems]);
 
     const filteredItems = useMemo(() => {
         let result = items;
@@ -46,11 +52,13 @@ export default function MenuPage() {
     }
 
     function handleToggleAvailability(id: number) {
+        // Optimistic update
         setItems((prev) =>
             prev.map((item) =>
                 item.id === id ? { ...item, is_available: !item.is_available } : item,
             ),
         );
+        router.patch(`/menu/items/${id}/availability`);
     }
 
     function handleOpenAdd() {

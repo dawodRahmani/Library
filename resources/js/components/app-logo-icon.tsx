@@ -19,14 +19,14 @@ export default function AppLogoIcon({
         >
             <defs>
                 <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#059669" />
-                    <stop offset="50%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#7c3aed" />
+                    <stop offset="0%" stopColor="#4f46e5" />
+                    <stop offset="50%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#818cf8" />
                 </linearGradient>
                 <linearGradient id="logoGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#34d399" />
-                    <stop offset="60%" stopColor="#6ee7b7" />
-                    <stop offset="100%" stopColor="#a78bfa" />
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="60%" stopColor="#818cf8" />
+                    <stop offset="100%" stopColor="#a5b4fc" />
                 </linearGradient>
             </defs>
 
@@ -87,7 +87,7 @@ export default function AppLogoIcon({
                 width="12"
                 height="12"
                 rx="2"
-                fill="#ef4444"
+                fill="#f59e0b"
                 transform="rotate(45 100 154)"
             />
         </svg>

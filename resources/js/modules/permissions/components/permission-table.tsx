@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Edit, Trash2, KeyRound } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { KeyRound } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
     Table,
@@ -14,11 +13,9 @@ import type { PermissionData } from '../types';
 
 interface PermissionTableProps {
     permissions: PermissionData[];
-    onEdit: (permission: PermissionData) => void;
-    onDelete: (permission: PermissionData) => void;
 }
 
-export function PermissionTable({ permissions, onEdit, onDelete }: PermissionTableProps) {
+export function PermissionTable({ permissions }: PermissionTableProps) {
     const { t } = useTranslation();
 
     if (permissions.length === 0) {
@@ -38,7 +35,6 @@ export function PermissionTable({ permissions, onEdit, onDelete }: PermissionTab
                         <TableHead className="font-semibold">{t('permissions.permissionName')}</TableHead>
                         <TableHead className="font-semibold">{t('permissions.group')}</TableHead>
                         <TableHead className="font-semibold">{t('permissions.assignedToRoles')}</TableHead>
-                        <TableHead className="font-semibold text-center">{t('users.actions')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -71,26 +67,6 @@ export function PermissionTable({ permissions, onEdit, onDelete }: PermissionTab
                                     {perm.roles.length === 0 && (
                                         <span className="text-xs text-muted-foreground">—</span>
                                     )}
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => onEdit(perm)}
-                                        className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                                    >
-                                        <Edit className="size-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => onDelete(perm)}
-                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    >
-                                        <Trash2 className="size-4" />
-                                    </Button>
                                 </div>
                             </TableCell>
                         </TableRow>

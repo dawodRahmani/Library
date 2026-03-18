@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatPrice } from '@/data/mock';
 import { cn } from '@/lib/utils';
+
+function formatPrice(amount: number): string {
+    return `${amount.toLocaleString()} ؋`;
+}
 import type { DailySalesData } from '../data/mock-reports';
 
 interface ReportTableProps {

@@ -35,6 +35,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $logoPath = public_path('images/logo.png');
+        $logoUrl  = file_exists($logoPath)
+            ? asset('images/logo.png') . '?v=' . filemtime($logoPath)
+            : null;
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -42,6 +47,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'logoUrl'     => $logoUrl,
         ];
     }
 }

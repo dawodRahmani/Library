@@ -11,6 +11,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { UserData } from '../types';
+import { formatShamsiDate } from '@/lib/date';
 
 interface UserTableProps {
     users: UserData[];
@@ -93,7 +94,7 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
                             </TableCell>
                             <TableCell>
                                 <span className="text-sm text-muted-foreground" dir="ltr">
-                                    {new Date(user.created_at).toLocaleDateString()}
+                                    {formatShamsiDate(user.created_at)}
                                 </span>
                             </TableCell>
                             <TableCell>

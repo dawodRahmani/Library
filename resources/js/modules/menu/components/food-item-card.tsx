@@ -2,8 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatPrice } from '@/data/mock';
+import { FoodImage } from '@/components/food-image';
 import type { FoodItem } from '@/data/mock/types';
+
+function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 import { Pencil, ToggleLeft, ToggleRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +20,7 @@ export function FoodItemCard({ item, onEdit, onToggleAvailability }: FoodItemCar
 
     return (
         <Card className="gap-0 py-0 overflow-hidden">
+            <FoodImage src={item.image} alt={item.name} size="md" />
             <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">

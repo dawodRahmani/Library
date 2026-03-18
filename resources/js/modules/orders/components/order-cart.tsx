@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatPrice } from '@/data/mock';
 import type { FoodItem } from '@/data/mock/types';
+
+function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 
 interface CartItem {
     food_item: FoodItem;
@@ -21,6 +22,7 @@ interface OrderCartProps {
     onSubmit: () => void;
     onCancel: () => void;
     selectedTable: number | null;
+    orderType?: 'dine_in' | 'takeaway' | 'delivery';
 }
 
 export function OrderCart({
@@ -31,6 +33,7 @@ export function OrderCart({
     onSubmit,
     onCancel,
     selectedTable,
+    orderType = 'dine_in',
 }: OrderCartProps) {
     const { t } = useTranslation();
 
@@ -135,7 +138,7 @@ export function OrderCart({
                     <Button
                         className="flex-1"
                         onClick={onSubmit}
-                        disabled={cartItems.length === 0 || selectedTable === null}
+                        disabled={cartItems.length === 0 || (orderType === 'dine_in' && selectedTable === null)}
                     >
                         {t('orders.submitOrder')}
                     </Button>

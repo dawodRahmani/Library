@@ -1,18 +1,28 @@
 import { useTranslation } from 'react-i18next';
-import { router } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { mockOrders, formatPrice, formatTime } from '@/data/mock';
-import type { OrderStatus } from '@/data/mock/types';
+type OrderStatus = 'pending' | 'in_kitchen' | 'ready' | 'served' | 'paid' | 'cancelled';
 import { cn } from '@/lib/utils';
+import { formatShamsiDateTime } from '@/lib/date';
+
+interface RecentOrder {
+    id: number;
+    order_number: string;
+    status: OrderStatus;
+    total_amount: number;
+    table: { number: number; name: string | null } | null;
+    created_at: string;
+    items_count: number;
+}
 
 const statusColors: Record<OrderStatus, string> = {
-    pending: 'bg-gray-100 text-gray-800',
-    in_kitchen: 'bg-yellow-100 text-yellow-800',
-    ready: 'bg-orange-100 text-orange-800',
-    served: 'bg-blue-100 text-blue-800',
-    paid: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+    pending: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    in_kitchen: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+    ready: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+    served: 'bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300',
+    paid: 'bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
+    cancelled: 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
 };
 
 const statusKeys: Record<OrderStatus, string> = {
@@ -24,12 +34,13 @@ const statusKeys: Record<OrderStatus, string> = {
     cancelled: 'orders.statusCancelled',
 };
 
+function formatPrice(amount: number): string {
+    return `${amount.toLocaleString()} ؋`;
+}
+
 export function RecentOrders() {
     const { t } = useTranslation();
-
-    const recentOrders = mockOrders
-        .filter(o => o.status !== 'cancelled')
-        .slice(0, 5);
+    const { recentOrders } = usePage<{ recentOrders: RecentOrder[] }>().props;
 
     return (
         <Card>
@@ -52,12 +63,14 @@ export function RecentOrders() {
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                         <span className="font-medium">{order.order_number}</span>
-                                        <span className="text-sm text-muted-foreground">
-                                            {t('orders.table')} {order.table.number}
-                                        </span>
+                                        {order.table && (
+                                            <span className="text-sm text-muted-foreground">
+                                                {t('orders.table')} {order.table.number}
+                                            </span>
+                                        )}
                                     </div>
                                     <p className="text-sm text-muted-foreground">
-                                        {order.items.map(i => `${i.food_item.name} x${i.quantity}`).join('، ')}
+                                        {t('orders.itemsCount', { count: order.items_count })}
                                     </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
@@ -65,7 +78,7 @@ export function RecentOrders() {
                                         {t(statusKeys[order.status])}
                                     </Badge>
                                     <span className="text-sm font-medium">{formatPrice(order.total_amount)}</span>
-                                    <span className="text-xs text-muted-foreground">{formatTime(order.created_at)}</span>
+                                    <span className="text-xs text-muted-foreground">{formatShamsiDateTime(order.created_at)}</span>
                                 </div>
                             </div>
                         ))}

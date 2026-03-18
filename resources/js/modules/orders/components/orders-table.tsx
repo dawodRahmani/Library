@@ -8,9 +8,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { formatPrice, formatTime } from '@/data/mock';
 import type { Order } from '@/data/mock/types';
 import { OrderStatusBadge } from './order-status-badge';
+import { formatShamsiDateTime } from '@/lib/date';
+
+function formatPrice(amount: number): string {
+    return `${amount.toLocaleString()} ؋`;
+}
 
 interface OrdersTableProps {
     orders: Order[];
@@ -28,7 +32,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                     <TableHead>{t('orders.itemCount')}</TableHead>
                     <TableHead>{t('orders.total')}</TableHead>
                     <TableHead>{t('orders.status')}</TableHead>
-                    <TableHead>{t('orders.time')}</TableHead>
+                    <TableHead>{t('orders.dateTime')}</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -47,14 +51,18 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                         >
                             <TableCell className="font-medium">{order.order_number}</TableCell>
                             <TableCell>
-                                {order.table.name || `${t('orders.table')} ${order.table.number}`}
+                                {order.table
+                                    ? order.table.name || `${t('orders.table')} ${order.table.number}`
+                                    : '—'}
                             </TableCell>
-                            <TableCell>{order.items.length}</TableCell>
+                            <TableCell>{order.items.length} {t('orders.itemCount')}</TableCell>
                             <TableCell>{formatPrice(order.total_amount)}</TableCell>
                             <TableCell>
                                 <OrderStatusBadge status={order.status} />
                             </TableCell>
-                            <TableCell>{formatTime(order.created_at)}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                                {formatShamsiDateTime(order.created_at)}
+                            </TableCell>
                         </TableRow>
                     ))
                 )}

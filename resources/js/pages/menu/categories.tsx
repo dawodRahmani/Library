@@ -1,18 +1,20 @@
-import { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import type { Category } from '@/data/mock/types';
-import { mockCategories } from '@/data/mock';
 import { CategoryList } from '@/modules/menu/components/category-list';
 import { AddCategoryModal } from '@/modules/menu/components/add-category-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 
+interface Props extends Record<string, unknown> { categories: Category[] }
+
 export default function CategoriesPage() {
     const { t } = useTranslation();
+    const { categories: initialCategories } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -20,9 +22,13 @@ export default function CategoriesPage() {
         { title: t('menu.categories'), href: '/menu/categories' },
     ];
 
-    const [categories, setCategories] = useState(mockCategories);
+    const [categories, setCategories] = useState(initialCategories);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
+
+    useEffect(() => {
+        setCategories(initialCategories);
+    }, [initialCategories]);
 
     function handleEdit(cat: Category) {
         setEditingCategory(cat);
@@ -30,7 +36,7 @@ export default function CategoriesPage() {
     }
 
     function handleDelete(id: number) {
-        setCategories((prev) => prev.filter((cat) => cat.id !== id));
+        router.delete(`/menu/categories/${id}`);
     }
 
     function handleOpenAdd() {
@@ -67,7 +73,10 @@ export default function CategoriesPage() {
 
             <AddCategoryModal
                 open={modalOpen}
-                onOpenChange={setModalOpen}
+                onOpenChange={(open) => {
+                    setModalOpen(open);
+                    if (!open) setEditingCategory(undefined);
+                }}
                 category={editingCategory}
             />
         </AppLayout>

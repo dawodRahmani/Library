@@ -8,38 +8,49 @@ import type { BreadcrumbItem } from '@/types';
 import { SalaryTable } from '@/modules/salaries/components/salary-table';
 import { SalaryFormDialog } from '@/modules/salaries/components/salary-form-dialog';
 import { SalaryDeleteDialog } from '@/modules/salaries/components/salary-delete-dialog';
-import { mockEmployees, mockSalaries, formatPrice } from '@/data/mock';
+import { SalaryPayslip } from '@/modules/salaries/components/salary-payslip';
+import { router, usePage } from '@inertiajs/react';
 import type { Salary, SalaryFormData } from '@/modules/salaries/types';
 
-interface SalaryPageProps {
-    id?: string;
+interface PageEmployee {
+    id: number;
+    name: string;
+    role: string;
+    phone: string;
+    hire_date: string | null;
+    is_active: boolean;
+    base_salary: number;
 }
 
-export default function SalaryPage({ id }: SalaryPageProps) {
-    const { t } = useTranslation();
+function formatPrice(amount: number): string {
+    return `${amount.toLocaleString()} ؋`;
+}
 
-    // Get employee ID from URL path
-    const employeeId = Number(id || window.location.pathname.split('/')[2]);
-    const employee = mockEmployees.find((e) => e.id === employeeId);
+interface Props extends Record<string, unknown> {
+    employee: PageEmployee;
+    salaries: Salary[];
+}
+
+export default function SalaryPage() {
+    const { t } = useTranslation();
+    const { employee, salaries } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
         { title: t('sidebar.employees'), href: '/employees' },
-        { title: employee?.name || t('salaries.title'), href: `/employees/${employeeId}/salary` },
+        { title: employee.name, href: `/employees/${employee.id}/salary` },
     ];
 
     const [formOpen, setFormOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [payslipOpen, setPayslipOpen] = useState(false);
     const [editingSalary, setEditingSalary] = useState<Salary | null>(null);
     const [deletingSalary, setDeletingSalary] = useState<Salary | null>(null);
-
-    const employeeSalaries = useMemo(() => {
-        return mockSalaries.filter((s) => s.employee_id === employeeId);
-    }, [employeeId]);
+    const [payslipSalary, setPayslipSalary] = useState<Salary | null>(null);
 
     const totalPaid = useMemo(() => {
-        return employeeSalaries.reduce((sum, s) => sum + s.amount, 0);
-    }, [employeeSalaries]);
+        return salaries.reduce((sum, s) => sum + s.amount, 0);
+    }, [salaries]);
 
     const handleEdit = (salary: Salary) => {
         setEditingSalary(salary);
@@ -51,14 +62,23 @@ export default function SalaryPage({ id }: SalaryPageProps) {
         setDeleteOpen(true);
     };
 
-    const handleFormSubmit = (_data: SalaryFormData) => {
-        setFormOpen(false);
-        setEditingSalary(null);
+    const handleFormSubmit = (data: SalaryFormData) => {
+        if (editingSalary) {
+            router.patch(`/salaries/${editingSalary.id}`, { ...data }, {
+                onSuccess: () => { setFormOpen(false); setEditingSalary(null); },
+            });
+        } else {
+            router.post('/salaries', { ...data, employee_id: employee.id }, {
+                onSuccess: () => setFormOpen(false),
+            });
+        }
     };
 
     const handleDeleteConfirm = () => {
-        setDeleteOpen(false);
-        setDeletingSalary(null);
+        if (!deletingSalary) return;
+        router.delete(`/salaries/${deletingSalary.id}`, {
+            onSuccess: () => { setDeleteOpen(false); setDeletingSalary(null); },
+        });
     };
 
     const handleAddNew = () => {
@@ -66,23 +86,10 @@ export default function SalaryPage({ id }: SalaryPageProps) {
         setFormOpen(true);
     };
 
-    if (!employee) {
-        return (
-            <AppLayout breadcrumbs={breadcrumbs}>
-                <Head title={t('salaries.title')} />
-                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                    <Wallet className="size-12 mb-3 opacity-30" />
-                    <p className="text-lg font-medium">{t('employees.noEmployees')}</p>
-                    <Button variant="outline" className="mt-4" asChild>
-                        <Link href="/employees">
-                            <ArrowRight className="size-4 me-2" />
-                            {t('salaries.backToEmployees')}
-                        </Link>
-                    </Button>
-                </div>
-            </AppLayout>
-        );
-    }
+    const handlePayslip = (salary: Salary) => {
+        setPayslipSalary(salary);
+        setPayslipOpen(true);
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -128,14 +135,15 @@ export default function SalaryPage({ id }: SalaryPageProps) {
 
                 {/* Table */}
                 <SalaryTable
-                    salaries={employeeSalaries}
+                    salaries={salaries}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onPayslip={handlePayslip}
                 />
 
-                {employeeSalaries.length > 0 && (
+                {salaries.length > 0 && (
                     <div className="flex items-center justify-center text-sm text-muted-foreground">
-                        {t('common.showing')} {employeeSalaries.length} {t('common.results')}
+                        {t('common.showing')} {salaries.length} {t('common.results')}
                     </div>
                 )}
             </div>
@@ -148,7 +156,17 @@ export default function SalaryPage({ id }: SalaryPageProps) {
                 }}
                 onSubmit={handleFormSubmit}
                 salary={editingSalary}
-                employeeId={employeeId}
+                employeeId={employee.id}
+                employeeName={employee.name}
+                baseSalary={employee.base_salary}
+            />
+
+            <SalaryPayslip
+                open={payslipOpen}
+                onClose={() => setPayslipOpen(false)}
+                salary={payslipSalary}
+                employeeName={employee.name}
+                employeeRole={employee.role}
             />
 
             <SalaryDeleteDialog

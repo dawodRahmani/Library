@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\RestaurantController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -21,5 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('user-password.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
-    Route::inertia('settings/restaurant', 'settings/restaurant')->name('restaurant.edit');
+    Route::get('settings/restaurant', [RestaurantController::class, 'edit'])->name('restaurant.edit');
+    Route::post('settings/logo', [RestaurantController::class, 'uploadLogo'])->name('restaurant.logo');
+    Route::delete('settings/logo', [RestaurantController::class, 'removeLogo'])->name('restaurant.logo.remove');
 });

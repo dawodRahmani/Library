@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Printer, Pencil, ArrowRight } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { OrderStatus } from '@/data/mock/types';
-import { mockOrders, formatPrice, formatTime, formatDate } from '@/data/mock';
+import type { Order, OrderStatus } from '@/data/mock/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -14,32 +13,23 @@ import { OrderStatusBadge } from '@/modules/orders/components/order-status-badge
 import { OrderItemsTable } from '@/modules/orders/components/order-items-table';
 import { OrderStatusActions } from '@/modules/orders/components/order-status-actions';
 import { OrderReceipt } from '@/modules/orders/components/order-receipt';
+import { formatShamsiDate, formatTime } from '@/lib/date';
+import { useOrderEvents } from '@/hooks/use-order-events';
+
+interface Props extends Record<string, unknown> { order: Order }
+
+function formatPrice(amount: number): string {
+    return `${amount.toLocaleString()} ؋`;
+}
 
 export default function OrderShowPage() {
     const { t } = useTranslation();
+    const { order } = usePage<Props>().props;
 
-    const orderId = parseInt(window.location.pathname.split('/').pop() || '0');
-    const order = mockOrders.find((o) => o.id === orderId);
+    const [currentStatus, setCurrentStatus] = useState<OrderStatus>(order.status);
 
-    const [currentStatus, setCurrentStatus] = useState<OrderStatus>(
-        order?.status || 'pending',
-    );
-
-    if (!order) {
-        return (
-            <AppLayout breadcrumbs={[]}>
-                <Head title={t('orders.notFound')} />
-                <div className="flex flex-1 items-center justify-center p-4">
-                    <div className="text-center">
-                        <h2 className="text-xl font-bold">{t('orders.notFound')}</h2>
-                        <Button asChild className="mt-4">
-                            <Link href="/orders">{t('orders.backToOrders')}</Link>
-                        </Button>
-                    </div>
-                </div>
-            </AppLayout>
-        );
-    }
+    // Auto-refresh order detail every 5s with notifications
+    useOrderEvents({ reloadProps: ['order'], interval: 5000, showNotifications: true });
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -48,7 +38,21 @@ export default function OrderShowPage() {
     ];
 
     const handleStatusChange = (newStatus: OrderStatus) => {
-        setCurrentStatus(newStatus);
+        if (newStatus === 'paid') {
+            router.patch(`/orders/${order.id}/pay`, {}, {
+                onSuccess: () => setCurrentStatus('paid'),
+            });
+            return;
+        }
+        if (newStatus === 'cancelled') {
+            router.post(`/orders/${order.id}/cancel`, {}, {
+                onSuccess: () => setCurrentStatus('cancelled'),
+            });
+            return;
+        }
+        router.patch(`/orders/${order.id}/status`, { status: newStatus }, {
+            onSuccess: () => setCurrentStatus(newStatus),
+        });
     };
 
     const handlePrintBill = () => {
@@ -96,12 +100,18 @@ export default function OrderShowPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-lg font-bold">
-                                {order.table.name || `${t('orders.table')} ${order.table.number}`}
-                            </p>
-                            <p className="text-muted-foreground text-sm">
-                                {t('orders.capacity')}: {order.table.capacity}
-                            </p>
+                            {order.table ? (
+                                <>
+                                    <p className="text-lg font-bold">
+                                        {order.table.name || `${t('orders.table')} ${order.table.number}`}
+                                    </p>
+                                    <p className="text-muted-foreground text-sm">
+                                        {t('orders.capacity')}: {order.table.capacity}
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="text-lg font-bold">{t('orders.noTable')}</p>
+                            )}
                         </CardContent>
                     </Card>
                     <Card>
@@ -123,7 +133,7 @@ export default function OrderShowPage() {
                         <CardContent>
                             <p className="text-lg font-bold">{formatTime(order.created_at)}</p>
                             <p className="text-muted-foreground text-sm">
-                                {formatDate(order.created_at)}
+                                {formatShamsiDate(order.created_at)}
                             </p>
                         </CardContent>
                     </Card>

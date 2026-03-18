@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
+function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 import {
     Table,
     TableBody,
@@ -10,7 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { formatPrice } from '@/data/mock';
+import { formatShamsiDate } from '@/lib/date';
 import type { Expense } from '../types';
 
 interface ExpenseTableProps {
@@ -71,7 +73,7 @@ export function ExpenseTable({ expenses, onEdit, onDelete }: ExpenseTableProps) 
                                 </span>
                             </TableCell>
                             <TableCell>
-                                <span className="text-sm text-muted-foreground">{expense.date}</span>
+                                <span className="text-sm text-muted-foreground">{formatShamsiDate(expense.date)}</span>
                             </TableCell>
                             <TableCell>
                                 <span className="text-sm text-muted-foreground">{expense.notes || '—'}</span>

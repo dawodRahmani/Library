@@ -9,20 +9,22 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
+interface Role { id: number; name: string; }
+
 interface EmployeeFiltersProps {
     search: string;
     onSearchChange: (value: string) => void;
     roleFilter: string;
     onRoleFilterChange: (value: string) => void;
+    roles: Role[];
 }
-
-const roles = ['manager', 'waiter', 'chef', 'cashier'] as const;
 
 export function EmployeeFilters({
     search,
     onSearchChange,
     roleFilter,
     onRoleFilterChange,
+    roles,
 }: EmployeeFiltersProps) {
     const { t } = useTranslation();
 
@@ -45,8 +47,8 @@ export function EmployeeFilters({
                 <SelectContent>
                     <SelectItem value="all">{t('employees.allRoles')}</SelectItem>
                     {roles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                            {t(`employees.roles.${role}`)}
+                        <SelectItem key={role.id} value={role.name}>
+                            {role.name}
                         </SelectItem>
                     ))}
                 </SelectContent>

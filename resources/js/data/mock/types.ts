@@ -16,6 +16,14 @@ export interface FoodItem {
     sort_order: number;
 }
 
+export interface TableFloor {
+    id: number;
+    name: string;
+    description?: string;
+    color: string;
+    order: number;
+}
+
 export interface RestaurantTable {
     id: number;
     number: number;
@@ -23,6 +31,8 @@ export interface RestaurantTable {
     capacity: number;
     status: 'available' | 'occupied';
     active_order_id?: number;
+    floor_id: number;
+    floor_name: string;
 }
 
 export type OrderStatus = 'pending' | 'in_kitchen' | 'ready' | 'served' | 'paid' | 'cancelled';
@@ -31,7 +41,7 @@ export interface OrderItem {
     id: number;
     order_id: number;
     food_item_id: number;
-    food_item: FoodItem;
+    food_item: FoodItem | null;
     quantity: number;
     unit_price: number;
     subtotal: number;
@@ -40,9 +50,10 @@ export interface OrderItem {
 
 export interface Order {
     id: number;
-    table_id: number;
-    table: RestaurantTable;
+    table_id: number | null;
+    table: RestaurantTable | null;
     order_number: string;
+    order_type?: 'dine_in' | 'takeaway' | 'delivery';
     status: OrderStatus;
     total_amount: number;
     notes?: string;
@@ -60,13 +71,20 @@ export interface Employee {
     phone: string;
     hire_date: string;
     is_active: boolean;
+    base_salary: number;
 }
+
+export type SalaryStatus = 'paid' | 'pending' | 'partial';
 
 export interface Salary {
     id: number;
     employee_id: number;
     amount: number;
-    payment_date: string;
+    base_amount: number;
+    deductions: number;
+    bonuses: number;
+    status: SalaryStatus;
+    payment_date?: string;
     month: string;
     notes?: string;
 }

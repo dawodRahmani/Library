@@ -46,7 +46,7 @@ export function DailySalesChart({ data }: DailySalesChartProps) {
                                 tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
                             />
                             <Tooltip
-                                formatter={(value: number) => `${value.toLocaleString()} ؋`}
+                                formatter={(value) => `${Number(value).toLocaleString()} ؋`}
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--background))',
                                     border: '1px solid hsl(var(--border))',

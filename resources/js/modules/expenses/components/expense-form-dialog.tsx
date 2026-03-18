@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/input'; // used for description/amount
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ShamsiDateInput } from '@/components/ui/shamsi-date-input';
 import {
     Select,
     SelectContent,
@@ -30,13 +31,15 @@ interface ExpenseFormDialogProps {
 
 const categories: ExpenseCategory[] = ['groceries', 'rent', 'electricity', 'gas', 'supplies', 'other'];
 
-const defaultFormData: ExpenseFormData = {
-    category: '',
-    description: '',
-    amount: '',
-    date: '',
-    notes: '',
-};
+function defaultFormData(): ExpenseFormData {
+    return {
+        category: '',
+        description: '',
+        amount: '',
+        date: new Date().toISOString().slice(0, 10),
+        notes: '',
+    };
+}
 
 export function ExpenseFormDialog({
     open,
@@ -46,7 +49,7 @@ export function ExpenseFormDialog({
 }: ExpenseFormDialogProps) {
     const { t } = useTranslation();
     const isEditing = !!expense;
-    const [form, setForm] = useState<ExpenseFormData>(defaultFormData);
+    const [form, setForm] = useState<ExpenseFormData>(defaultFormData());
 
     useEffect(() => {
         if (expense) {
@@ -58,7 +61,7 @@ export function ExpenseFormDialog({
                 notes: expense.notes || '',
             });
         } else {
-            setForm(defaultFormData);
+            setForm(defaultFormData());
         }
     }, [expense, open]);
 
@@ -135,16 +138,11 @@ export function ExpenseFormDialog({
 
                     {/* Date */}
                     <div className="space-y-2">
-                        <Label htmlFor="expense-date" className="font-medium">
-                            {t('expenses.date')}
-                        </Label>
-                        <Input
-                            id="expense-date"
+                        <Label className="font-medium">{t('expenses.date')}</Label>
+                        <ShamsiDateInput
                             value={form.date}
-                            onChange={(e) => setForm({ ...form, date: e.target.value })}
-                            required
-                            className="h-10"
-                            placeholder="1404-12-14"
+                            onChange={(val) => setForm({ ...form, date: val })}
+                            className="w-full h-10"
                         />
                     </div>
 

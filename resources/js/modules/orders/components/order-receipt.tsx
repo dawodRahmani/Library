@@ -1,7 +1,9 @@
 import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatPrice } from '@/data/mock';
 import type { Order } from '@/data/mock/types';
+import { formatShamsiDate, formatTime } from '@/lib/date';
+
+function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 
 interface OrderReceiptProps {
     order: Order;
@@ -11,9 +13,8 @@ export const OrderReceipt = forwardRef<HTMLDivElement, OrderReceiptProps>(
     ({ order }, ref) => {
         const { t } = useTranslation();
 
-        const now = new Date(order.created_at);
-        const dateStr = now.toLocaleDateString('fa-AF');
-        const timeStr = now.toLocaleTimeString('fa-AF', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = formatShamsiDate(order.created_at);
+        const timeStr = formatTime(order.created_at);
 
         return (
             <div ref={ref} className="print-area hidden print:block">
@@ -34,7 +35,7 @@ export const OrderReceipt = forwardRef<HTMLDivElement, OrderReceiptProps>(
                         <span>{t('print.date')}: {dateStr}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>{t('print.table')}: {order.table.name || order.table.number}</span>
+                        <span>{t('print.table')}: {order.table?.name || order.table?.number || '—'}</span>
                         <span>{t('print.time')}: {timeStr}</span>
                     </div>
                     {order.created_by_name && (
@@ -59,7 +60,7 @@ export const OrderReceipt = forwardRef<HTMLDivElement, OrderReceiptProps>(
                     <tbody>
                         {order.items.map((item) => (
                             <tr key={item.id}>
-                                <td>{item.food_item.name}</td>
+                                <td>{item.food_item?.name ?? '—'}</td>
                                 <td style={{ textAlign: 'center' }}>{item.quantity}</td>
                                 <td style={{ textAlign: 'end' }}>{item.unit_price.toLocaleString()}</td>
                                 <td style={{ textAlign: 'end' }}>{item.subtotal.toLocaleString()}</td>
