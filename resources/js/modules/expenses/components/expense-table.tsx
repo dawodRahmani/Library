@@ -62,9 +62,9 @@ export function ExpenseTable({ expenses, onEdit, onDelete }: ExpenseTableProps) 
                             <TableCell>
                                 <Badge
                                     variant="outline"
-                                    className={`text-xs font-medium ${categoryColors[expense.category] || ''}`}
+                                    className={`text-xs font-medium ${categoryColors[expense.category] || categoryColors['other']}`}
                                 >
-                                    {t(`expenses.categories.${expense.category}`)}
+                                    {expense.category_name || expense.category}
                                 </Badge>
                             </TableCell>
                             <TableCell>

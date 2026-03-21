@@ -40,11 +40,15 @@ class HandleInertiaRequests extends Middleware
             ? asset('images/logo.png') . '?v=' . filemtime($logoPath)
             : null;
 
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'roles' => $user ? $user->getRoleNames()->toArray() : [],
+                'permissions' => $user ? $user->getAllPermissions()->pluck('name')->toArray() : [],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'logoUrl'     => $logoUrl,

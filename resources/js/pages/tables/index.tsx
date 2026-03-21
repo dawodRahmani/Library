@@ -5,7 +5,7 @@ import { Plus, UtensilsCrossed, Pencil, Trash2 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
-import type { RestaurantTable, TableFloor } from '@/data/mock/types';
+import type { RestaurantTable, TableFloor } from '@/types/models';
 import { TableGrid } from '@/modules/tables/components/table-grid';
 import { TableSummary } from '@/modules/tables/components/table-summary';
 import { AddTableModal } from '@/modules/tables/components/add-table-modal';
@@ -29,7 +29,7 @@ export default function TablesPage() {
     }, [initialTables]);
 
     // Auto-refresh tables every 5s with notifications
-    useOrderEvents({ reloadProps: ['tables'], interval: 5000, showNotifications: true });
+    useOrderEvents({ reloadProps: ['tables'], showNotifications: true });
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },

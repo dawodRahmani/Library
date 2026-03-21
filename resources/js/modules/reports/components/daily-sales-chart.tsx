@@ -10,7 +10,7 @@ import {
     Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { DailySalesData } from '../data/mock-reports';
+import type { DailySalesData } from '../types';
 
 interface DailySalesChartProps {
     data: DailySalesData[];

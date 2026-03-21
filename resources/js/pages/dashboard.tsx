@@ -12,7 +12,7 @@ export default function Dashboard() {
     const { t } = useTranslation();
 
     // Auto-refresh dashboard every 5s
-    useOrderEvents({ interval: 5000, showNotifications: true });
+    useOrderEvents({ showNotifications: true });
 
     const breadcrumbs: BreadcrumbItem[] = [
         {

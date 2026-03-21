@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -20,7 +21,10 @@ class TableStatusChanged implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('restaurant')];
+        return [
+            new PrivateChannel('restaurant'),
+            new Channel('public-restaurant'),
+        ];
     }
 
     public function broadcastAs(): string

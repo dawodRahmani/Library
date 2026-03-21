@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { BreadcrumbItem } from '@/types';
 import { usePage } from '@inertiajs/react';
-import type { RestaurantTable } from '@/data/mock/types';
+import type { RestaurantTable } from '@/types/models';
 
 interface Props extends Record<string, unknown> { tables: RestaurantTable[] }
 

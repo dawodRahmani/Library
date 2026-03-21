@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import type { FoodItem, Category, RestaurantTable } from '@/data/mock/types';
+import type { FoodItem, Category, RestaurantTable } from '@/types/models';
 
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;
@@ -44,8 +44,8 @@ export default function PosPage() {
     const { t } = useTranslation();
     const { items, categories, tables } = usePage<Props>().props;
 
-    // Auto-refresh POS every 5s with notifications
-    useOrderEvents({ interval: 5000, showNotifications: true });
+    // Real-time updates — only reload server props (tables/items), preserve cart state
+    useOrderEvents({ reloadProps: ['items', 'tables'], showNotifications: true });
 
     // Cart state
     const [cartItems, setCartItems] = useState<PosCartItem[]>([]);

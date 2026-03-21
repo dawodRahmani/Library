@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { router } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // used for description/amount
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ShamsiDateInput } from '@/components/ui/shamsi-date-input';
@@ -20,20 +22,19 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import type { Expense, ExpenseFormData, ExpenseCategory } from '../types';
+import type { Expense, ExpenseFormData, ExpenseCategoryItem } from '../types';
 
 interface ExpenseFormDialogProps {
     open: boolean;
     onClose: () => void;
     onSubmit: (data: ExpenseFormData) => void;
     expense?: Expense | null;
+    categories: ExpenseCategoryItem[];
 }
-
-const categories: ExpenseCategory[] = ['groceries', 'rent', 'electricity', 'gas', 'supplies', 'other'];
 
 function defaultFormData(): ExpenseFormData {
     return {
-        category: '',
+        expense_category_id: '',
         description: '',
         amount: '',
         date: new Date().toISOString().slice(0, 10),
@@ -46,15 +47,19 @@ export function ExpenseFormDialog({
     onClose,
     onSubmit,
     expense,
+    categories,
 }: ExpenseFormDialogProps) {
     const { t } = useTranslation();
     const isEditing = !!expense;
     const [form, setForm] = useState<ExpenseFormData>(defaultFormData());
+    const [showNewCategory, setShowNewCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [savingCategory, setSavingCategory] = useState(false);
 
     useEffect(() => {
         if (expense) {
             setForm({
-                category: expense.category,
+                expense_category_id: expense.expense_category_id,
                 description: expense.description,
                 amount: expense.amount,
                 date: expense.date,
@@ -63,11 +68,29 @@ export function ExpenseFormDialog({
         } else {
             setForm(defaultFormData());
         }
+        setShowNewCategory(false);
+        setNewCategoryName('');
     }, [expense, open]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSubmit(form);
+    };
+
+    const handleAddCategory = () => {
+        if (!newCategoryName.trim()) return;
+        setSavingCategory(true);
+        router.post('/expenses/categories', { name: newCategoryName.trim() }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setNewCategoryName('');
+                setShowNewCategory(false);
+                setSavingCategory(false);
+            },
+            onError: () => {
+                setSavingCategory(false);
+            },
+        });
     };
 
     return (
@@ -86,21 +109,70 @@ export function ExpenseFormDialog({
                     {/* Category */}
                     <div className="space-y-2">
                         <Label className="font-medium">{t('expenses.category')}</Label>
-                        <Select
-                            value={form.category}
-                            onValueChange={(val) => setForm({ ...form, category: val as ExpenseCategory })}
-                        >
-                            <SelectTrigger className="h-10">
-                                <SelectValue placeholder={t('expenses.allCategories')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories.map((cat) => (
-                                    <SelectItem key={cat} value={cat}>
-                                        {t(`expenses.categories.${cat}`)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        {!showNewCategory ? (
+                            <div className="flex gap-2">
+                                <Select
+                                    value={form.expense_category_id ? String(form.expense_category_id) : ''}
+                                    onValueChange={(val) => setForm({ ...form, expense_category_id: Number(val) })}
+                                >
+                                    <SelectTrigger className="h-10 flex-1">
+                                        <SelectValue placeholder={t('expenses.selectCategory')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map((cat) => (
+                                            <SelectItem key={cat.id} value={String(cat.id)}>
+                                                {cat.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-10 w-10 shrink-0"
+                                    onClick={() => setShowNewCategory(true)}
+                                    title={t('expenses.addCategory')}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Input
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    placeholder={t('expenses.newCategoryName')}
+                                    className="h-10 flex-1"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleAddCategory();
+                                        }
+                                        if (e.key === 'Escape') setShowNewCategory(false);
+                                    }}
+                                />
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    className="h-10"
+                                    onClick={handleAddCategory}
+                                    disabled={savingCategory || !newCategoryName.trim()}
+                                >
+                                    {savingCategory ? '...' : t('common.save')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-10"
+                                    onClick={() => setShowNewCategory(false)}
+                                >
+                                    {t('common.cancel')}
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Description */}
@@ -167,6 +239,7 @@ export function ExpenseFormDialog({
                         <Button
                             type="submit"
                             className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                            disabled={!form.expense_category_id}
                         >
                             {t('common.save')}
                         </Button>

@@ -6,15 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { Supplier, SupplierFormData } from '../types';
-
-const SUPPLIER_CATEGORIES = ['meat', 'grains', 'vegetables', 'oils', 'spices', 'beverages', 'dairy', 'other'];
+import type { Supplier, SupplierFormData, InventoryCategoryItem } from '../types';
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     supplier?: Supplier | null;
     onSave: (data: SupplierFormData) => void;
+    categories: InventoryCategoryItem[];
 }
 
 const empty: SupplierFormData = {
@@ -26,7 +25,7 @@ const empty: SupplierFormData = {
     notes: '',
 };
 
-export function SupplierFormDialog({ open, onOpenChange, supplier, onSave }: Props) {
+export function SupplierFormDialog({ open, onOpenChange, supplier, onSave, categories }: Props) {
     const { t } = useTranslation();
     const [form, setForm] = useState<SupplierFormData>(empty);
 
@@ -93,9 +92,9 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSave }: Pro
                                 <SelectValue placeholder={t('inventory.selectCategory')} />
                             </SelectTrigger>
                             <SelectContent>
-                                {SUPPLIER_CATEGORIES.map((cat) => (
-                                    <SelectItem key={cat} value={cat}>
-                                        {t(`inventory.categories.${cat}`)}
+                                {categories.map((cat) => (
+                                    <SelectItem key={cat.id} value={cat.slug}>
+                                        {cat.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

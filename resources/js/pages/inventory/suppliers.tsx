@@ -7,15 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SupplierTable } from '@/modules/inventory/components/supplier-table';
 import { SupplierFormDialog } from '@/modules/inventory/components/supplier-form-dialog';
-import type { Supplier, SupplierFormData } from '@/modules/inventory/types';
+import type { Supplier, SupplierFormData, InventoryCategoryItem } from '@/modules/inventory/types';
 
 interface Props extends Record<string, unknown> {
     suppliers: Supplier[];
+    categories: InventoryCategoryItem[];
 }
 
 export default function SuppliersPage() {
     const { t } = useTranslation();
-    const { suppliers } = usePage<Props>().props;
+    const { suppliers, categories } = usePage<Props>().props;
     const [search, setSearch] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
@@ -88,6 +89,7 @@ export default function SuppliersPage() {
                 }}
                 supplier={editingSupplier}
                 onSave={handleSave}
+                categories={categories}
             />
         </AppLayout>
     );

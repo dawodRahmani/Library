@@ -9,7 +9,7 @@ import { InventoryItemTable } from '@/modules/inventory/components/inventory-ite
 import { InventoryItemFilters } from '@/modules/inventory/components/inventory-item-filters';
 import { InventoryItemFormDialog } from '@/modules/inventory/components/inventory-item-form-dialog';
 import { InventoryItemDeleteDialog } from '@/modules/inventory/components/inventory-item-delete-dialog';
-import type { InventoryItem, InventoryItemFormData } from '@/modules/inventory/types';
+import type { InventoryItem, InventoryItemFormData, InventoryCategoryItem, InventoryUnitItem } from '@/modules/inventory/types';
 
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;
@@ -17,11 +17,13 @@ function formatPrice(amount: number): string {
 
 interface Props extends Record<string, unknown> {
     items: InventoryItem[];
+    categories: InventoryCategoryItem[];
+    units: InventoryUnitItem[];
 }
 
 export default function InventoryItemsPage() {
     const { t } = useTranslation();
-    const { items } = usePage<Props>().props;
+    const { items, categories, units } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -41,7 +43,7 @@ export default function InventoryItemsPage() {
             const matchesSearch =
                 !search || item.name.toLowerCase().includes(search.toLowerCase());
             const matchesCategory =
-                categoryFilter === 'all' || item.category === categoryFilter;
+                categoryFilter === 'all' || String(item.inventory_category_id) === categoryFilter;
             return matchesSearch && matchesCategory;
         });
     }, [items, search, categoryFilter]);
@@ -107,6 +109,7 @@ export default function InventoryItemsPage() {
                     onSearchChange={setSearch}
                     categoryFilter={categoryFilter}
                     onCategoryFilterChange={setCategoryFilter}
+                    categories={categories}
                 />
 
                 <InventoryItemTable
@@ -127,6 +130,8 @@ export default function InventoryItemsPage() {
                 onClose={() => { setFormOpen(false); setEditingItem(null); }}
                 onSubmit={handleFormSubmit}
                 item={editingItem}
+                categories={categories}
+                units={units}
             />
 
             <InventoryItemDeleteDialog

@@ -21,9 +21,8 @@ class DashboardController extends Controller
         $totalTables = Table::count();
         $pendingOrders = Order::whereIn('status', ['pending', 'in_kitchen', 'ready'])->count();
 
-        $monthStart = $today->copy()->startOfMonth();
-        $monthlyRevenue = Order::where('status', 'paid')
-            ->whereDate('paid_at', '>=', $monthStart)
+        $dailyRevenue = Order::where('status', 'paid')
+            ->whereDate('paid_at', $today)
             ->sum('total_amount');
 
         $recentOrders = Order::with('table', 'items')
@@ -58,7 +57,7 @@ class DashboardController extends Controller
                 'todayOrders'    => $todayOrderCount,
                 'activeTables'   => $activeTables,
                 'totalTables'    => $totalTables,
-                'monthlyRevenue' => $monthlyRevenue,
+                'dailyRevenue'   => $dailyRevenue,
                 'pendingOrders'  => $pendingOrders,
             ],
             'recentOrders'  => $recentOrders,

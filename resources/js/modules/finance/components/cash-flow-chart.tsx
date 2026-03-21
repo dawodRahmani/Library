@@ -10,7 +10,7 @@ import {
     Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { DailyCashFlow } from '../data/mock-finance';
+import type { DailyCashFlow } from '../types';
 
 interface CashFlowChartProps {
     data: DailyCashFlow[];

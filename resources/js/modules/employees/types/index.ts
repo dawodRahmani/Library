@@ -1,4 +1,4 @@
-export type { Employee } from '@/data/mock/types';
+export type { Employee } from '@/types/models';
 
 export type EmployeeFormData = {
     name: string;

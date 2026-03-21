@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import type { OrderStatus } from '@/data/mock/types';
+import type { OrderStatus } from '@/types/models';
 
 interface OrderStatusActionsProps {
     status: OrderStatus;

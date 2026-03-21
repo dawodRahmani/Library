@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type { LedgerEntryType } from '@/data/mock-accounting';
+import type { LedgerEntryType } from '@/modules/accounting/types';
 
 type Filter = LedgerEntryType | 'all';
 

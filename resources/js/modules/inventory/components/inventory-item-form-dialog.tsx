@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { router } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogFooter,
@@ -17,44 +20,58 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { inventoryCategories } from '../data/mock-inventory';
-import type { InventoryItem, InventoryItemFormData, InventoryUnit } from '../types';
+import type { InventoryItem, InventoryItemFormData, InventoryCategoryItem, InventoryUnitItem } from '../types';
 
 interface InventoryItemFormDialogProps {
     open: boolean;
     onClose: () => void;
     onSubmit: (data: InventoryItemFormData) => void;
     item?: InventoryItem | null;
+    categories: InventoryCategoryItem[];
+    units: InventoryUnitItem[];
 }
-
-const units: InventoryUnit[] = ['kg', 'liter', 'piece', 'box', 'bag'];
 
 const defaultForm: InventoryItemFormData = {
     name: '',
-    unit: '',
+    inventory_unit_id: '',
     cost_per_unit: '',
     current_stock: '',
     min_stock_level: '',
-    category: '',
+    inventory_category_id: '',
 };
 
-export function InventoryItemFormDialog({ open, onClose, onSubmit, item }: InventoryItemFormDialogProps) {
+export function InventoryItemFormDialog({ open, onClose, onSubmit, item, categories, units }: InventoryItemFormDialogProps) {
     const { t } = useTranslation();
+    const isEditing = !!item;
     const [form, setForm] = useState<InventoryItemFormData>(defaultForm);
+
+    // New category inline
+    const [showNewCategory, setShowNewCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [savingCategory, setSavingCategory] = useState(false);
+
+    // New unit inline
+    const [showNewUnit, setShowNewUnit] = useState(false);
+    const [newUnitName, setNewUnitName] = useState('');
+    const [savingUnit, setSavingUnit] = useState(false);
 
     useEffect(() => {
         if (item) {
             setForm({
                 name: item.name,
-                unit: item.unit,
+                inventory_unit_id: item.inventory_unit_id,
                 cost_per_unit: item.cost_per_unit,
                 current_stock: item.current_stock,
                 min_stock_level: item.min_stock_level,
-                category: item.category,
+                inventory_category_id: item.inventory_category_id,
             });
         } else {
             setForm(defaultForm);
         }
+        setShowNewCategory(false);
+        setNewCategoryName('');
+        setShowNewUnit(false);
+        setNewUnitName('');
     }, [item, open]);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -62,68 +79,163 @@ export function InventoryItemFormDialog({ open, onClose, onSubmit, item }: Inven
         onSubmit(form);
     };
 
+    const handleAddCategory = () => {
+        if (!newCategoryName.trim()) return;
+        setSavingCategory(true);
+        router.post('/inventory/categories', { name: newCategoryName.trim() }, {
+            preserveScroll: true,
+            onSuccess: () => { setNewCategoryName(''); setShowNewCategory(false); setSavingCategory(false); },
+            onError: () => setSavingCategory(false),
+        });
+    };
+
+    const handleAddUnit = () => {
+        if (!newUnitName.trim()) return;
+        setSavingUnit(true);
+        router.post('/inventory/units', { name: newUnitName.trim() }, {
+            preserveScroll: true,
+            onSuccess: () => { setNewUnitName(''); setShowNewUnit(false); setSavingUnit(false); },
+            onError: () => setSavingUnit(false),
+        });
+    };
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>
-                        {item ? t('inventory.editItem') : t('inventory.addItem')}
+                    <DialogTitle className="text-lg">
+                        {isEditing ? t('inventory.editItem') : t('inventory.addItem')}
                     </DialogTitle>
+                    <DialogDescription>
+                        {isEditing ? t('inventory.editItem') : t('inventory.addItem')}
+                    </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-5 mt-2">
+                    {/* Name */}
                     <div className="space-y-2">
-                        <Label htmlFor="inv-name">{t('inventory.itemName')}</Label>
+                        <Label htmlFor="inv-name" className="font-medium">{t('inventory.itemName')}</Label>
                         <Input
                             id="inv-name"
                             value={form.name}
                             onChange={(e) => setForm({ ...form, name: e.target.value })}
                             required
+                            className="h-10"
+                            placeholder={t('inventory.itemName')}
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>{t('inventory.unit')}</Label>
-                            <Select
-                                value={form.unit}
-                                onValueChange={(v) => setForm({ ...form, unit: v as InventoryUnit })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('inventory.unit')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {units.map((u) => (
-                                        <SelectItem key={u} value={u}>
-                                            {t(`inventory.units.${u}`)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>{t('inventory.category')}</Label>
-                            <Select
-                                value={form.category}
-                                onValueChange={(v) => setForm({ ...form, category: v })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('inventory.category')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {inventoryCategories.map((c) => (
-                                        <SelectItem key={c.value} value={c.value}>
-                                            {t(`inventory.categories.${c.value}`)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    {/* Category */}
+                    <div className="space-y-2">
+                        <Label className="font-medium">{t('inventory.category')}</Label>
+                        {!showNewCategory ? (
+                            <div className="flex gap-2">
+                                <Select
+                                    value={form.inventory_category_id ? String(form.inventory_category_id) : ''}
+                                    onValueChange={(v) => setForm({ ...form, inventory_category_id: Number(v) })}
+                                >
+                                    <SelectTrigger className="h-10 flex-1">
+                                        <SelectValue placeholder={t('inventory.selectCategory')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map((cat) => (
+                                            <SelectItem key={cat.id} value={String(cat.id)}>
+                                                {cat.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-10 w-10 shrink-0"
+                                    onClick={() => setShowNewCategory(true)}
+                                    title={t('inventory.addCategory')}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Input
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    placeholder={t('inventory.newCategoryName')}
+                                    className="h-10 flex-1"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') { e.preventDefault(); handleAddCategory(); }
+                                        if (e.key === 'Escape') setShowNewCategory(false);
+                                    }}
+                                />
+                                <Button type="button" size="sm" className="h-10" onClick={handleAddCategory} disabled={savingCategory || !newCategoryName.trim()}>
+                                    {savingCategory ? '...' : t('common.save')}
+                                </Button>
+                                <Button type="button" size="sm" variant="ghost" className="h-10" onClick={() => setShowNewCategory(false)}>
+                                    {t('common.cancel')}
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
+                    {/* Unit */}
                     <div className="space-y-2">
-                        <Label htmlFor="inv-cost">{t('inventory.costPerUnit')}</Label>
+                        <Label className="font-medium">{t('inventory.unit')}</Label>
+                        {!showNewUnit ? (
+                            <div className="flex gap-2">
+                                <Select
+                                    value={form.inventory_unit_id ? String(form.inventory_unit_id) : ''}
+                                    onValueChange={(v) => setForm({ ...form, inventory_unit_id: Number(v) })}
+                                >
+                                    <SelectTrigger className="h-10 flex-1">
+                                        <SelectValue placeholder={t('inventory.selectUnit')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {units.map((u) => (
+                                            <SelectItem key={u.id} value={String(u.id)}>
+                                                {u.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-10 w-10 shrink-0"
+                                    onClick={() => setShowNewUnit(true)}
+                                    title={t('inventory.addUnit')}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Input
+                                    value={newUnitName}
+                                    onChange={(e) => setNewUnitName(e.target.value)}
+                                    placeholder={t('inventory.newUnitName')}
+                                    className="h-10 flex-1"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') { e.preventDefault(); handleAddUnit(); }
+                                        if (e.key === 'Escape') setShowNewUnit(false);
+                                    }}
+                                />
+                                <Button type="button" size="sm" className="h-10" onClick={handleAddUnit} disabled={savingUnit || !newUnitName.trim()}>
+                                    {savingUnit ? '...' : t('common.save')}
+                                </Button>
+                                <Button type="button" size="sm" variant="ghost" className="h-10" onClick={() => setShowNewUnit(false)}>
+                                    {t('common.cancel')}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Cost per unit */}
+                    <div className="space-y-2">
+                        <Label htmlFor="inv-cost" className="font-medium">{t('inventory.costPerUnit')}</Label>
                         <Input
                             id="inv-cost"
                             type="number"
@@ -131,14 +243,16 @@ export function InventoryItemFormDialog({ open, onClose, onSubmit, item }: Inven
                             value={form.cost_per_unit}
                             onChange={(e) => setForm({ ...form, cost_per_unit: Number(e.target.value) || '' })}
                             dir="ltr"
-                            className="text-left"
+                            className="h-10 text-left"
+                            placeholder="0"
                             required
                         />
                     </div>
 
+                    {/* Stock row */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="inv-stock">{t('inventory.currentStock')}</Label>
+                            <Label htmlFor="inv-stock" className="font-medium">{t('inventory.currentStock')}</Label>
                             <Input
                                 id="inv-stock"
                                 type="number"
@@ -146,13 +260,14 @@ export function InventoryItemFormDialog({ open, onClose, onSubmit, item }: Inven
                                 value={form.current_stock}
                                 onChange={(e) => setForm({ ...form, current_stock: Number(e.target.value) || '' })}
                                 dir="ltr"
-                                className="text-left"
+                                className="h-10 text-left"
+                                placeholder="0"
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="inv-min">{t('inventory.minStockLevel')}</Label>
+                            <Label htmlFor="inv-min" className="font-medium">{t('inventory.minStockLevel')}</Label>
                             <Input
                                 id="inv-min"
                                 type="number"
@@ -160,19 +275,21 @@ export function InventoryItemFormDialog({ open, onClose, onSubmit, item }: Inven
                                 value={form.min_stock_level}
                                 onChange={(e) => setForm({ ...form, min_stock_level: Number(e.target.value) || '' })}
                                 dir="ltr"
-                                className="text-left"
+                                className="h-10 text-left"
+                                placeholder="0"
                                 required
                             />
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-2">
+                    <DialogFooter className="gap-2 pt-4">
                         <Button type="button" variant="outline" onClick={onClose}>
                             {t('common.cancel')}
                         </Button>
                         <Button
                             type="submit"
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                            disabled={!form.inventory_category_id || !form.inventory_unit_id}
                         >
                             {t('common.save')}
                         </Button>

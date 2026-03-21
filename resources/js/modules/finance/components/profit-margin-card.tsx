@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;
 }
-import type { MonthlyFinance, ExpenseCategoryBreakdown } from '../data/mock-finance';
-import { getPercentChange } from '../data/mock-finance';
+import type { MonthlyFinance, ExpenseCategoryBreakdown } from '../types';
+import { getPercentChange } from '../types';
 
 interface ProfitMarginCardProps {
     current: MonthlyFinance;

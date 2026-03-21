@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
+use App\Models\InventoryCategory;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,8 +26,15 @@ class SupplierController extends Controller
 
         $suppliers = $query->get()->map(fn($s) => $this->format($s));
 
+        $categories = InventoryCategory::orderBy('name')->get()->map(fn($c) => [
+            'id'   => $c->id,
+            'name' => $c->name,
+            'slug' => $c->slug,
+        ]);
+
         return Inertia::render('inventory/suppliers', [
-            'suppliers' => $suppliers,
+            'suppliers'  => $suppliers,
+            'categories' => $categories,
         ]);
     }
 
@@ -68,15 +76,18 @@ class SupplierController extends Controller
 
     private function format(Supplier $s): array
     {
+        $cat = $s->category ? InventoryCategory::where('slug', $s->category)->first() : null;
+
         return [
-            'id'           => $s->id,
-            'name'         => $s->name,
-            'contact_name' => $s->contact_name ?? '',
-            'phone'        => $s->phone ?? '',
-            'address'      => $s->address,
-            'category'     => $s->category,
-            'notes'        => $s->notes,
-            'created_at'   => $s->created_at->toDateString(),
+            'id'            => $s->id,
+            'name'          => $s->name,
+            'contact_name'  => $s->contact_name ?? '',
+            'phone'         => $s->phone ?? '',
+            'address'       => $s->address,
+            'category'      => $s->category,
+            'category_name' => $cat?->name ?? $s->category,
+            'notes'         => $s->notes,
+            'created_at'    => $s->created_at->toDateString(),
         ];
     }
 }

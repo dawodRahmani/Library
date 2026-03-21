@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { KitchenOrderCard } from './kitchen-order-card';
-import type { Order, OrderStatus } from '@/data/mock/types';
+import type { Order, OrderStatus } from '@/types/models';
 
 interface KitchenColumnProps {
     title: string;

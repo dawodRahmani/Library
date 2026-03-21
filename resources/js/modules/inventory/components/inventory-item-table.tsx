@@ -76,13 +76,13 @@ export function InventoryItemTable({ items, onEdit, onDelete }: InventoryItemTab
                                 <div>
                                     <span className="font-medium">{item.name}</span>
                                     <span className="ms-1 text-xs text-muted-foreground">
-                                        ({t(`inventory.units.${item.unit}`)})
+                                        ({item.unit_name || item.unit})
                                     </span>
                                 </div>
                             </TableCell>
                             <TableCell>
                                 <Badge variant="outline" className="text-xs">
-                                    {t(`inventory.categories.${item.category}`)}
+                                    {item.category_name || item.category}
                                 </Badge>
                             </TableCell>
                             <TableCell>
@@ -90,7 +90,7 @@ export function InventoryItemTable({ items, onEdit, onDelete }: InventoryItemTab
                                     {item.current_stock}
                                 </span>
                                 <span className="text-xs text-muted-foreground ms-1">
-                                    / {item.min_stock_level} {t(`inventory.units.${item.unit}`)}
+                                    / {item.min_stock_level} {item.unit_name || item.unit}
                                 </span>
                             </TableCell>
                             <TableCell>

@@ -3,7 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { FoodItem, Category } from '@/data/mock/types';
+import type { FoodItem, Category } from '@/types/models';
 import { FoodItemGrid } from '@/modules/menu/components/food-item-grid';
 import { AddFoodModal } from '@/modules/menu/components/add-food-modal';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ interface Props extends Record<string, unknown> { items: FoodItem[]; categories:
 
 export default function MenuPage() {
     const { t } = useTranslation();
-    const { items: mockFoodItems, categories: mockCategories } = usePage<Props>().props;
+    const { items: foodItems, categories } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -25,11 +25,11 @@ export default function MenuPage() {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<FoodItem | undefined>(undefined);
-    const [items, setItems] = useState(mockFoodItems);
+    const [items, setItems] = useState(foodItems);
 
     useEffect(() => {
-        setItems(mockFoodItems);
-    }, [mockFoodItems]);
+        setItems(foodItems);
+    }, [foodItems]);
 
     const filteredItems = useMemo(() => {
         let result = items;
@@ -109,7 +109,7 @@ export default function MenuPage() {
                     >
                         {t('common.all')}
                     </Button>
-                    {mockCategories.map((cat) => (
+                    {categories.map((cat) => (
                         <Button
                             key={cat.id}
                             variant={selectedCategory === cat.id ? 'default' : 'outline'}
@@ -139,7 +139,7 @@ export default function MenuPage() {
                 open={modalOpen}
                 onOpenChange={setModalOpen}
                 item={editingItem}
-                categories={mockCategories}
+                categories={categories}
             />
         </AppLayout>
     );

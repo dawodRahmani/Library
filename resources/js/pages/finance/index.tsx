@@ -13,7 +13,7 @@ import type {
     DailyCashFlow,
     ExpenseCategoryBreakdown,
     SalaryOverview,
-} from '@/modules/finance/data/mock-finance';
+} from '@/modules/finance/types';
 
 interface Props extends Record<string, unknown> {
     current: MonthlyFinance;

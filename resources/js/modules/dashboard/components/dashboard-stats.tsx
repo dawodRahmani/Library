@@ -14,7 +14,7 @@ interface DashboardStatsProps {
     todayOrders: number;
     activeTables: number;
     totalTables: number;
-    monthlyRevenue: number;
+    dailyRevenue: number;
     pendingOrders: number;
 }
 
@@ -88,8 +88,8 @@ export function DashboardStats() {
             valueColor: 'text-sky-700 dark:text-sky-400',
         },
         {
-            title: t('dashboard.monthlyRevenue'),
-            value: formatPrice(stats.monthlyRevenue),
+            title: t('dashboard.dailyRevenue'),
+            value: formatPrice(stats.dailyRevenue),
             icon: TrendingUp,
             iconBg: 'bg-violet-100 dark:bg-violet-900/40',
             iconColor: 'text-violet-600 dark:text-violet-400',

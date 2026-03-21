@@ -60,7 +60,7 @@ export function SupplierTable({ suppliers, onEdit, onDelete }: Props) {
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant="secondary" className="text-xs">
-                                            {t(`inventory.categories.${s.category}`)}
+                                            {s.category_name || s.category}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">

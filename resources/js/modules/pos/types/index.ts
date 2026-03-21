@@ -1,4 +1,4 @@
-import type { FoodItem } from '@/data/mock/types';
+import type { FoodItem } from '@/types/models';
 
 export type OrderType = 'dine_in' | 'takeaway' | 'delivery';
 export type PaymentMethod = 'cash' | 'card';

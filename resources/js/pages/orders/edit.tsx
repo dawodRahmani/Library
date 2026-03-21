@@ -4,7 +4,7 @@ import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { FoodItem, Category, Order, RestaurantTable } from '@/data/mock/types';
+import type { FoodItem, Category, Order, RestaurantTable } from '@/types/models';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {

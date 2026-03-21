@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -22,6 +23,7 @@ class OrderStatusChanged implements ShouldBroadcast
         return [
             new PrivateChannel('kitchen'),
             new PrivateChannel('restaurant'),
+            new Channel('public-restaurant'),
         ];
     }
 

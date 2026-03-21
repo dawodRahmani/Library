@@ -35,131 +35,156 @@ Route::post('kiosk/order', [KioskController::class, 'placeOrder'])->name('kiosk.
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Dashboard
+    // Dashboard — accessible to all authenticated users
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ── Users ──────────────────────────────────────────────────
-    Route::get('users', [UserController::class, 'index'])->name('users.index');
-    Route::post('users', [UserController::class, 'store'])->name('users.store');
-    Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::middleware('permission:users.view')->group(function () {
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::post('users', [UserController::class, 'store'])->middleware('permission:users.create')->name('users.store');
+        Route::put('users/{user}', [UserController::class, 'update'])->middleware('permission:users.edit')->name('users.update');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('permission:users.delete')->name('users.destroy');
+        Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->middleware('permission:users.edit')->name('users.toggle-active');
+    });
 
-    // ── Roles ───────────────────────────────────────────────────
-    Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
-    Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
-    Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
-    Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
-    Route::patch('roles/{role}/permissions', [RoleController::class, 'syncPermissions'])->name('roles.permissions');
-
-    // ── Permissions (read-only) ─────────────────────────────────
-    Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+    // ── Roles & Permissions ────────────────────────────────────
+    Route::middleware('permission:settings.manage')->group(function () {
+        Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+        Route::patch('roles/{role}/permissions', [RoleController::class, 'syncPermissions'])->name('roles.permissions');
+        Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+    });
 
     // ── Tables & Floors ────────────────────────────────────────
-    Route::get('tables', [TableController::class, 'index'])->name('tables.index');
-    Route::post('tables', [TableController::class, 'store'])->name('tables.store');
-    Route::patch('tables/{table}', [TableController::class, 'update'])->name('tables.update');
-    Route::delete('tables/{table}', [TableController::class, 'destroy'])->name('tables.destroy');
-    Route::get('tables/qr-codes', function () {
-        $tables = \App\Models\Table::with('floor')->orderBy('number')->get()->map(fn ($t) => [
-            'id'         => $t->id,
-            'number'     => $t->number,
-            'name'       => $t->name,
-            'capacity'   => $t->capacity,
-            'status'     => $t->status,
-            'floor_id'   => $t->floor_id,
-            'floor_name' => $t->floor?->name ?? '',
-        ]);
-        return \Inertia\Inertia::render('tables/qr-codes', ['tables' => $tables]);
-    })->name('tables.qr-codes');
+    Route::middleware('permission:tables.view')->group(function () {
+        Route::get('tables', [TableController::class, 'index'])->name('tables.index');
+        Route::post('tables', [TableController::class, 'store'])->middleware('permission:tables.create')->name('tables.store');
+        Route::patch('tables/{table}', [TableController::class, 'update'])->middleware('permission:tables.edit')->name('tables.update');
+        Route::delete('tables/{table}', [TableController::class, 'destroy'])->middleware('permission:tables.delete')->name('tables.destroy');
+        Route::get('tables/qr-codes', function () {
+            $tables = \App\Models\Table::with('floor')->orderBy('number')->get()->map(fn ($t) => [
+                'id'         => $t->id,
+                'number'     => $t->number,
+                'name'       => $t->name,
+                'capacity'   => $t->capacity,
+                'status'     => $t->status,
+                'floor_id'   => $t->floor_id,
+                'floor_name' => $t->floor?->name ?? '',
+            ]);
+            return \Inertia\Inertia::render('tables/qr-codes', ['tables' => $tables]);
+        })->name('tables.qr-codes');
 
-    Route::post('floors', [FloorController::class, 'store'])->name('floors.store');
-    Route::patch('floors/{floor}', [FloorController::class, 'update'])->name('floors.update');
-    Route::delete('floors/{floor}', [FloorController::class, 'destroy'])->name('floors.destroy');
+        Route::post('floors', [FloorController::class, 'store'])->middleware('permission:tables.create')->name('floors.store');
+        Route::patch('floors/{floor}', [FloorController::class, 'update'])->middleware('permission:tables.edit')->name('floors.update');
+        Route::delete('floors/{floor}', [FloorController::class, 'destroy'])->middleware('permission:tables.delete')->name('floors.destroy');
+    });
 
     // ── Menu ───────────────────────────────────────────────────
-    Route::get('menu', [MenuItemController::class, 'index'])->name('menu.index');
-    Route::post('menu/items', [MenuItemController::class, 'store'])->name('menu.items.store');
-    Route::patch('menu/items/{menuItem}', [MenuItemController::class, 'update'])->name('menu.items.update');
-    Route::delete('menu/items/{menuItem}', [MenuItemController::class, 'destroy'])->name('menu.items.destroy');
-    Route::patch('menu/items/{menuItem}/availability', [MenuItemController::class, 'toggleAvailability'])->name('menu.items.availability');
+    Route::middleware('permission:menu.view')->group(function () {
+        Route::get('menu', [MenuItemController::class, 'index'])->name('menu.index');
+        Route::post('menu/items', [MenuItemController::class, 'store'])->middleware('permission:menu.create')->name('menu.items.store');
+        Route::patch('menu/items/{menuItem}', [MenuItemController::class, 'update'])->middleware('permission:menu.edit')->name('menu.items.update');
+        Route::delete('menu/items/{menuItem}', [MenuItemController::class, 'destroy'])->middleware('permission:menu.delete')->name('menu.items.destroy');
+        Route::patch('menu/items/{menuItem}/availability', [MenuItemController::class, 'toggleAvailability'])->middleware('permission:menu.edit')->name('menu.items.availability');
 
-    Route::get('menu/categories', [CategoryController::class, 'index'])->name('menu.categories');
-    Route::post('menu/categories', [CategoryController::class, 'store'])->name('menu.categories.store');
-    Route::patch('menu/categories/{category}', [CategoryController::class, 'update'])->name('menu.categories.update');
-    Route::delete('menu/categories/{category}', [CategoryController::class, 'destroy'])->name('menu.categories.destroy');
+        Route::get('menu/categories', [CategoryController::class, 'index'])->name('menu.categories');
+        Route::post('menu/categories', [CategoryController::class, 'store'])->middleware('permission:menu.create')->name('menu.categories.store');
+        Route::patch('menu/categories/{category}', [CategoryController::class, 'update'])->middleware('permission:menu.edit')->name('menu.categories.update');
+        Route::delete('menu/categories/{category}', [CategoryController::class, 'destroy'])->middleware('permission:menu.delete')->name('menu.categories.destroy');
+    });
 
     // ── Kitchen ────────────────────────────────────────────────
-    Route::get('kitchen', [KitchenController::class, 'index'])->name('kitchen.index');
+    Route::get('kitchen', [KitchenController::class, 'index'])->middleware('permission:kitchen.view')->name('kitchen.index');
 
     // ── Orders ─────────────────────────────────────────────────
-    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
-    Route::get('orders/{id}/edit', [OrderController::class, 'edit'])->name('orders.edit');
-    Route::patch('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
-    Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
-    Route::patch('orders/{order}/pay', [OrderController::class, 'pay'])->name('orders.pay');
-    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::middleware('permission:orders.view')->group(function () {
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/create', [OrderController::class, 'create'])->middleware('permission:orders.create')->name('orders.create');
+        Route::post('orders', [OrderController::class, 'store'])->middleware('permission:orders.create')->name('orders.store');
+        Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+        Route::get('orders/{id}/edit', [OrderController::class, 'edit'])->middleware('permission:orders.edit')->name('orders.edit');
+        Route::patch('orders/{order}', [OrderController::class, 'update'])->middleware('permission:orders.edit')->name('orders.update');
+        Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->middleware('permission:orders.manage_status')->name('orders.status');
+        Route::patch('orders/{order}/pay', [OrderController::class, 'pay'])->middleware('permission:orders.manage_status')->name('orders.pay');
+        Route::post('orders/merge', [OrderController::class, 'merge'])->middleware('permission:orders.edit')->name('orders.merge');
+        Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->middleware('permission:orders.manage_status')->name('orders.cancel');
+    });
 
     // ── Expenses ───────────────────────────────────────────────
-    Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
-    Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
-    Route::patch('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
-    Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    Route::middleware('permission:expenses.view')->group(function () {
+        Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+        Route::post('expenses', [ExpenseController::class, 'store'])->middleware('permission:expenses.create')->name('expenses.store');
+        Route::post('expenses/categories', [ExpenseController::class, 'storeCategory'])->middleware('permission:expenses.create')->name('expenses.categories.store');
+        Route::patch('expenses/{expense}', [ExpenseController::class, 'update'])->middleware('permission:expenses.edit')->name('expenses.update');
+        Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->middleware('permission:expenses.delete')->name('expenses.destroy');
+    });
 
     // ── Employees ──────────────────────────────────────────────
-    Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
-    Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');
-    Route::patch('employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
-    Route::delete('employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
-    Route::get('employees/{employee}/salary', [EmployeeController::class, 'salary'])->name('employees.salary');
+    Route::middleware('permission:employees.view')->group(function () {
+        Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
+        Route::post('employees', [EmployeeController::class, 'store'])->middleware('permission:employees.create')->name('employees.store');
+        Route::patch('employees/{employee}', [EmployeeController::class, 'update'])->middleware('permission:employees.edit')->name('employees.update');
+        Route::delete('employees/{employee}', [EmployeeController::class, 'destroy'])->middleware('permission:employees.delete')->name('employees.destroy');
+        Route::get('employees/{employee}/salary', [EmployeeController::class, 'salary'])->name('employees.salary');
+    });
 
     // ── Salaries ───────────────────────────────────────────────
-    Route::get('salaries', [SalaryController::class, 'index'])->name('salaries.index');
-    Route::post('salaries', [SalaryController::class, 'store'])->name('salaries.store');
-    Route::patch('salaries/{salary}', [SalaryController::class, 'update'])->name('salaries.update');
-    Route::delete('salaries/{salary}', [SalaryController::class, 'destroy'])->name('salaries.destroy');
-    Route::patch('salaries/{salary}/pay', [SalaryController::class, 'markAsPaid'])->name('salaries.pay');
+    Route::middleware('permission:salaries.view')->group(function () {
+        Route::get('salaries', [SalaryController::class, 'index'])->name('salaries.index');
+        Route::post('salaries', [SalaryController::class, 'store'])->middleware('permission:salaries.create')->name('salaries.store');
+        Route::patch('salaries/{salary}', [SalaryController::class, 'update'])->middleware('permission:salaries.edit')->name('salaries.update');
+        Route::delete('salaries/{salary}', [SalaryController::class, 'destroy'])->middleware('permission:salaries.delete')->name('salaries.destroy');
+        Route::patch('salaries/{salary}/pay', [SalaryController::class, 'markAsPaid'])->middleware('permission:salaries.edit')->name('salaries.pay');
+    });
 
     // ── Accounting ─────────────────────────────────────────────
-    Route::get('accounting', [AccountingController::class, 'index'])->name('accounting.index');
+    Route::middleware('permission:finance.view')->group(function () {
+        Route::get('accounting', [AccountingController::class, 'index'])->name('accounting.index');
+        Route::post('accounting/fund', [AccountingController::class, 'addFund'])->name('accounting.fund');
+    });
 
     // ── Inventory ──────────────────────────────────────────────
-    Route::get('inventory', [InventoryDashboardController::class, 'index'])->name('inventory.index');
+    Route::middleware('permission:inventory.view')->group(function () {
+        Route::get('inventory', [InventoryDashboardController::class, 'index'])->name('inventory.index');
 
-    Route::get('inventory/items', [InventoryItemController::class, 'index'])->name('inventory.items');
-    Route::post('inventory/items', [InventoryItemController::class, 'store'])->name('inventory.items.store');
-    Route::patch('inventory/items/{inventoryItem}', [InventoryItemController::class, 'update'])->name('inventory.items.update');
-    Route::delete('inventory/items/{inventoryItem}', [InventoryItemController::class, 'destroy'])->name('inventory.items.destroy');
+        Route::get('inventory/items', [InventoryItemController::class, 'index'])->name('inventory.items');
+        Route::post('inventory/items', [InventoryItemController::class, 'store'])->middleware('permission:inventory.create')->name('inventory.items.store');
+        Route::post('inventory/categories', [InventoryItemController::class, 'storeCategory'])->middleware('permission:inventory.create')->name('inventory.categories.store');
+        Route::post('inventory/units', [InventoryItemController::class, 'storeUnit'])->middleware('permission:inventory.create')->name('inventory.units.store');
+        Route::patch('inventory/items/{inventoryItem}', [InventoryItemController::class, 'update'])->middleware('permission:inventory.edit')->name('inventory.items.update');
+        Route::delete('inventory/items/{inventoryItem}', [InventoryItemController::class, 'destroy'])->middleware('permission:inventory.delete')->name('inventory.items.destroy');
 
-    Route::get('inventory/transactions', [StockTransactionController::class, 'index'])->name('inventory.transactions');
-    Route::post('inventory/transactions', [StockTransactionController::class, 'store'])->name('inventory.transactions.store');
+        Route::get('inventory/transactions', [StockTransactionController::class, 'index'])->name('inventory.transactions');
+        Route::post('inventory/transactions', [StockTransactionController::class, 'store'])->middleware('permission:inventory.create')->name('inventory.transactions.store');
 
-    Route::get('inventory/alerts', function () {
-        $alerts = \App\Services\InventoryService::getAlerts();
-        return \Inertia\Inertia::render('inventory/alerts', ['alerts' => $alerts]);
-    })->name('inventory.alerts');
+        Route::get('inventory/alerts', function () {
+            $alerts = \App\Services\InventoryService::getAlerts();
+            return \Inertia\Inertia::render('inventory/alerts', ['alerts' => $alerts]);
+        })->name('inventory.alerts');
 
-    Route::get('inventory/suppliers', [SupplierController::class, 'index'])->name('inventory.suppliers');
-    Route::post('inventory/suppliers', [SupplierController::class, 'store'])->name('inventory.suppliers.store');
-    Route::patch('inventory/suppliers/{supplier}', [SupplierController::class, 'update'])->name('inventory.suppliers.update');
-    Route::delete('inventory/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('inventory.suppliers.destroy');
+        Route::get('inventory/suppliers', [SupplierController::class, 'index'])->name('inventory.suppliers');
+        Route::post('inventory/suppliers', [SupplierController::class, 'store'])->middleware('permission:inventory.create')->name('inventory.suppliers.store');
+        Route::patch('inventory/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('permission:inventory.edit')->name('inventory.suppliers.update');
+        Route::delete('inventory/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('permission:inventory.delete')->name('inventory.suppliers.destroy');
 
-    Route::get('inventory/purchase-orders', [PurchaseOrderController::class, 'index'])->name('inventory.purchase-orders');
-    Route::post('inventory/purchase-orders', [PurchaseOrderController::class, 'store'])->name('inventory.purchase-orders.store');
-    Route::patch('inventory/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'update'])->name('inventory.purchase-orders.update');
-    Route::delete('inventory/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->name('inventory.purchase-orders.destroy');
-    Route::patch('inventory/purchase-orders/{purchaseOrder}/arrive', [PurchaseOrderController::class, 'markArrived'])->name('inventory.purchase-orders.arrive');
+        Route::get('inventory/purchase-orders', [PurchaseOrderController::class, 'index'])->name('inventory.purchase-orders');
+        Route::post('inventory/purchase-orders', [PurchaseOrderController::class, 'store'])->middleware('permission:inventory.create')->name('inventory.purchase-orders.store');
+        Route::patch('inventory/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'update'])->middleware('permission:inventory.edit')->name('inventory.purchase-orders.update');
+        Route::delete('inventory/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->middleware('permission:inventory.delete')->name('inventory.purchase-orders.destroy');
+        Route::patch('inventory/purchase-orders/{purchaseOrder}/arrive', [PurchaseOrderController::class, 'markArrived'])->middleware('permission:inventory.edit')->name('inventory.purchase-orders.arrive');
+    });
 
     // ── Reports & Finance ──────────────────────────────────────────
-    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('finance', [FinanceController::class, 'index'])->name('finance.index');
+    Route::get('reports', [ReportController::class, 'index'])->middleware('permission:reports.view')->name('reports.index');
+    Route::get('finance', [FinanceController::class, 'index'])->middleware('permission:finance.view')->name('finance.index');
 
     // ── POS ────────────────────────────────────────────────────
-    Route::get('pos', [PosController::class, 'index'])->name('pos.index');
-    Route::post('pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+    Route::middleware('permission:orders.create')->group(function () {
+        Route::get('pos', [PosController::class, 'index'])->name('pos.index');
+        Route::post('pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+    });
 });
 
 require __DIR__.'/settings.php';

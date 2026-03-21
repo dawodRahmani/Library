@@ -8,7 +8,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import type { Category } from '@/data/mock/types';
+import type { Category } from '@/types/models';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface CategoryListProps {

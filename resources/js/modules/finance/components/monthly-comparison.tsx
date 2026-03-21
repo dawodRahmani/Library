@@ -10,7 +10,7 @@ import {
     Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { MonthlyFinance } from '../data/mock-finance';
+import type { MonthlyFinance } from '../types';
 
 interface MonthlyComparisonProps {
     data: MonthlyFinance[];

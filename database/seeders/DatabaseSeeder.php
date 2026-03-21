@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Employee;
-use App\Models\Expense;
 use App\Models\Floor;
 use App\Models\InventoryItem;
 use App\Models\MenuItem;
@@ -134,23 +133,6 @@ class DatabaseSeeder extends Seeder
             Employee::firstOrCreate(
                 ['phone' => $emp['phone']],
                 array_merge($emp, ['is_active' => true]),
-            );
-        }
-
-        // ── Expenses ────────────────────────────────────────────
-        $adminId = User::where('email', 'admin@gmail.com')->value('id');
-        $expenseData = [
-            ['category' => 'rent',        'description' => 'اجاره ماهانه',        'amount' => 50000, 'date' => '2026-03-01'],
-            ['category' => 'electricity', 'description' => 'برق ماه مارچ',        'amount' => 8000,  'date' => '2026-03-05'],
-            ['category' => 'groceries',   'description' => 'خرید مواد اولیه',     'amount' => 25000, 'date' => '2026-03-10'],
-            ['category' => 'supplies',    'description' => 'لوازم آشپزخانه',      'amount' => 5000,  'date' => '2026-03-12'],
-            ['category' => 'gas',         'description' => 'گاز ماه مارچ',        'amount' => 4000,  'date' => '2026-03-15'],
-        ];
-
-        foreach ($expenseData as $exp) {
-            Expense::firstOrCreate(
-                ['description' => $exp['description'], 'date' => $exp['date']],
-                array_merge($exp, ['created_by' => $adminId]),
             );
         }
 

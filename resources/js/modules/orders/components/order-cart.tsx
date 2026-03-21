@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { FoodItem } from '@/data/mock/types';
+import type { FoodItem } from '@/types/models';
 
 function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 
@@ -43,7 +43,7 @@ export function OrderCart({
     );
 
     return (
-        <Card className="flex h-full flex-col">
+        <Card className="flex max-h-[calc(100vh-10rem)] flex-col">
             <CardHeader>
                 <CardTitle>{t('orders.cart')}</CardTitle>
             </CardHeader>

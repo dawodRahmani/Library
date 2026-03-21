@@ -2,13 +2,14 @@ import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { inventoryCategories } from '../data/mock-inventory';
+import type { InventoryCategoryItem } from '../types';
 
 interface InventoryItemFiltersProps {
     search: string;
     onSearchChange: (value: string) => void;
     categoryFilter: string;
     onCategoryFilterChange: (value: string) => void;
+    categories: InventoryCategoryItem[];
 }
 
 export function InventoryItemFilters({
@@ -16,6 +17,7 @@ export function InventoryItemFilters({
     onSearchChange,
     categoryFilter,
     onCategoryFilterChange,
+    categories,
 }: InventoryItemFiltersProps) {
     const { t } = useTranslation();
 
@@ -39,15 +41,15 @@ export function InventoryItemFilters({
                 >
                     {t('inventory.allCategories')}
                 </Button>
-                {inventoryCategories.map((cat) => (
+                {categories.map((cat) => (
                     <Button
-                        key={cat.value}
-                        variant={categoryFilter === cat.value ? 'default' : 'outline'}
+                        key={cat.id}
+                        variant={categoryFilter === String(cat.id) ? 'default' : 'outline'}
                         size="sm"
-                        onClick={() => onCategoryFilterChange(cat.value)}
-                        className={categoryFilter === cat.value ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}
+                        onClick={() => onCategoryFilterChange(String(cat.id))}
+                        className={categoryFilter === String(cat.id) ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}
                     >
-                        {t(`inventory.categories.${cat.value}`)}
+                        {cat.name}
                     </Button>
                 ))}
             </div>

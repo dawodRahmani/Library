@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { OrderStatus } from '@/data/mock/types';
+import type { OrderStatus } from '@/types/models';
 
 const statusConfig: Record<OrderStatus, { className: string; translationKey: string }> = {
     pending: {

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\LedgerEntry;
+use App\Services\LedgerService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -68,5 +70,23 @@ class AccountingController extends Controller
             ],
             'filters' => $request->only(['type', 'search', 'date_from', 'date_to']),
         ]);
+    }
+
+    public function addFund(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'amount'      => 'required|numeric|min:1',
+            'description' => 'required|string|max:255',
+        ]);
+
+        LedgerService::record(
+            type: 'fund',
+            reference: 'FUND-' . now()->format('Ymd-His'),
+            description: $data['description'],
+            amount: $data['amount'],
+            direction: 'in',
+        );
+
+        return back();
     }
 }

@@ -7,7 +7,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import type { RestaurantTable } from '@/data/mock/types';
+import type { RestaurantTable } from '@/types/models';
 
 interface KioskTableSelectProps {
     open: boolean;

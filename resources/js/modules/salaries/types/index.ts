@@ -1,4 +1,4 @@
-export type { Salary, SalaryStatus } from '@/data/mock/types';
+export type { Salary, SalaryStatus } from '@/types/models';
 
 export type SalaryFormData = {
     employee_id: number | '';

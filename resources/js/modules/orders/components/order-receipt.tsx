@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Order } from '@/data/mock/types';
+import type { Order } from '@/types/models';
 import { formatShamsiDate, formatTime } from '@/lib/date';
 
 function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }

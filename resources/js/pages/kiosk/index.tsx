@@ -1,9 +1,11 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
+import { useEcho } from '@laravel/echo-react';
+import { toast } from 'sonner';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { FoodItem, Category, RestaurantTable } from '@/data/mock/types';
+import type { FoodItem, Category, RestaurantTable } from '@/types/models';
 
 interface Props extends Record<string, unknown> {
     items: FoodItem[];
@@ -28,6 +30,55 @@ export default function KioskPage() {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
     const [tableDialogOpen, setTableDialogOpen] = useState(false);
+    const lastOrderIdRef = useRef<number | null>(null);
+
+    // ── Real-time: order status updates (public channel) ────
+    const statusKeys: Record<string, string> = {
+        pending: 'orders.statusPending',
+        in_kitchen: 'orders.statusInKitchen',
+        ready: 'orders.statusReady',
+        served: 'orders.statusServed',
+        paid: 'orders.statusPaid',
+        cancelled: 'orders.statusCancelled',
+    };
+
+    useEcho(
+        'public-restaurant',
+        '.OrderStatusChanged',
+        (payload: { order_id: number; status: string }) => {
+            if (lastOrderIdRef.current && payload.order_id === lastOrderIdRef.current) {
+                const statusLabel = t(statusKeys[payload.status] || payload.status);
+                toast.info(t('kiosk.orderUpdate'), {
+                    description: statusLabel,
+                    duration: 6000,
+                });
+            }
+        },
+        [t],
+        'public',
+    );
+
+    // ── Real-time: menu availability changes ────────────────
+    useEcho(
+        'public-restaurant',
+        '.MenuAvailabilityChanged',
+        (payload: { item_id: number; is_available: boolean }) => {
+            router.reload({ only: ['items'] });
+            if (!payload.is_available) {
+                const item = items.find((i) => i.id === payload.item_id);
+                if (item) {
+                    toast.warning(t('digitalMenu.itemUnavailable'), {
+                        description: item.name,
+                        duration: 4000,
+                    });
+                    // Remove from cart if present
+                    setCart((prev) => prev.filter((ci) => ci.item.id !== payload.item_id));
+                }
+            }
+        },
+        [items, t],
+        'public',
+    );
 
     // Filter items by category
     const filteredItems = useMemo(() => {
@@ -76,7 +127,11 @@ export default function KioskPage() {
             order_type: selectedTable ? 'dine_in' : 'takeaway',
             items: cart.map((ci) => ({ menu_item_id: ci.item.id, quantity: ci.quantity })),
         }, {
-            onSuccess: () => setView('success'),
+            onSuccess: (page) => {
+                const orderId = (page.props as Record<string, unknown>).lastOrderId as number | undefined;
+                if (orderId) lastOrderIdRef.current = orderId;
+                setView('success');
+            },
         });
     };
 
@@ -84,6 +139,7 @@ export default function KioskPage() {
         setCart([]);
         setSelectedTable(null);
         setSelectedCategory(null);
+        lastOrderIdRef.current = null;
         setView('menu');
     };
 

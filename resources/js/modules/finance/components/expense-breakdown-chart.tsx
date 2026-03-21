@@ -8,7 +8,7 @@ import {
     Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ExpenseCategoryBreakdown } from '../data/mock-finance';
+import type { ExpenseCategoryBreakdown } from '../types';
 
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;

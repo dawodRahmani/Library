@@ -9,9 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ShamsiDateInput } from '@/components/ui/shamsi-date-input';
-import { Search } from 'lucide-react';
+import { Search, PlusCircle } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
-import type { LedgerEntry, LedgerEntryType } from '@/data/mock-accounting';
+import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import type { LedgerEntry, LedgerEntryType } from '@/modules/accounting/types';
 
 type Filter = LedgerEntryType | 'all';
 
@@ -42,7 +51,7 @@ interface Props extends Record<string, unknown> {
     filters: Filters;
 }
 
-const TYPE_FILTERS: Filter[] = ['all', 'income', 'expense', 'salary', 'inventory_purchase'];
+const TYPE_FILTERS: Filter[] = ['all', 'income', 'expense', 'salary', 'inventory_purchase', 'fund'];
 
 const filterColors: Record<Filter, string> = {
     all:                '',
@@ -50,6 +59,7 @@ const filterColors: Record<Filter, string> = {
     expense:            'border-red-300 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300',
     salary:             'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300',
     inventory_purchase: 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
+    fund:               'border-purple-300 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300',
 };
 
 export default function AccountingPage() {
@@ -60,6 +70,12 @@ export default function AccountingPage() {
     const [typeFilter, setType]   = useState<Filter>((filters.type as Filter) ?? 'all');
     const [dateFrom, setDateFrom] = useState(filters.date_from ?? '');
     const [dateTo, setDateTo]     = useState(filters.date_to ?? '');
+
+    // Add fund dialog
+    const [fundOpen, setFundOpen] = useState(false);
+    const [fundAmount, setFundAmount] = useState('');
+    const [fundDescription, setFundDescription] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     const debouncedSearch = useDebounce(search, 400);
 
@@ -81,12 +97,30 @@ export default function AccountingPage() {
         router.get('/accounting', params, { preserveState: true, replace: true });
     }
 
+    function handleAddFund() {
+        if (!fundAmount || Number(fundAmount) <= 0) return;
+        setSubmitting(true);
+        router.post('/accounting/fund', {
+            amount: Number(fundAmount),
+            description: fundDescription || t('accounting.fundDefault'),
+        }, {
+            onSuccess: () => {
+                toast.success(t('accounting.fundSuccess'));
+                setFundOpen(false);
+                setFundAmount('');
+                setFundDescription('');
+            },
+            onFinish: () => setSubmitting(false),
+        });
+    }
+
     const filterLabels: Record<Filter, string> = {
         all:                t('common.all'),
         income:             t('accounting.income'),
         expense:            t('accounting.expense'),
         salary:             t('accounting.salary'),
         inventory_purchase: t('accounting.inventoryPurchase'),
+        fund:               t('accounting.fund'),
     };
 
     const breadcrumbs = [{ title: t('sidebar.accounting'), href: '/accounting' }];
@@ -95,9 +129,15 @@ export default function AccountingPage() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('accounting.title')} />
             <div className="space-y-6 p-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground">{t('accounting.title')}</h1>
-                    <p className="text-sm text-muted-foreground">{t('accounting.description')}</p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">{t('accounting.title')}</h1>
+                        <p className="text-sm text-muted-foreground">{t('accounting.description')}</p>
+                    </div>
+                    <Button onClick={() => setFundOpen(true)}>
+                        <PlusCircle className="me-2 size-4" />
+                        {t('accounting.addFund')}
+                    </Button>
                 </div>
 
                 <LedgerSummaryCards
@@ -167,6 +207,46 @@ export default function AccountingPage() {
                     perPage={entries.per_page}
                 />
             </div>
+
+            {/* Add Fund Dialog */}
+            <Dialog open={fundOpen} onOpenChange={setFundOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('accounting.addFund')}</DialogTitle>
+                        <DialogDescription>{t('accounting.addFundDescription')}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <Label>{t('accounting.amount')}</Label>
+                            <Input
+                                type="number"
+                                min="1"
+                                value={fundAmount}
+                                onChange={(e) => setFundAmount(e.target.value)}
+                                placeholder="0"
+                                dir="ltr"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t('accounting.description')}</Label>
+                            <Input
+                                value={fundDescription}
+                                onChange={(e) => setFundDescription(e.target.value)}
+                                placeholder={t('accounting.fundDefault')}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setFundOpen(false)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button onClick={handleAddFund} disabled={submitting || !fundAmount || Number(fundAmount) <= 0}>
+                            <PlusCircle className="me-2 size-4" />
+                            {submitting ? t('common.loading') : t('accounting.addFund')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

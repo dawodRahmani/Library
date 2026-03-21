@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import type { Category } from '@/data/mock/types';
+import type { Category } from '@/types/models';
 
 interface MenuCategoryNavProps {
     categories: Category[];

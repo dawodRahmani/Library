@@ -8,12 +8,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Expense extends Model
 {
     protected $fillable = [
-        'category', 'description', 'amount', 'date', 'notes', 'created_by',
+        'expense_category_id', 'category', 'description', 'amount', 'date', 'notes', 'created_by',
     ];
 
     protected $casts = [
         'date' => 'date',
     ];
+
+    public function expenseCategory(): BelongsTo
+    {
+        return $this->belongsTo(ExpenseCategory::class);
+    }
 
     public function creator(): BelongsTo
     {

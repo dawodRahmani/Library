@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { KitchenHeader } from '@/modules/kitchen/components/kitchen-header';
 import { KitchenColumn } from '@/modules/kitchen/components/kitchen-column';
 import { useOrderEvents } from '@/hooks/use-order-events';
-import type { Order, OrderStatus } from '@/data/mock/types';
+import type { Order, OrderStatus } from '@/types/models';
 
 interface Props extends Record<string, unknown> { orders: Order[] }
 
@@ -20,7 +20,7 @@ export default function KitchenPage() {
     }, [initialOrders]);
 
     // Auto-refresh every 5s with sound notification
-    useOrderEvents({ reloadProps: ['orders'], interval: 5000, showNotifications: true });
+    useOrderEvents({ reloadProps: ['orders'], showNotifications: true });
 
     // Re-render every 30s to update elapsed time display
     const [, setTick] = useState(0);

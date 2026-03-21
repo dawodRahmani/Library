@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { FoodImage } from '@/components/food-image';
-import type { FoodItem, Category } from '@/data/mock/types';
+import type { FoodItem, Category } from '@/types/models';
 
 function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 

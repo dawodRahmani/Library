@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { RestaurantTable } from '@/data/mock/types';
+import type { RestaurantTable } from '@/types/models';
 
 interface TableSummaryProps {
     tables: RestaurantTable[];

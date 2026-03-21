@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LedgerEntryBadge } from './ledger-entry-badge';
-import type { LedgerEntry } from '@/data/mock-accounting';
+import type { LedgerEntry } from '@/modules/accounting/types';
 
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;

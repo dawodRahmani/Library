@@ -1,5 +1,5 @@
 import { TableCard } from './table-card';
-import type { RestaurantTable } from '@/data/mock/types';
+import type { RestaurantTable } from '@/types/models';
 
 interface TableGridProps {
     tables: RestaurantTable[];

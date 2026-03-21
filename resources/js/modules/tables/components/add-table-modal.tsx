@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import type { RestaurantTable, TableFloor } from '@/data/mock/types';
+import type { RestaurantTable, TableFloor } from '@/types/models';
 
 interface AddTableModalProps {
     open: boolean;

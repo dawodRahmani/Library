@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { FoodImage } from '@/components/food-image';
-import type { FoodItem, Category } from '@/data/mock/types';
+import type { FoodItem, Category } from '@/types/models';
 import { ImagePlus, ToggleLeft, ToggleRight, X } from 'lucide-react';
 
 interface AddFoodModalProps {

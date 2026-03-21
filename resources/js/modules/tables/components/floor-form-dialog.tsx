@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
-import type { TableFloor } from '@/data/mock/types';
+import type { TableFloor } from '@/types/models';
 
 const COLORS = ['emerald', 'blue', 'amber', 'purple', 'red', 'gray'] as const;
 

@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FoodImage } from '@/components/food-image';
-import type { FoodItem } from '@/data/mock/types';
+import type { FoodItem } from '@/types/models';
 
 function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 import { Pencil, ToggleLeft, ToggleRight } from 'lucide-react';

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { FoodItem } from '@/data/mock/types';
+import type { FoodItem } from '@/types/models';
 
 function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 

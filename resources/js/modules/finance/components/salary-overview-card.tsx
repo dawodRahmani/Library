@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;
 }
-import type { SalaryOverview } from '../data/mock-finance';
+import type { SalaryOverview } from '../types';
 
 interface SalaryOverviewCardProps {
     data: SalaryOverview[];

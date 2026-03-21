@@ -3,7 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { Category } from '@/data/mock/types';
+import type { Category } from '@/types/models';
 import { CategoryList } from '@/modules/menu/components/category-list';
 import { AddCategoryModal } from '@/modules/menu/components/add-category-modal';
 import { Button } from '@/components/ui/button';

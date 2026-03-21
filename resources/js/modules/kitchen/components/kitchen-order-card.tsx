@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Clock, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { Order, OrderStatus } from '@/data/mock/types';
+import type { Order, OrderStatus } from '@/types/models';
 
 interface KitchenOrderCardProps {
     order: Order;

@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Printer, Pencil, ArrowRight } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { Order, OrderStatus } from '@/data/mock/types';
+import type { Order, OrderStatus } from '@/types/models';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -26,10 +26,14 @@ export default function OrderShowPage() {
     const { t } = useTranslation();
     const { order } = usePage<Props>().props;
 
+    // Sync local status with server data when it changes (e.g. via Pusher reload)
     const [currentStatus, setCurrentStatus] = useState<OrderStatus>(order.status);
+    useEffect(() => {
+        setCurrentStatus(order.status);
+    }, [order.status]);
 
-    // Auto-refresh order detail every 5s with notifications
-    useOrderEvents({ reloadProps: ['order'], interval: 5000, showNotifications: true });
+    // Real-time updates via Pusher
+    useOrderEvents({ reloadProps: ['order'], showNotifications: true });
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -38,20 +42,28 @@ export default function OrderShowPage() {
     ];
 
     const handleStatusChange = (newStatus: OrderStatus) => {
+        const onDone = () => {
+            setCurrentStatus(newStatus);
+            router.reload({ only: ['order'] });
+        };
+
         if (newStatus === 'paid') {
             router.patch(`/orders/${order.id}/pay`, {}, {
-                onSuccess: () => setCurrentStatus('paid'),
+                preserveState: false,
+                onSuccess: onDone,
             });
             return;
         }
         if (newStatus === 'cancelled') {
             router.post(`/orders/${order.id}/cancel`, {}, {
-                onSuccess: () => setCurrentStatus('cancelled'),
+                preserveState: false,
+                onSuccess: onDone,
             });
             return;
         }
         router.patch(`/orders/${order.id}/status`, { status: newStatus }, {
-            onSuccess: () => setCurrentStatus(newStatus),
+            preserveState: false,
+            onSuccess: onDone,
         });
     };
 

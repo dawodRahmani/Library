@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
+import { useEcho } from '@laravel/echo-react';
+import { toast } from 'sonner';
 import { Search, UtensilsCrossed } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import type { FoodItem, Category } from '@/data/mock/types';
+import type { FoodItem, Category } from '@/types/models';
 import { MenuHeader } from '@/modules/digital-menu/components/menu-header';
 import { MenuCategoryNav } from '@/modules/digital-menu/components/menu-category-nav';
 import { MenuFoodCard } from '@/modules/digital-menu/components/menu-food-card';
@@ -23,6 +25,26 @@ export default function DigitalMenuPage() {
 
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
     const [search, setSearch] = useState('');
+
+    // ── Real-time: menu availability changes ────────────────
+    useEcho(
+        'public-restaurant',
+        '.MenuAvailabilityChanged',
+        (payload: { item_id: number; is_available: boolean }) => {
+            router.reload({ only: ['items'] });
+            if (!payload.is_available) {
+                const item = items.find((i) => i.id === payload.item_id);
+                if (item) {
+                    toast.warning(t('digitalMenu.itemUnavailable'), {
+                        description: item.name,
+                        duration: 4000,
+                    });
+                }
+            }
+        },
+        [items, t],
+        'public',
+    );
 
     const filteredItems = useMemo(() => {
         return items.filter((item) => {

@@ -9,7 +9,7 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { TopSellingItem } from '../data/mock-reports';
+import type { TopSellingItem } from '../types';
 
 interface TopItemsChartProps {
     data: TopSellingItem[];

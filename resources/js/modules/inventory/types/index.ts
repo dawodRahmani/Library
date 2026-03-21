@@ -1,15 +1,31 @@
-export type InventoryUnit = 'kg' | 'liter' | 'piece' | 'box' | 'bag';
+export type InventoryUnitSlugSlug = 'kg' | 'liter' | 'piece' | 'box' | 'bag' | string;
 
 export type TransactionType = 'stock_in' | 'stock_out' | 'waste' | 'adjustment';
+
+export interface InventoryCategoryItem {
+    id: number;
+    name: string;
+    slug: string;
+}
+
+export interface InventoryUnitSlugItem {
+    id: number;
+    name: string;
+    slug: string;
+}
 
 export interface InventoryItem {
     id: number;
     name: string;
-    unit: InventoryUnit;
+    unit: string;
+    unit_name: string;
+    inventory_unit_id: number;
     cost_per_unit: number;
     current_stock: number;
     min_stock_level: number;
     category: string;
+    category_name: string;
+    inventory_category_id: number;
     is_active: boolean;
     last_restocked?: string;
     created_at: string;
@@ -21,7 +37,7 @@ export interface StockTransaction {
     inventory_item_name: string;
     type: TransactionType;
     quantity: number;
-    unit: InventoryUnit;
+    unit: InventoryUnitSlug;
     cost_per_unit?: number;
     total_cost?: number;
     notes?: string;
@@ -35,18 +51,18 @@ export interface InventoryAlert {
     item_name: string;
     current_stock: number;
     min_stock_level: number;
-    unit: InventoryUnit;
+    unit: InventoryUnitSlug;
     shortage: number;
     severity: 'critical' | 'warning';
 }
 
 export interface InventoryItemFormData {
     name: string;
-    unit: InventoryUnit | '';
+    inventory_unit_id: number | '';
     cost_per_unit: number | '';
     current_stock: number | '';
     min_stock_level: number | '';
-    category: string;
+    inventory_category_id: number | '';
 }
 
 export interface StockTransactionFormData {
@@ -65,6 +81,7 @@ export interface Supplier {
     phone: string;
     address?: string;
     category: string;
+    category_name: string;
     notes?: string;
     created_at: string;
 }
@@ -85,7 +102,7 @@ export interface PurchaseOrderItem {
     inventory_item_id: number;
     inventory_item_name: string;
     quantity: number;
-    unit: InventoryUnit;
+    unit: InventoryUnitSlug;
     unit_cost: number;
     total_cost: number;
 }

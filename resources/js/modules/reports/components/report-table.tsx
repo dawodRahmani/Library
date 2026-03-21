@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;
 }
-import type { DailySalesData } from '../data/mock-reports';
+import type { DailySalesData } from '../types';
 
 interface ReportTableProps {
     data: DailySalesData[];

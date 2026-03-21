@@ -170,6 +170,30 @@ class OrderController extends Controller
         return redirect()->route('orders.index');
     }
 
+    public function merge(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'target_order_id' => 'required|exists:orders,id',
+            'source_order_ids' => 'required|array|min:1',
+            'source_order_ids.*' => 'exists:orders,id',
+        ]);
+
+        $target = Order::findOrFail($data['target_order_id']);
+
+        // Only block merging cancelled orders
+        $invalidOrders = Order::whereIn('id', $data['source_order_ids'])
+            ->where('status', 'cancelled')
+            ->exists();
+
+        if ($invalidOrders || $target->status === 'cancelled') {
+            return back()->withErrors(['merge' => 'Cannot merge cancelled orders.']);
+        }
+
+        $this->orderService->merge($target, $data['source_order_ids']);
+
+        return redirect()->route('orders.show', $target->id);
+    }
+
     private function formatOrder(Order $order): array
     {
         return [

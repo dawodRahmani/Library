@@ -174,6 +174,59 @@ class OrderService
     }
 
     /**
+     * Merge multiple orders into one target order.
+     * Moves all items from source orders into the target, recalculates total, and cancels sources.
+     */
+    public function merge(Order $target, array $sourceIds): Order
+    {
+        return DB::transaction(function () use ($target, $sourceIds) {
+            $sources = Order::with('items')->whereIn('id', $sourceIds)->get();
+
+            foreach ($sources as $source) {
+                // Move all items to the target order
+                $source->items()->update(['order_id' => $target->id]);
+
+                // Append source notes to target
+                if ($source->notes) {
+                    $target->notes = $target->notes
+                        ? $target->notes . ' | ' . $source->notes
+                        : $source->notes;
+                }
+
+                // Free source table if different from target
+                if ($source->table_id && $source->table_id !== $target->table_id) {
+                    Table::where('id', $source->table_id)->update([
+                        'status'          => 'available',
+                        'active_order_id' => null,
+                    ]);
+                    try {
+                        broadcast(new TableStatusChanged($source->table_id, 'available', null))->toOthers();
+                    } catch (\Throwable) {}
+                }
+
+                // Cancel the source order
+                $source->update([
+                    'status' => 'cancelled',
+                    'notes'  => ($source->notes ? $source->notes . ' | ' : '') . 'ادغام شده با ' . $target->order_number,
+                ]);
+            }
+
+            // Recalculate target total from all items
+            $total = OrderItem::where('order_id', $target->id)->sum('subtotal');
+            $target->update([
+                'total_amount' => $total,
+                'notes'        => $target->notes,
+            ]);
+
+            try {
+                broadcast(new OrderStatusChanged($target->id, $target->status))->toOthers();
+            } catch (\Throwable) {}
+
+            return $target->fresh('items.menuItem', 'table.floor', 'creator');
+        });
+    }
+
+    /**
      * Generate a unique order number like #1025.
      */
     private function generateOrderNumber(): string

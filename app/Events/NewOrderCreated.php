@@ -20,6 +20,7 @@ class NewOrderCreated implements ShouldBroadcast
         return [
             new PrivateChannel('kitchen'),
             new PrivateChannel('restaurant'),
+            new Channel('public-restaurant'),
         ];
     }
 

@@ -8,22 +8,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { ExpenseCategory } from '../types';
+import type { ExpenseCategoryItem } from '../types';
 
 interface ExpenseFiltersProps {
     search: string;
     onSearchChange: (value: string) => void;
     categoryFilter: string;
     onCategoryFilterChange: (value: string) => void;
+    categories: ExpenseCategoryItem[];
 }
-
-const categories: ExpenseCategory[] = ['groceries', 'rent', 'electricity', 'gas', 'supplies', 'other'];
 
 export function ExpenseFilters({
     search,
     onSearchChange,
     categoryFilter,
     onCategoryFilterChange,
+    categories,
 }: ExpenseFiltersProps) {
     const { t } = useTranslation();
 
@@ -46,8 +46,8 @@ export function ExpenseFilters({
                 <SelectContent>
                     <SelectItem value="all">{t('expenses.allCategories')}</SelectItem>
                     {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                            {t(`expenses.categories.${cat}`)}
+                        <SelectItem key={cat.id} value={String(cat.id)}>
+                            {cat.name}
                         </SelectItem>
                     ))}
                 </SelectContent>

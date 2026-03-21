@@ -7,7 +7,7 @@ import { FoodImage } from '@/components/food-image';
 import { cn } from '@/lib/utils';
 
 function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
-import type { FoodItem } from '@/data/mock/types';
+import type { FoodItem } from '@/types/models';
 
 interface KioskMenuGridProps {
     items: FoodItem[];

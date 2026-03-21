@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { RestaurantTable } from '@/data/mock/types';
+import type { RestaurantTable } from '@/types/models';
 
 interface TableCardProps {
     table: RestaurantTable;

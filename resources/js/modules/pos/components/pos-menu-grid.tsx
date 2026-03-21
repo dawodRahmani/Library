@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { FoodImage } from '@/components/food-image';
-import type { FoodItem, Category } from '@/data/mock/types';
+import type { FoodItem, Category } from '@/types/models';
 
 function formatPrice(amount: number): string { return `${amount.toLocaleString()} ؋`; }
 

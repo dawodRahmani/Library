@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ShoppingBag, Truck, UtensilsCrossed } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import type { FoodItem, Category, RestaurantTable } from '@/data/mock/types';
+import type { FoodItem, Category, RestaurantTable } from '@/types/models';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -176,7 +176,7 @@ export default function CreateOrderPage() {
                     </div>
 
                     {/* Cart */}
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-2 lg:sticky lg:top-4 lg:self-start">
                         <OrderCart
                             cartItems={cartItems}
                             onUpdateQuantity={handleUpdateQuantity}

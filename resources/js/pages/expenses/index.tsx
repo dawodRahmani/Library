@@ -9,7 +9,7 @@ import { ExpenseTable } from '@/modules/expenses/components/expense-table';
 import { ExpenseFormDialog } from '@/modules/expenses/components/expense-form-dialog';
 import { ExpenseDeleteDialog } from '@/modules/expenses/components/expense-delete-dialog';
 import { ExpenseFilters } from '@/modules/expenses/components/expense-filters';
-import type { Expense, ExpenseFormData } from '@/modules/expenses/types';
+import type { Expense, ExpenseFormData, ExpenseCategoryItem } from '@/modules/expenses/types';
 
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;
@@ -17,11 +17,12 @@ function formatPrice(amount: number): string {
 
 interface Props extends Record<string, unknown> {
     expenses: Expense[];
+    categories: ExpenseCategoryItem[];
 }
 
 export default function ExpensesIndex() {
     const { t } = useTranslation();
-    const { expenses } = usePage<Props>().props;
+    const { expenses, categories } = usePage<Props>().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('sidebar.dashboard'), href: '/dashboard' },
@@ -41,7 +42,7 @@ export default function ExpensesIndex() {
                 !search ||
                 expense.description.toLowerCase().includes(search.toLowerCase());
             const matchesCategory =
-                categoryFilter === 'all' || expense.category === categoryFilter;
+                categoryFilter === 'all' || String(expense.expense_category_id) === categoryFilter;
             return matchesSearch && matchesCategory;
         });
     }, [expenses, search, categoryFilter]);
@@ -125,6 +126,7 @@ export default function ExpensesIndex() {
                     onSearchChange={setSearch}
                     categoryFilter={categoryFilter}
                     onCategoryFilterChange={setCategoryFilter}
+                    categories={categories}
                 />
 
                 {/* Table */}
@@ -149,6 +151,7 @@ export default function ExpensesIndex() {
                 }}
                 onSubmit={handleFormSubmit}
                 expense={editingExpense}
+                categories={categories}
             />
 
             <ExpenseDeleteDialog

@@ -1,5 +1,5 @@
 import { FoodItemCard } from './food-item-card';
-import type { FoodItem } from '@/data/mock/types';
+import type { FoodItem } from '@/types/models';
 
 interface FoodItemGridProps {
     items: FoodItem[];
