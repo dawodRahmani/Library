@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { useEcho } from '@laravel/echo-react';
+import { useEchoPublic } from '@laravel/echo-react';
 
 interface UseOrderEventsOptions {
     /** Inertia props to reload */
@@ -74,7 +74,7 @@ export function useOrderEvents({
     }, [reloadProps]);
 
     // ── New Order ───────────────────────────────────────────
-    useEcho(
+    useEchoPublic(
         'public-restaurant',
         '.NewOrderCreated',
         (payload: { order: { order_number?: string; table?: { number: number } | null } }) => {
@@ -95,7 +95,7 @@ export function useOrderEvents({
     );
 
     // ── Order Status Changed ────────────────────────────────
-    useEcho(
+    useEchoPublic(
         'public-restaurant',
         '.OrderStatusChanged',
         (payload: { order_id: number; status: string }) => {
@@ -114,7 +114,7 @@ export function useOrderEvents({
     );
 
     // ── Table Status Changed ────────────────────────────────
-    useEcho(
+    useEchoPublic(
         'public-restaurant',
         '.TableStatusChanged',
         (payload: { table_id: number; status: string }) => {

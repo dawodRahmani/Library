@@ -8,6 +8,7 @@ import {
     KeyRound,
     Landmark,
     LayoutGrid,
+    ListChecks,
     Monitor,
     Package,
     PackageSearch,
@@ -60,6 +61,11 @@ export function AppSidebar() {
             title: t('sidebar.orders'),
             href: '/orders',
             icon: ClipboardList,
+        }] : []),
+        ...(can('orders.view') ? [{
+            title: t('sidebar.activeOrders'),
+            href: '/orders/active',
+            icon: ListChecks,
         }] : []),
         ...(can('tables.view') ? [{
             title: t('sidebar.tables'),

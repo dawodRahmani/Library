@@ -38,6 +38,7 @@ const defaultFormData: EmployeeFormData = {
     phone: '',
     hire_date: '',
     is_active: true,
+    base_salary: '',
 };
 
 export function EmployeeFormDialog({
@@ -59,6 +60,7 @@ export function EmployeeFormDialog({
                 phone: employee.phone,
                 hire_date: employee.hire_date,
                 is_active: employee.is_active,
+                base_salary: employee.base_salary ?? '',
             });
         } else {
             setForm(defaultFormData);
@@ -78,7 +80,7 @@ export function EmployeeFormDialog({
                         {isEditing ? t('employees.editEmployee') : t('employees.addEmployee')}
                     </DialogTitle>
                     <DialogDescription>
-                        {isEditing ? t('employees.editEmployee') : t('employees.addEmployee')}
+                        {isEditing ? t('employees.editEmployeeDesc') : t('employees.addEmployeeDesc')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -131,6 +133,23 @@ export function EmployeeFormDialog({
                             dir="ltr"
                             className="h-10 text-left"
                             placeholder="07XXXXXXXX"
+                        />
+                    </div>
+
+                    {/* Base Salary */}
+                    <div className="space-y-2">
+                        <Label htmlFor="emp-base-salary" className="font-medium">
+                            {t('employees.baseSalary')}
+                        </Label>
+                        <Input
+                            id="emp-base-salary"
+                            type="number"
+                            value={form.base_salary}
+                            onChange={(e) => setForm({ ...form, base_salary: e.target.value ? Number(e.target.value) : '' })}
+                            min={0}
+                            dir="ltr"
+                            className="h-10 text-left"
+                            placeholder="0"
                         />
                     </div>
 

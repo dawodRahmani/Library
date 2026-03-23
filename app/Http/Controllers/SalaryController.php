@@ -97,6 +97,7 @@ class SalaryController extends Controller
 
     public function destroy(Salary $salary): RedirectResponse
     {
+        \App\Models\LedgerEntry::where('reference', 'SAL-' . $salary->id)->delete();
         $salary->delete();
         return back();
     }

@@ -170,6 +170,19 @@ class OrderController extends Controller
         return redirect()->route('orders.index');
     }
 
+    public function active(): Response
+    {
+        $orders = Order::with('table.floor', 'creator', 'items.menuItem')
+            ->whereNotIn('status', ['paid', 'cancelled'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn($o) => $this->formatOrder($o));
+
+        return Inertia::render('orders/active', [
+            'orders' => $orders,
+        ]);
+    }
+
     public function merge(Request $request): RedirectResponse
     {
         $data = $request->validate([

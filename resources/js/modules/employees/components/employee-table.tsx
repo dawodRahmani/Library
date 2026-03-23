@@ -54,7 +54,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                 </TableHeader>
                 <TableBody>
                     {employees.map((employee) => (
-                        <TableRow key={employee.id} className="group">
+                        <TableRow key={employee.id}>
                             <TableCell>
                                 <div className="flex items-center gap-3">
                                     <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-purple-600 text-white text-sm font-bold shadow-sm">
@@ -91,7 +91,7 @@ export function EmployeeTable({ employees, onEdit, onDelete }: EmployeeTableProp
                                 )}
                             </TableCell>
                             <TableCell>
-                                <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center justify-center gap-1">
                                     <Button
                                         variant="ghost"
                                         size="sm"

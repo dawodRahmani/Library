@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { useEcho } from '@laravel/echo-react';
@@ -6,13 +6,14 @@ import { toast } from 'sonner';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { FoodItem, Category, RestaurantTable } from '@/types/models';
+import { KioskHeader } from '@/modules/kiosk/components/kiosk-header';
 
 interface Props extends Record<string, unknown> {
     items: FoodItem[];
     categories: Category[];
     tables: RestaurantTable[];
+    lastOrderId?: number | null;
 }
-import { KioskHeader } from '@/modules/kiosk/components/kiosk-header';
 import { KioskCategories } from '@/modules/kiosk/components/kiosk-categories';
 import { KioskMenuGrid } from '@/modules/kiosk/components/kiosk-menu-grid';
 import { KioskCart, type CartItem } from '@/modules/kiosk/components/kiosk-cart';
@@ -23,7 +24,7 @@ type KioskView = 'menu' | 'success';
 
 export default function KioskPage() {
     const { t } = useTranslation();
-    const { items, categories, tables } = usePage<Props>().props;
+    const { items, categories, tables, lastOrderId } = usePage<Props>().props;
 
     const [view, setView] = useState<KioskView>('menu');
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -31,6 +32,13 @@ export default function KioskPage() {
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
     const [tableDialogOpen, setTableDialogOpen] = useState(false);
     const lastOrderIdRef = useRef<number | null>(null);
+
+    // Sync lastOrderId from server props after order placement
+    useEffect(() => {
+        if (lastOrderId) {
+            lastOrderIdRef.current = lastOrderId;
+        }
+    }, [lastOrderId]);
 
     // ── Real-time: order status updates (public channel) ────
     const statusKeys: Record<string, string> = {
@@ -127,9 +135,7 @@ export default function KioskPage() {
             order_type: selectedTable ? 'dine_in' : 'takeaway',
             items: cart.map((ci) => ({ menu_item_id: ci.item.id, quantity: ci.quantity })),
         }, {
-            onSuccess: (page) => {
-                const orderId = (page.props as Record<string, unknown>).lastOrderId as number | undefined;
-                if (orderId) lastOrderIdRef.current = orderId;
+            onSuccess: () => {
                 setView('success');
             },
         });

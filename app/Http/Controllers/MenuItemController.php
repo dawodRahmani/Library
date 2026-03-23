@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MenuAvailabilityChanged;
 use App\Models\Category;
 use App\Models\MenuItem;
 use Illuminate\Http\RedirectResponse;
@@ -81,6 +82,13 @@ class MenuItemController extends Controller
     public function toggleAvailability(MenuItem $menuItem): RedirectResponse
     {
         $menuItem->update(['is_available' => ! $menuItem->is_available]);
+
+        try {
+            broadcast(new MenuAvailabilityChanged($menuItem->id, (bool) $menuItem->is_available))->toOthers();
+        } catch (\Throwable) {
+            // Broadcasting is optional
+        }
+
         return back();
     }
 }

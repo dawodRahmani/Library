@@ -6,4 +6,5 @@ export type EmployeeFormData = {
     phone: string;
     hire_date: string;
     is_active: boolean;
+    base_salary: number | '';
 };

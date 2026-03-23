@@ -54,7 +54,7 @@ export function SalaryTable({ salaries, onEdit, onDelete, onPayslip }: SalaryTab
                 </TableHeader>
                 <TableBody>
                     {salaries.map((salary) => (
-                        <TableRow key={salary.id} className="group">
+                        <TableRow key={salary.id}>
                             <TableCell className="font-medium">{salary.month}</TableCell>
                             <TableCell>{formatPrice(salary.base_amount)}</TableCell>
                             <TableCell>
@@ -86,7 +86,7 @@ export function SalaryTable({ salaries, onEdit, onDelete, onPayslip }: SalaryTab
                                 <span className="text-sm text-muted-foreground">{salary.notes || '—'}</span>
                             </TableCell>
                             <TableCell>
-                                <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center justify-center gap-1">
                                     <Button
                                         variant="ghost"
                                         size="sm"

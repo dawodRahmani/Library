@@ -22,9 +22,10 @@ class KioskController extends Controller
         $tables     = Table::with('floor')->where('status', 'available')->orderBy('number')->get();
 
         return Inertia::render('kiosk/index', [
-            'items'      => $this->serializeItems($items),
-            'categories' => $categories,
-            'tables'     => $this->serializeTables($tables),
+            'items'       => $this->serializeItems($items),
+            'categories'  => $categories,
+            'tables'      => $this->serializeTables($tables),
+            'lastOrderId' => session()->pull('last_kiosk_order_id'),
         ]);
     }
 
@@ -51,12 +52,14 @@ class KioskController extends Controller
         $createdBy = User::first()->id ?? 1;
 
         $service = new OrderService();
-        $service->create([
+        $order = $service->create([
             'table_id'   => $validated['table_id'] ?? null,
             'order_type' => $validated['order_type'],
             'items'      => $items,
             'notes'      => null,
         ], $createdBy);
+
+        session(['last_kiosk_order_id' => $order->id]);
 
         return back();
     }

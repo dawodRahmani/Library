@@ -103,6 +103,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('orders/create', [OrderController::class, 'create'])->middleware('permission:orders.create')->name('orders.create');
         Route::post('orders', [OrderController::class, 'store'])->middleware('permission:orders.create')->name('orders.store');
+        Route::get('orders/active', [OrderController::class, 'active'])->name('orders.active');
         Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
         Route::get('orders/{id}/edit', [OrderController::class, 'edit'])->middleware('permission:orders.edit')->name('orders.edit');
         Route::patch('orders/{order}', [OrderController::class, 'update'])->middleware('permission:orders.edit')->name('orders.update');

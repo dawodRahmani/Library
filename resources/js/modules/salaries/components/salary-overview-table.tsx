@@ -11,11 +11,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import type { Salary } from '../types';
+import { SalaryStatusBadge } from './salary-status-badge';
+
 function formatPrice(amount: number): string {
     return `${amount.toLocaleString()} ؋`;
 }
-import type { Salary } from '../types';
-import { SalaryStatusBadge } from './salary-status-badge';
 
 interface PageEmployee {
     id: number;

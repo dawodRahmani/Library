@@ -17,6 +17,7 @@
         "platform": "منوی اصلی",
         "dashboard": "داشبورد",
         "orders": "فرمایشات",
+        "activeOrders": "فرمایشات فعال",
         "tables": "میزها",
         "menu": "منوی غذا",
         "kitchen": "آشپزخانه",
@@ -207,12 +208,18 @@
         "confirmMerge": "تأیید ادغام",
         "mergeSuccess": "فرمایشات با موفقیت ادغام شدند"
     },
+    "activeOrders": {
+        "title": "فرمایشات فعال",
+        "activeCount": "فرمایش فعال",
+        "noActiveOrders": "در حال حاضر هیچ فرمایش فعالی وجود ندارد",
+        "confirmCancel": "لغو فرمایش"
+    },
     "kitchen": {
         "title": "مانیتور آشپزخانه",
         "newOrders": "فرمایشات جدید",
         "preparing": "در حال آماده‌سازی",
         "ready": "آماده",
-        "exitKitchen": "خروج",
+        "exitKitchen": "داشبورد",
         "startPreparing": "شروع آماده‌سازی",
         "markReady": "آماده شد",
         "markServed": "سرو شد",
@@ -334,7 +341,9 @@
     "employees": {
         "title": "مدیریت کارمندان",
         "addEmployee": "کارمند جدید",
+        "addEmployeeDesc": "معلومات کارمند جدید را وارد کنید",
         "editEmployee": "ویرایش کارمند",
+        "editEmployeeDesc": "معلومات کارمند را ویرایش کنید",
         "deleteEmployee": "حذف کارمند",
         "name": "نام",
         "phone": "شماره تلفن",
@@ -656,7 +665,7 @@
         "deleteHeld": "حذف",
         "paymentSuccess": "پرداخت با موفقیت انجام شد!",
         "newSale": "فروش جدید",
-        "exit": "خروج",
+        "exit": "داشبورد",
         "emptyCart": "سبد خالی است",
         "addItems": "غذاها را انتخاب کنید",
         "quantity": "تعداد",

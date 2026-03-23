@@ -28,7 +28,7 @@ class DashboardController extends Controller
         $recentOrders = Order::with('table', 'items')
             ->whereNotIn('status', ['cancelled'])
             ->orderByDesc('created_at')
-            ->limit(8)
+            ->limit(5)
             ->get()
             ->map(fn($o) => [
                 'id'           => $o->id,

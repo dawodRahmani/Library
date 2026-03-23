@@ -98,11 +98,19 @@ class ExpenseController extends Controller
             'category' => ExpenseCategory::find($data['expense_category_id'])?->slug ?? 'other',
         ]);
 
+        // Keep the ledger entry in sync with the updated expense
+        \App\Models\LedgerEntry::where('reference', 'EXP-' . $expense->id)->update([
+            'description' => $expense->fresh()->description,
+            'amount'      => $expense->fresh()->amount,
+            'category'    => $expense->fresh()->expenseCategory?->slug ?? 'other',
+        ]);
+
         return back();
     }
 
     public function destroy(Expense $expense): RedirectResponse
     {
+        \App\Models\LedgerEntry::where('reference', 'EXP-' . $expense->id)->delete();
         $expense->delete();
         return back();
     }

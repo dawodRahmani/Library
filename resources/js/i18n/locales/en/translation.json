@@ -17,6 +17,7 @@
         "platform": "Main Menu",
         "dashboard": "Dashboard",
         "orders": "Orders",
+        "activeOrders": "Active Orders",
         "tables": "Tables",
         "menu": "Food Menu",
         "kitchen": "Kitchen",
@@ -207,12 +208,18 @@
         "confirmMerge": "Confirm Merge",
         "mergeSuccess": "Orders merged successfully"
     },
+    "activeOrders": {
+        "title": "Active Orders",
+        "activeCount": "active orders",
+        "noActiveOrders": "No active orders right now",
+        "confirmCancel": "Cancel Order"
+    },
     "kitchen": {
         "title": "Kitchen Monitor",
         "newOrders": "New Orders",
         "preparing": "Preparing",
         "ready": "Ready",
-        "exitKitchen": "Exit",
+        "exitKitchen": "Dashboard",
         "startPreparing": "Start Preparing",
         "markReady": "Mark Ready",
         "markServed": "Mark Served",
@@ -334,7 +341,9 @@
     "employees": {
         "title": "Employee Management",
         "addEmployee": "New Employee",
+        "addEmployeeDesc": "Enter the details for the new employee",
         "editEmployee": "Edit Employee",
+        "editEmployeeDesc": "Update the employee's information",
         "deleteEmployee": "Delete Employee",
         "name": "Name",
         "phone": "Phone",
@@ -656,7 +665,7 @@
         "deleteHeld": "Delete",
         "paymentSuccess": "Payment successful!",
         "newSale": "New Sale",
-        "exit": "Exit",
+        "exit": "Dashboard",
         "emptyCart": "Cart is empty",
         "addItems": "Select food items",
         "quantity": "Quantity",
