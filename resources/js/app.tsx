@@ -16,7 +16,7 @@ configureEcho({
     forceTLS: true,
 });
 
-const appName = 'رستورانت برتر';
+const appName = import.meta.env.VITE_APP_NAME || 'Library';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

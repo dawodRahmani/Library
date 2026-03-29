@@ -1,7 +1,7 @@
-# Top Property - Restaurant Management System
+# Library Management System
 
 ## Project Overview
-A desktop-first restaurant management system (رستورانت برتر) with offline-first architecture. Primary language is **Dari (RTL)** with i18n support.
+A desktop-first library management system with offline-first architecture. Primary language is **Dari (RTL)** with i18n support.
 
 ## Tech Stack
 - **Backend:** Laravel 12 + PHP 8.2
@@ -38,11 +38,3 @@ A desktop-first restaurant management system (رستورانت برتر) with of
 - All UI text should use translation keys, never hardcoded strings
 - Database translatable fields use JSON columns
 - SQLite is the database — avoid MySQL-specific syntax
-
-## Plan Documents
-Detailed implementation plans are in the `plan/` directory:
-- `plan/overview.md` — Full project overview and module descriptions
-- `plan/database-schema.md` — Database table schemas
-- `plan/modules.md` — Module feature details and UI specs
-- `plan/tech-architecture.md` — Technical architecture decisions
-- `implementation-guide.md` — Original implementation guide (references MySQL, but we use SQLite)

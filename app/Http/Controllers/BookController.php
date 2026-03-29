@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class DashboardController extends Controller
+class BookController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('dashboard');
+        return Inertia::render('library/index');
     }
 }

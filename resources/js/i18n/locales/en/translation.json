@@ -1,7 +1,7 @@
 {
     "app": {
-        "name": "Top Restaurant",
-        "tagline": "Restaurant Management System"
+        "name": "Resalat Library",
+        "tagline": "Digital Library Management System"
     },
     "auth": {
         "login": "Log in to your account",
@@ -43,7 +43,10 @@
         "financeSection": "Finance & HR",
         "financeGroup": "Finance",
         "hrGroup": "Human Resources",
-        "settingsGroup": "Settings"
+        "settingsGroup": "Settings",
+        "library": "Library",
+        "books": "Books",
+        "videos": "Videos"
     },
     "dashboard": {
         "title": "Dashboard",

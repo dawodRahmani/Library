@@ -72,7 +72,7 @@ export default function Login({
                                 {canResetPassword && (
                                     <TextLink
                                         href={request()}
-                                        className="ms-auto text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
+                                        className="ms-auto text-xs text-[#27ae60] hover:text-[#229954]"
                                         tabIndex={5}
                                     >
                                         {t('auth.forgotPassword')}
@@ -105,7 +105,7 @@ export default function Login({
 
                         <Button
                             type="submit"
-                            className="mt-2 w-full h-11 bg-gradient-to-l from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all hover:shadow-emerald-500/40"
+                            className="mt-2 w-full h-11 bg-[#27ae60] hover:bg-[#229954] text-white font-semibold shadow-lg shadow-[#27ae60]/25 transition-all"
                             size="lg"
                             tabIndex={4}
                             disabled={processing}

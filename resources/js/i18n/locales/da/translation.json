@@ -1,7 +1,7 @@
 {
     "app": {
-        "name": "رستورانت برتر",
-        "tagline": "سیستم مدیریت رستورانت"
+        "name": "کتابخانه رسالت",
+        "tagline": "سیستم مدیریت کتابخانه دیجیتال"
     },
     "auth": {
         "login": "ورود به سیستم",
@@ -43,7 +43,10 @@
         "financeSection": "مالی و منابع انسانی",
         "financeGroup": "مالی",
         "hrGroup": "منابع انسانی",
-        "settingsGroup": "تنظیمات"
+        "settingsGroup": "تنظیمات",
+        "library": "کتابخانه",
+        "books": "کتاب‌ها",
+        "videos": "ویدیو ها"
     },
     "dashboard": {
         "title": "داشبورد",

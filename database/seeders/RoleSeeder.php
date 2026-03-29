@@ -15,31 +15,10 @@ class RoleSeeder extends Seeder
         $rolePermissions = [
             'admin' => $all,
 
-            'manager' => array_values(array_filter(
+            'librarian' => array_values(array_filter(
                 $all,
                 fn ($p) => ! str_starts_with($p, 'users.') && $p !== 'settings.manage',
             )),
-
-            'waiter' => [
-                'orders.view', 'orders.create',
-                'tables.view',
-                'menu.view',
-                'kitchen.view',
-            ],
-
-            'chef' => [
-                'kitchen.view',
-                'orders.view', 'orders.manage_status',
-                'menu.view',
-                'inventory.view',
-            ],
-
-            'cashier' => [
-                'orders.view', 'orders.manage_status',
-                'expenses.view', 'expenses.create',
-                'reports.view',
-                'finance.view',
-            ],
         ];
 
         foreach ($rolePermissions as $roleName => $permissions) {
