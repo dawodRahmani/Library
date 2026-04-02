@@ -1,7 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Headphones, Play, Clock, User, ChevronLeft, Mic } from 'lucide-react';
 
-type Category = 'همه' | 'بخش ایمان' | 'شرح حدیث' | 'آموزش قرآن' | 'تحلیل‌ها' | 'رمضان' | 'متفرقه';
+type Category = 'همه' | 'عقیده و منهج' | 'پند و موعظه' | 'جهاد و استشهاد' | 'سیاست' | 'تحلیل و سخن روز' | 'تاریخ' | 'نشید و ترانه';
+
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+    aqeedah: 'عقیده و منهج',
+    advice: 'پند و موعظه',
+    jihad: 'جهاد و استشهاد',
+    politics: 'سیاست',
+    analysis: 'تحلیل و سخن روز',
+    history: 'تاریخ',
+    nasheed: 'نشید و ترانه',
+};
 
 interface AudioItem {
     id: number;
@@ -16,29 +26,30 @@ interface AudioItem {
 }
 
 const AUDIO_ITEMS: AudioItem[] = [
-    { id: 1,  title: 'شرح شعب الایمان — قسمت اول',         description: 'شرح و تفسیر کتاب شعب الایمان امام بیهقی، بیان شاخه‌های ایمان و چگونگی تقویت هر یک.',           author: 'شیخ عبدالله نوری',   date: '۹ حمل ۱۴۰۴',  duration: '۵۵ دقیقه', category: 'بخش ایمان',  gradient: 'from-emerald-900 to-teal-800',   episodes: 12 },
-    { id: 2,  title: 'شرح حدیث جبریل',                      description: 'تفسیر و شرح حدیث معروف جبریل که در آن اسلام، ایمان و احسان تعریف شده‌اند.',                    author: 'مفتی احمد رحمانی',  date: '۸ حمل ۱۴۰۴',  duration: '۴۸ دقیقه', category: 'شرح حدیث',  gradient: 'from-blue-900 to-indigo-800',    episodes: 8  },
-    { id: 3,  title: 'آموزش قرائت قرآن کریم — مبتدی',      description: 'دوره جامع آموزش قرائت صحیح قرآن کریم با رعایت تجوید، مناسب برای مبتدیان.',                     author: 'قاری محمد امین',    date: '۷ حمل ۱۴۰۴',  duration: '۳۵ دقیقه', category: 'آموزش قرآن', gradient: 'from-violet-900 to-purple-800',  episodes: 20 },
-    { id: 4,  title: 'تحلیل اوضاع جهان اسلام',             description: 'بررسی و تحلیل اوضاع کنونی جهان اسلام، چالش‌ها و فرصت‌های پیش رو از منظر اسلامی.',            author: 'دکتر محمد حسینی',  date: '۶ حمل ۱۴۰۴',  duration: '۶۲ دقیقه', category: 'تحلیل‌ها',  gradient: 'from-rose-900 to-red-800',       episodes: 5  },
-    { id: 5,  title: 'فضائل رمضان و احکام آن',             description: 'بیان فضائل ماه مبارک رمضان، احکام روزه، تراویح و شب قدر با ادله از قرآن و سنت.',              author: 'شیخ عبدالله نوری',   date: '۵ حمل ۱۴۰۴',  duration: '۴۵ دقیقه', category: 'رمضان',      gradient: 'from-amber-900 to-orange-800',   episodes: 30 },
-    { id: 6,  title: 'اذکار و ادعیه روزانه',               description: 'مجموعه اذکار صبح و شام، دعاهای بعد از نماز و اذکار مختلف با تلفظ صحیح و ترجمه دری.',          author: 'قاری محمد امین',    date: '۴ حمل ۱۴۰۴',  duration: '۲۸ دقیقه', category: 'متفرقه',     gradient: 'from-teal-900 to-cyan-800',      episodes: 7  },
-    { id: 7,  title: 'شرح اربعین نووی',                    description: 'شرح چهل حدیث نووی با بیان مفردات، معانی و فوائد فقهی و روحی هر حدیث.',                        author: 'مفتی احمد رحمانی',  date: '۳ حمل ۱۴۰۴',  duration: '۵۸ دقیقه', category: 'شرح حدیث',  gradient: 'from-green-900 to-emerald-800',  episodes: 15 },
-    { id: 8,  title: 'تقویت ایمان در زندگی روزمره',        description: 'رهنمودهای عملی برای تقویت ایمان، اصلاح اخلاق و نزدیک شدن بیشتر به خداوند در زندگی روزانه.', author: 'شیخ زهرا نوری',    date: '۲ حمل ۱۴۰۴',  duration: '۴۰ دقیقه', category: 'بخش ایمان',  gradient: 'from-indigo-900 to-blue-800',    episodes: 10 },
-    { id: 9,  title: 'آموزش مقامات قرآنی',                 description: 'معرفی مقامات مشهور قرائت قرآن کریم، تفاوت آن‌ها و تمرین‌های عملی برای هر مقام.',             author: 'قاری محمد امین',    date: '۱ حمل ۱۴۰۴',  duration: '۵۰ دقیقه', category: 'آموزش قرآن', gradient: 'from-pink-900 to-rose-800',      episodes: 18 },
-    { id: 10, title: 'درس‌های عقیده از کتاب لمعة الاعتقاد', description: 'شرح کتاب لمعة الاعتقاد ابن قدامه، بیان اصول عقیده اهل سنت به صورت ساده و روان.',            author: 'دکتر محمد حسینی',  date: '۲۹ حوت ۱۴۰۳', duration: '۴۴ دقیقه', category: 'بخش ایمان',  gradient: 'from-slate-900 to-gray-800',     episodes: 9  },
-    { id: 11, title: 'شب‌های رمضان — تفسیر سوره بقره',    description: 'تفسیر سوره بقره در شب‌های ماه رمضان با تمرکز بر معانی و احکام آیات.',                        author: 'شیخ عبدالله نوری',   date: '۲۸ حوت ۱۴۰۳', duration: '۷۵ دقیقه', category: 'رمضان',      gradient: 'from-cyan-900 to-teal-800',      episodes: 28 },
-    { id: 12, title: 'سیره نبوی — از ولادت تا بعثت',       description: 'بررسی دوران کودکی و جوانی پیامبر اکرم صلی الله علیه وسلم قبل از نبوت.',                      author: 'مفتی احمد رحمانی',  date: '۲۷ حوت ۱۴۰۳', duration: '۵۲ دقیقه', category: 'متفرقه',     gradient: 'from-amber-900 to-yellow-800',   episodes: 6  },
+    { id: 1,  title: 'شرح شعب الایمان — قسمت اول',         description: 'شرح و تفسیر کتاب شعب الایمان امام بیهقی، بیان شاخه‌های ایمان و چگونگی تقویت هر یک.',           author: 'شیخ عبدالله نوری',   date: '۹ حمل ۱۴۰۴',  duration: '۵۵ دقیقه', category: 'عقیده و منهج',      gradient: 'from-emerald-900 to-teal-800',   episodes: 12 },
+    { id: 2,  title: 'شرح حدیث جبریل',                      description: 'تفسیر و شرح حدیث معروف جبریل که در آن اسلام، ایمان و احسان تعریف شده‌اند.',                    author: 'مفتی احمد رحمانی',  date: '۸ حمل ۱۴۰۴',  duration: '۴۸ دقیقه', category: 'پند و موعظه',       gradient: 'from-blue-900 to-indigo-800',    episodes: 8  },
+    { id: 3,  title: 'آموزش قرائت قرآن کریم — مبتدی',      description: 'دوره جامع آموزش قرائت صحیح قرآن کریم با رعایت تجوید، مناسب برای مبتدیان.',                     author: 'قاری محمد امین',    date: '۷ حمل ۱۴۰۴',  duration: '۳۵ دقیقه', category: 'عقیده و منهج',      gradient: 'from-violet-900 to-purple-800',  episodes: 20 },
+    { id: 4,  title: 'تحلیل اوضاع جهان اسلام',             description: 'بررسی و تحلیل اوضاع کنونی جهان اسلام، چالش‌ها و فرصت‌های پیش رو از منظر اسلامی.',            author: 'دکتر محمد حسینی',  date: '۶ حمل ۱۴۰۴',  duration: '۶۲ دقیقه', category: 'تحلیل و سخن روز',   gradient: 'from-rose-900 to-red-800',       episodes: 5  },
+    { id: 5,  title: 'فضائل رمضان و احکام آن',             description: 'بیان فضائل ماه مبارک رمضان، احکام روزه، تراویح و شب قدر با ادله از قرآن و سنت.',              author: 'شیخ عبدالله نوری',   date: '۵ حمل ۱۴۰۴',  duration: '۴۵ دقیقه', category: 'پند و موعظه',       gradient: 'from-amber-900 to-orange-800',   episodes: 30 },
+    { id: 6,  title: 'اذکار و ادعیه روزانه',               description: 'مجموعه اذکار صبح و شام، دعاهای بعد از نماز و اذکار مختلف با تلفظ صحیح و ترجمه دری.',          author: 'قاری محمد امین',    date: '۴ حمل ۱۴۰۴',  duration: '۲۸ دقیقه', category: 'نشید و ترانه',      gradient: 'from-teal-900 to-cyan-800',      episodes: 7  },
+    { id: 7,  title: 'شرح اربعین نووی',                    description: 'شرح چهل حدیث نووی با بیان مفردات، معانی و فوائد فقهی و روحی هر حدیث.',                        author: 'مفتی احمد رحمانی',  date: '۳ حمل ۱۴۰۴',  duration: '۵۸ دقیقه', category: 'پند و موعظه',       gradient: 'from-green-900 to-emerald-800',  episodes: 15 },
+    { id: 8,  title: 'تقویت ایمان در زندگی روزمره',        description: 'رهنمودهای عملی برای تقویت ایمان، اصلاح اخلاق و نزدیک شدن بیشتر به خداوند در زندگی روزانه.', author: 'شیخ زهرا نوری',    date: '۲ حمل ۱۴۰۴',  duration: '۴۰ دقیقه', category: 'عقیده و منهج',      gradient: 'from-indigo-900 to-blue-800',    episodes: 10 },
+    { id: 9,  title: 'آموزش مقامات قرآنی',                 description: 'معرفی مقامات مشهور قرائت قرآن کریم، تفاوت آن‌ها و تمرین‌های عملی برای هر مقام.',             author: 'قاری محمد امین',    date: '۱ حمل ۱۴۰۴',  duration: '۵۰ دقیقه', category: 'نشید و ترانه',      gradient: 'from-pink-900 to-rose-800',      episodes: 18 },
+    { id: 10, title: 'درس‌های عقیده از کتاب لمعة الاعتقاد', description: 'شرح کتاب لمعة الاعتقاد ابن قدامه، بیان اصول عقیده اهل سنت به صورت ساده و روان.',            author: 'دکتر محمد حسینی',  date: '۲۹ حوت ۱۴۰۳', duration: '۴۴ دقیقه', category: 'جهاد و استشهاد',    gradient: 'from-slate-900 to-gray-800',     episodes: 9  },
+    { id: 11, title: 'شب‌های رمضان — تفسیر سوره بقره',    description: 'تفسیر سوره بقره در شب‌های ماه رمضان با تمرکز بر معانی و احکام آیات.',                        author: 'شیخ عبدالله نوری',   date: '۲۸ حوت ۱۴۰۳', duration: '۷۵ دقیقه', category: 'سیاست',             gradient: 'from-cyan-900 to-teal-800',      episodes: 28 },
+    { id: 12, title: 'سیره نبوی — از ولادت تا بعثت',       description: 'بررسی دوران کودکی و جوانی پیامبر اکرم صلی الله علیه وسلم قبل از نبوت.',                      author: 'مفتی احمد رحمانی',  date: '۲۷ حوت ۱۴۰۳', duration: '۵۲ دقیقه', category: 'تاریخ',             gradient: 'from-amber-900 to-yellow-800',   episodes: 6  },
 ];
 
-const CATEGORIES: Category[] = ['همه', 'بخش ایمان', 'شرح حدیث', 'آموزش قرآن', 'تحلیل‌ها', 'رمضان', 'متفرقه'];
+const CATEGORIES: Category[] = ['همه', 'عقیده و منهج', 'پند و موعظه', 'جهاد و استشهاد', 'سیاست', 'تحلیل و سخن روز', 'تاریخ', 'نشید و ترانه'];
 
 const CAT_COLORS: Record<string, string> = {
-    'بخش ایمان':  'bg-emerald-100 text-emerald-700',
-    'شرح حدیث':   'bg-blue-100    text-blue-700',
-    'آموزش قرآن': 'bg-violet-100  text-violet-700',
-    'تحلیل‌ها':   'bg-rose-100    text-rose-700',
-    'رمضان':      'bg-amber-100   text-amber-700',
-    'متفرقه':     'bg-gray-100    text-gray-700',
+    'عقیده و منهج':    'bg-emerald-100 text-emerald-700',
+    'پند و موعظه':     'bg-blue-100    text-blue-700',
+    'جهاد و استشهاد':  'bg-red-100     text-red-700',
+    'سیاست':           'bg-violet-100  text-violet-700',
+    'تحلیل و سخن روز': 'bg-rose-100    text-rose-700',
+    'تاریخ':           'bg-amber-100   text-amber-700',
+    'نشید و ترانه':    'bg-teal-100    text-teal-700',
 };
 
 function AudioCard({ item }: { item: AudioItem }) {
@@ -89,8 +100,21 @@ function AudioCard({ item }: { item: AudioItem }) {
     );
 }
 
-export function AudioList() {
+export function AudioList({ initialCategory }: { initialCategory?: string }) {
     const [active, setActive] = useState<Category>('همه');
+
+    useEffect(() => {
+        if (initialCategory) {
+            setActive(initialCategory as Category);
+            return;
+        }
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('category');
+        if (slug && CATEGORY_SLUG_MAP[slug]) {
+            setActive(CATEGORY_SLUG_MAP[slug] as Category);
+        }
+    }, [initialCategory]);
+
     const filtered = active === 'همه' ? AUDIO_ITEMS : AUDIO_ITEMS.filter((a) => a.category === active);
 
     return (

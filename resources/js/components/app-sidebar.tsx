@@ -2,8 +2,13 @@ import { Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import {
     BookOpen,
+    FileText,
+    Headphones,
     KeyRound,
     LayoutGrid,
+    Layers,
+    MessageSquare,
+    Newspaper,
     Settings,
     Shield,
     ShieldCheck,
@@ -38,15 +43,37 @@ export function AppSidebar() {
         },
     ];
 
-    const libraryGroups = [{
-        title: t('sidebar.library'),
-        icon: BookOpen,
-        items: [
-            { title: t('sidebar.books'),  href: '/library',        icon: BookOpen },
-            { title: t('sidebar.videos'), href: '/library/videos', icon: Video },
-        ],
-    }];
+    // ── Content Management ────────────────────────────────
+    const contentItems: NavItem[] = [];
+    if (can('books.view')) {
+        contentItems.push({ title: 'کتاب‌ها', href: '/admin/books', icon: BookOpen });
+    }
+    if (can('videos.view')) {
+        contentItems.push({ title: 'ویدیوها', href: '/admin/videos', icon: Video });
+    }
+    if (can('audios.view')) {
+        contentItems.push({ title: 'صوتی‌ها', href: '/admin/audios', icon: Headphones });
+    }
+    if (can('fatwas.view')) {
+        contentItems.push({ title: 'دارالإفتاء', href: '/admin/fatwas', icon: MessageSquare });
+    }
+    if (can('articles.view')) {
+        contentItems.push({ title: 'مقاله‌ها', href: '/admin/articles', icon: FileText });
+    }
+    if (can('magazines.view')) {
+        contentItems.push({ title: 'مجله', href: '/admin/magazines', icon: Newspaper });
+    }
+    if (can('categories.manage')) {
+        contentItems.push({ title: 'دسته‌بندی‌ها', href: '/admin/categories', icon: Layers });
+    }
 
+    const contentGroups = contentItems.length > 0 ? [{
+        title: 'مدیریت محتوا',
+        icon: BookOpen,
+        items: contentItems,
+    }] : [];
+
+    // ── Settings ──────────────────────────────────────────
     const settingsItems: NavItem[] = [];
     if (can('users.view')) {
         settingsItems.push({ title: t('sidebar.users'), href: '/users', icon: ShieldCheck });
@@ -81,7 +108,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                <NavGroup groups={libraryGroups} label={t('sidebar.library')} />
+                {contentGroups.length > 0 && <NavGroup groups={contentGroups} label="مدیریت محتوا" />}
                 <NavGroup groups={settingsGroups} />
             </SidebarContent>
 

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -list)",
+      "Bash(find /c/Users/Rahmani/Desktop/Library/Library -path \"*pages*\" -name \"*.tsx\" -exec grep -l \"Form\\\\|useForm\" {})"
+    ]
+  }
+}

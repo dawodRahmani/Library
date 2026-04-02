@@ -2,11 +2,12 @@ import { Facebook, Twitter, Youtube, Linkedin, Rss } from 'lucide-react';
 
 /* ── Sitemap links ───────────────────────────────────────── */
 const SITEMAP = [
-    { label: 'خانه', href: '/' },
     { label: 'کتابخانه', href: '/library' },
+    { label: 'دارالإفتاء', href: '/dar-ul-ifta' },
     { label: 'ویدیوها', href: '/library/videos' },
-    { label: 'صوت‌ها', href: '/audio' },
-    { label: 'مقاله‌ها', href: '/articles' },
+    { label: 'صوتی‌ها', href: '/audio' },
+    { label: 'مجله', href: '/majalla' },
+    { label: 'درباره ما', href: '/about' },
     { label: 'تماس با ما', href: '/contact' },
 ];
 

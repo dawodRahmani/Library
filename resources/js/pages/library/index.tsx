@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TopBar }     from '@/components/home/top-bar';
 import { MainNav }    from '@/components/home/main-nav';
 import { NewsTicker } from '@/components/home/news-ticker';
@@ -25,25 +25,34 @@ interface Book {
     publisher: string;
 }
 
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+    aqeedah: 'عقیده و منهج',
+    jihad: 'جهاد و استشهاد',
+    articles: 'مقاله‌ها',
+    politics: 'سیاست',
+    history: 'تاریخ',
+    various: 'کتاب‌های گوناگون',
+};
+
 const MOCK_BOOKS: Book[] = [
-    { id: 1,  title: 'صحیح البخاری',                    author: 'امام محمد بن اسماعیل البخاری', category: 'حدیث',      year: 846,  isbn: '978-964-101-001-1', status: 'available', copies: 5, available: 3, rating: 5, pages: 1200, publisher: 'دار الفکر',          description: 'صحیح البخاری معتبرترین مجموعه احادیث نبوی پس از قرآن کریم است. امام بخاری بیش از ۶۰۰ هزار حدیث را بررسی کرد و ۷۳۹۷ حدیث صحیح را در این مجموعه گردآوری نمود.' },
-    { id: 2,  title: 'صحیح مسلم',                       author: 'امام مسلم بن الحجاج',         category: 'حدیث',      year: 875,  isbn: '978-964-101-002-8', status: 'available', copies: 4, available: 2, rating: 5, pages: 1050, publisher: 'دار الفکر',          description: 'صحیح مسلم دومین کتاب معتبر حدیثی در نزد اهل سنت است. امام مسلم این کتاب را در ۵۴ سال عمر خود تألیف کرد و شامل ۷۴۷۰ حدیث صحیح می‌باشد.' },
-    { id: 3,  title: 'تفسیر ابن کثیر',                  author: 'ابوالفداء اسماعیل ابن کثیر',  category: 'تفسیر',     year: 1370, isbn: '978-964-101-003-5', status: 'borrowed',  copies: 3, available: 0, rating: 5, pages: 1800, publisher: 'دار الکتب العلمیه', description: 'تفسیر ابن کثیر یکی از مهم‌ترین تفاسیر قرآن کریم به روش تفسیر قرآن به قرآن و حدیث است. این کتاب در چهار جلد نوشته شده و مرجع اصلی علمای اهل سنت به شمار می‌رود.' },
-    { id: 4,  title: 'ریاض الصالحین',                   author: 'امام محیی الدین النووی',      category: 'اخلاق',     year: 1277, isbn: '978-964-101-004-2', status: 'available', copies: 6, available: 4, rating: 5, pages: 560,  publisher: 'مکتبه المعارف',      description: 'ریاض الصالحین مجموعه‌ای از احادیث نبوی در موضوعات اخلاقی و عبادی است. این کتاب یکی از پرخواننده‌ترین کتب اسلامی در سراسر جهان محسوب می‌شود.' },
-    { id: 5,  title: 'فتح الباری شرح صحیح البخاری',     author: 'ابن حجر العسقلانی',           category: 'حدیث',      year: 1430, isbn: '978-964-101-005-9', status: 'available', copies: 2, available: 2, rating: 5, pages: 3500, publisher: 'دار المعرفه',        description: 'فتح الباری بزرگترین و معتبرترین شرح صحیح البخاری است. این اثر علمی عظیم توسط حافظ ابن حجر عسقلانی در ۱۳ جلد نوشته شده و مرجع اول محدثان است.' },
-    { id: 6,  title: 'العقیدة الواسطیه',                author: 'شیخ الاسلام ابن تیمیه',       category: 'عقیده',     year: 1300, isbn: '978-964-101-006-6', status: 'reserved',  copies: 3, available: 1, rating: 5, pages: 120,  publisher: 'مکتبه السنه',        description: 'العقیدة الواسطیه رساله‌ای کوتاه اما بسیار مهم در بیان عقیده اهل سنت و الجماعت است که توسط شیخ الاسلام ابن تیمیه نوشته شده.' },
-    { id: 7,  title: 'زاد المعاد',                      author: 'ابن قیم الجوزیه',             category: 'سیره',      year: 1350, isbn: '978-964-101-007-3', status: 'available', copies: 3, available: 2, rating: 5, pages: 800,  publisher: 'مؤسسه الرساله',      description: 'زاد المعاد کتابی جامع در سیره نبوی، احکام عبادات، و طب نبوی است. این اثر چندوجهی ابن قیم در پنج جلد نوشته شده و بینشی عمیق از زندگی پیامبر اکرم ارائه می‌دهد.' },
-    { id: 8,  title: 'الرحیق المختوم',                  author: 'صفی الرحمن المبارکفوری',      category: 'سیره',      year: 1976, isbn: '978-964-101-008-0', status: 'available', copies: 4, available: 3, rating: 5, pages: 480,  publisher: 'دار الوفاء',         description: 'الرحیق المختوم برنده جایزه اول مسابقه بین‌المللی سیره نبوی رابطه جهان اسلام بود. این کتاب کامل‌ترین و خواندنی‌ترین زندگینامه پیامبر اکرم به شمار می‌رود.' },
-    { id: 9,  title: 'مختصر صحیح البخاری',              author: 'محمد فؤاد عبدالباقی',         category: 'حدیث',      year: 1950, isbn: '978-964-101-009-7', status: 'borrowed',  copies: 5, available: 0, rating: 4, pages: 680,  publisher: 'دار الفکر',          description: 'مختصر صحیح البخاری خلاصه‌ای از صحیح البخاری است که احادیث مکرر حذف شده و فقط ۲۲۳۰ حدیث منحصربه‌فرد باقی مانده است.' },
-    { id: 10, title: 'الأذکار',                         author: 'امام محیی الدین النووی',      category: 'اخلاق',     year: 1280, isbn: '978-964-101-010-3', status: 'available', copies: 4, available: 3, rating: 4, pages: 340,  publisher: 'دار المنهاج',        description: 'الاذکار مجموعه‌ای جامع از دعاها و اذکار اسلامی از قرآن و سنت است که امام نووی آن را تألیف کرده. این کتاب راهنمای عملی برای ذکر خدا در همه حالات است.' },
-    { id: 11, title: 'تفسیر الجلالین',                  author: 'جلال الدین المحلی و السیوطی', category: 'تفسیر',     year: 1505, isbn: '978-964-101-011-0', status: 'available', copies: 3, available: 2, rating: 4, pages: 560,  publisher: 'دار الفکر',          description: 'تفسیر الجلالین یکی از مشهورترین تفاسیر مختصر قرآن کریم است که توسط دو عالم بزرگ به نام جلال‌الدین نوشته شده. این کتاب در یک جلد کل قرآن را تفسیر می‌کند.' },
-    { id: 12, title: 'شرح ثلاثة الأصول',               author: 'شیخ محمد بن صالح العثیمین',  category: 'عقیده',     year: 1990, isbn: '978-964-101-012-7', status: 'available', copies: 5, available: 5, rating: 5, pages: 180,  publisher: 'مکتبه الاسلامیه',    description: 'شرح ثلاثة الأصول توضیح رساله معروف شیخ محمد بن عبدالوهاب است. این کتاب پایه‌های عقیده اسلامی (معرفت خدا، دین و پیامبر) را به زبانی ساده بیان می‌کند.' },
-    { id: 13, title: 'بلوغ المرام',                     author: 'ابن حجر العسقلانی',           category: 'فقه',       year: 1400, isbn: '978-964-101-013-4', status: 'borrowed',  copies: 4, available: 0, rating: 4, pages: 420,  publisher: 'دار القبله',         description: 'بلوغ المرام مجموعه احادیث فقهی است که ابن حجر عسقلانی از کتب صحیح گردآوری کرده. این کتاب مرجع اصلی علمای فقه در استنباط احکام شرعی است.' },
-    { id: 14, title: 'الأربعون النوویه',                author: 'امام محیی الدین النووی',      category: 'حدیث',      year: 1275, isbn: '978-964-101-014-1', status: 'available', copies: 8, available: 6, rating: 5, pages: 80,   publisher: 'دار السلام',          description: 'اربعین نووی مجموعه ۴۲ حدیث مهم و جامع نبوی است که هر مسلمانی باید بداند. این کتاب کوچک یکی از پرتیراژترین کتب اسلامی در جهان است.' },
-    { id: 15, title: 'الحلال والحرام في الإسلام',       author: 'دکتر یوسف القرضاوی',         category: 'فقه',       year: 1960, isbn: '978-964-101-015-8', status: 'reserved',  copies: 3, available: 1, rating: 4, pages: 360,  publisher: 'مکتبه وهبه',         description: 'حلال و حرام در اسلام کتابی جامع در فقه معاصر است که دکتر قرضاوی در آن احکام روزمره زندگی مسلمانان را از منابع اصیل اسلامی بیان کرده است.' },
+    { id: 1,  title: 'صحیح البخاری',                    author: 'امام محمد بن اسماعیل البخاری', category: 'عقیده و منهج',      year: 846,  isbn: '978-964-101-001-1', status: 'available', copies: 5, available: 3, rating: 5, pages: 1200, publisher: 'دار الفکر',          description: 'صحیح البخاری معتبرترین مجموعه احادیث نبوی پس از قرآن کریم است. امام بخاری بیش از ۶۰۰ هزار حدیث را بررسی کرد و ۷۳۹۷ حدیث صحیح را در این مجموعه گردآوری نمود.' },
+    { id: 2,  title: 'صحیح مسلم',                       author: 'امام مسلم بن الحجاج',         category: 'عقیده و منهج',      year: 875,  isbn: '978-964-101-002-8', status: 'available', copies: 4, available: 2, rating: 5, pages: 1050, publisher: 'دار الفکر',          description: 'صحیح مسلم دومین کتاب معتبر حدیثی در نزد اهل سنت است. امام مسلم این کتاب را در ۵۴ سال عمر خود تألیف کرد و شامل ۷۴۷۰ حدیث صحیح می‌باشد.' },
+    { id: 3,  title: 'تفسیر ابن کثیر',                  author: 'ابوالفداء اسماعیل ابن کثیر',  category: 'کتاب‌های گوناگون', year: 1370, isbn: '978-964-101-003-5', status: 'borrowed',  copies: 3, available: 0, rating: 5, pages: 1800, publisher: 'دار الکتب العلمیه', description: 'تفسیر ابن کثیر یکی از مهم‌ترین تفاسیر قرآن کریم به روش تفسیر قرآن به قرآن و حدیث است. این کتاب در چهار جلد نوشته شده و مرجع اصلی علمای اهل سنت به شمار می‌رود.' },
+    { id: 4,  title: 'ریاض الصالحین',                   author: 'امام محیی الدین النووی',      category: 'کتاب‌های گوناگون', year: 1277, isbn: '978-964-101-004-2', status: 'available', copies: 6, available: 4, rating: 5, pages: 560,  publisher: 'مکتبه المعارف',      description: 'ریاض الصالحین مجموعه‌ای از احادیث نبوی در موضوعات اخلاقی و عبادی است. این کتاب یکی از پرخواننده‌ترین کتب اسلامی در سراسر جهان محسوب می‌شود.' },
+    { id: 5,  title: 'فتح الباری شرح صحیح البخاری',     author: 'ابن حجر العسقلانی',           category: 'عقیده و منهج',      year: 1430, isbn: '978-964-101-005-9', status: 'available', copies: 2, available: 2, rating: 5, pages: 3500, publisher: 'دار المعرفه',        description: 'فتح الباری بزرگترین و معتبرترین شرح صحیح البخاری است. این اثر علمی عظیم توسط حافظ ابن حجر عسقلانی در ۱۳ جلد نوشته شده و مرجع اول محدثان است.' },
+    { id: 6,  title: 'العقیدة الواسطیه',                author: 'شیخ الاسلام ابن تیمیه',       category: 'عقیده و منهج',      year: 1300, isbn: '978-964-101-006-6', status: 'reserved',  copies: 3, available: 1, rating: 5, pages: 120,  publisher: 'مکتبه السنه',        description: 'العقیدة الواسطیه رساله‌ای کوتاه اما بسیار مهم در بیان عقیده اهل سنت و الجماعت است که توسط شیخ الاسلام ابن تیمیه نوشته شده.' },
+    { id: 7,  title: 'زاد المعاد',                      author: 'ابن قیم الجوزیه',             category: 'جهاد و استشهاد',    year: 1350, isbn: '978-964-101-007-3', status: 'available', copies: 3, available: 2, rating: 5, pages: 800,  publisher: 'مؤسسه الرساله',      description: 'زاد المعاد کتابی جامع در سیره نبوی، احکام عبادات، و طب نبوی است. این اثر چندوجهی ابن قیم در پنج جلد نوشته شده و بینشی عمیق از زندگی پیامبر اکرم ارائه می‌دهد.' },
+    { id: 8,  title: 'الرحیق المختوم',                  author: 'صفی الرحمن المبارکفوری',      category: 'تاریخ',             year: 1976, isbn: '978-964-101-008-0', status: 'available', copies: 4, available: 3, rating: 5, pages: 480,  publisher: 'دار الوفاء',         description: 'الرحیق المختوم برنده جایزه اول مسابقه بین‌المللی سیره نبوی رابطه جهان اسلام بود. این کتاب کامل‌ترین و خواندنی‌ترین زندگینامه پیامبر اکرم به شمار می‌رود.' },
+    { id: 9,  title: 'مختصر صحیح البخاری',              author: 'محمد فؤاد عبدالباقی',         category: 'عقیده و منهج',      year: 1950, isbn: '978-964-101-009-7', status: 'borrowed',  copies: 5, available: 0, rating: 4, pages: 680,  publisher: 'دار الفکر',          description: 'مختصر صحیح البخاری خلاصه‌ای از صحیح البخاری است که احادیث مکرر حذف شده و فقط ۲۲۳۰ حدیث منحصربه‌فرد باقی مانده است.' },
+    { id: 10, title: 'الأذکار',                         author: 'امام محیی الدین النووی',      category: 'کتاب‌های گوناگون', year: 1280, isbn: '978-964-101-010-3', status: 'available', copies: 4, available: 3, rating: 4, pages: 340,  publisher: 'دار المنهاج',        description: 'الاذکار مجموعه‌ای جامع از دعاها و اذکار اسلامی از قرآن و سنت است که امام نووی آن را تألیف کرده. این کتاب راهنمای عملی برای ذکر خدا در همه حالات است.' },
+    { id: 11, title: 'تفسیر الجلالین',                  author: 'جلال الدین المحلی و السیوطی', category: 'کتاب‌های گوناگون', year: 1505, isbn: '978-964-101-011-0', status: 'available', copies: 3, available: 2, rating: 4, pages: 560,  publisher: 'دار الفکر',          description: 'تفسیر الجلالین یکی از مشهورترین تفاسیر مختصر قرآن کریم است که توسط دو عالم بزرگ به نام جلال‌الدین نوشته شده. این کتاب در یک جلد کل قرآن را تفسیر می‌کند.' },
+    { id: 12, title: 'شرح ثلاثة الأصول',               author: 'شیخ محمد بن صالح العثیمین',  category: 'عقیده و منهج',      year: 1990, isbn: '978-964-101-012-7', status: 'available', copies: 5, available: 5, rating: 5, pages: 180,  publisher: 'مکتبه الاسلامیه',    description: 'شرح ثلاثة الأصول توضیح رساله معروف شیخ محمد بن عبدالوهاب است. این کتاب پایه‌های عقیده اسلامی (معرفت خدا، دین و پیامبر) را به زبانی ساده بیان می‌کند.' },
+    { id: 13, title: 'بلوغ المرام',                     author: 'ابن حجر العسقلانی',           category: 'مقاله‌ها',          year: 1400, isbn: '978-964-101-013-4', status: 'borrowed',  copies: 4, available: 0, rating: 4, pages: 420,  publisher: 'دار القبله',         description: 'بلوغ المرام مجموعه احادیث فقهی است که ابن حجر عسقلانی از کتب صحیح گردآوری کرده. این کتاب مرجع اصلی علمای فقه در استنباط احکام شرعی است.' },
+    { id: 14, title: 'الأربعون النوویه',                author: 'امام محیی الدین النووی',      category: 'سیاست',             year: 1275, isbn: '978-964-101-014-1', status: 'available', copies: 8, available: 6, rating: 5, pages: 80,   publisher: 'دار السلام',          description: 'اربعین نووی مجموعه ۴۲ حدیث مهم و جامع نبوی است که هر مسلمانی باید بداند. این کتاب کوچک یکی از پرتیراژترین کتب اسلامی در جهان است.' },
+    { id: 15, title: 'الحلال والحرام في الإسلام',       author: 'دکتر یوسف القرضاوی',         category: 'جهاد و استشهاد',    year: 1960, isbn: '978-964-101-015-8', status: 'reserved',  copies: 3, available: 1, rating: 4, pages: 360,  publisher: 'مکتبه وهبه',         description: 'حلال و حرام در اسلام کتابی جامع در فقه معاصر است که دکتر قرضاوی در آن احکام روزمره زندگی مسلمانان را از منابع اصیل اسلامی بیان کرده است.' },
 ];
 
-const CATEGORIES = ['همه', 'حدیث', 'تفسیر', 'فقه', 'عقیده', 'سیره', 'اخلاق'];
+const CATEGORIES = ['همه', 'عقیده و منهج', 'جهاد و استشهاد', 'مقاله‌ها', 'سیاست', 'تاریخ', 'کتاب‌های گوناگون'];
 
 const STATUS_CONFIG: Record<BookStatus, { label: string; icon: React.ElementType; className: string }> = {
     available: { label: 'موجود',          icon: CheckCircle2, className: 'bg-emerald-100 text-emerald-700 border border-emerald-200' },
@@ -142,6 +151,14 @@ export default function LibraryIndex() {
     const [category, setCategory] = useState('همه');
     const [statusFilter, setStatusFilter] = useState('همه');
     const [selected, setSelected] = useState<Book | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('category');
+        if (slug && CATEGORY_SLUG_MAP[slug]) {
+            setCategory(CATEGORY_SLUG_MAP[slug]);
+        }
+    }, []);
 
     const filtered = MOCK_BOOKS.filter((book) => {
         const matchSearch =

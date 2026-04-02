@@ -1,8 +1,16 @@
-import { useState } from 'react';
-import { PlayCircle, Headphones, BookMarked, Clock, User, ChevronLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BookMarked, Clock, User, ChevronLeft } from 'lucide-react';
 
 /* ── Types ───────────────────────────────────────────────── */
-type TabKey = 'videos' | 'audio' | 'manuscripts';
+type Category = 'همه' | 'توحید و عقیده' | 'جهاد و استشهاد' | 'قضایای سیاسی' | 'احکام شرعی عام' | 'بیانیه‌ها';
+
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+    tawheed: 'توحید و عقیده',
+    jihad: 'جهاد و استشهاد',
+    political: 'قضایای سیاسی',
+    rulings: 'احکام شرعی عام',
+    statements: 'بیانیه‌ها',
+};
 
 interface FatwaItem {
     id: number;
@@ -10,55 +18,49 @@ interface FatwaItem {
     description: string;
     author: string;
     date: string;
-    duration?: string;
-    pages?: string;
+    category: Category;
     gradient: string;
 }
 
 /* ── Mock data ───────────────────────────────────────────── */
-const VIDEOS: FatwaItem[] = [
-    { id: 1, title: 'حکم نماز جماعت در مسجد', description: 'بیان احکام و فضایل نماز جماعت و شرایط وجوب آن از دیدگاه فقهای اهل سنت.', author: 'شیخ عبدالله نوری', date: '۹ حمل ۱۴۰۴', duration: '۲۵ دقیقه', gradient: 'from-emerald-900 to-teal-800' },
-    { id: 2, title: 'مسائل زکات فطر', description: 'بررسی احکام تفصیلی زکات فطر، مقدار، وقت و مستحقین آن با دلایل از قرآن و سنت.', author: 'مفتی احمد رحمانی', date: '۸ حمل ۱۴۰۴', duration: '۳۲ دقیقه', gradient: 'from-blue-900 to-indigo-800' },
-    { id: 3, title: 'حکم روزه مسافر', description: 'تفصیل احکام روزه در سفر و شرایطی که افطار جایز یا واجب می‌شود.', author: 'شیخ عبدالله نوری', date: '۷ حمل ۱۴۰۴', duration: '۱۸ دقیقه', gradient: 'from-violet-900 to-purple-800' },
-    { id: 4, title: 'مسائل نکاح و طلاق', description: 'شرح مسائل مهم در باب نکاح، شرایط صحت آن و احکام طلاق از نظر فقه حنفی.', author: 'مفتی محمد حسینی', date: '۶ حمل ۱۴۰۴', duration: '۴۵ دقیقه', gradient: 'from-rose-900 to-red-800' },
-    { id: 5, title: 'حکم بیمه در اسلام', description: 'بررسی فقهی انواع بیمه، حکم شرعی آن‌ها و جایگزین‌های اسلامی مشروع.', author: 'مفتی احمد رحمانی', date: '۵ حمل ۱۴۰۴', duration: '۳۸ دقیقه', gradient: 'from-amber-900 to-orange-800' },
-    { id: 6, title: 'احکام تجارت آنلاین', description: 'فتوا در مورد خرید و فروش آنلاین، شرایط صحت معامله و موارد حرام در تجارت اینترنتی.', author: 'مفتی محمد حسینی', date: '۴ حمل ۱۴۰۴', duration: '۲۹ دقیقه', gradient: 'from-teal-900 to-cyan-800' },
+const FATWA_ITEMS: FatwaItem[] = [
+    { id: 1, title: 'حکم نماز جماعت در مسجد', description: 'بیان احکام و فضایل نماز جماعت و شرایط وجوب آن از دیدگاه فقهای اهل سنت.', author: 'شیخ عبدالله نوری', date: '۹ حمل ۱۴۰۴', category: 'توحید و عقیده', gradient: 'from-emerald-900 to-teal-800' },
+    { id: 2, title: 'مسائل زکات فطر', description: 'بررسی احکام تفصیلی زکات فطر، مقدار، وقت و مستحقین آن با دلایل از قرآن و سنت.', author: 'مفتی احمد رحمانی', date: '۸ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-blue-900 to-indigo-800' },
+    { id: 3, title: 'حکم روزه مسافر', description: 'تفصیل احکام روزه در سفر و شرایطی که افطار جایز یا واجب می‌شود.', author: 'شیخ عبدالله نوری', date: '۷ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-violet-900 to-purple-800' },
+    { id: 4, title: 'مسائل نکاح و طلاق', description: 'شرح مسائل مهم در باب نکاح، شرایط صحت آن و احکام طلاق از نظر فقه حنفی.', author: 'مفتی محمد حسینی', date: '۶ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-rose-900 to-red-800' },
+    { id: 5, title: 'بیانیه درباره وضعیت مسلمانان', description: 'بیانیه رسمی دارالإفتاء درباره وضعیت مسلمانان و مسئولیت‌های شرعی آنان.', author: 'دارالإفتاء', date: '۵ حمل ۱۴۰۴', category: 'بیانیه‌ها', gradient: 'from-amber-900 to-orange-800' },
+    { id: 6, title: 'احکام تجارت آنلاین', description: 'فتوا در مورد خرید و فروش آنلاین، شرایط صحت معامله و موارد حرام در تجارت اینترنتی.', author: 'مفتی محمد حسینی', date: '۴ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-teal-900 to-cyan-800' },
+    { id: 7, title: 'حکم جهاد در عصر حاضر', description: 'بررسی احکام جهاد و شرایط آن در عصر حاضر از دیدگاه فقهای معاصر.', author: 'مفتی احمد رحمانی', date: '۳ حمل ۱۴۰۴', category: 'جهاد و استشهاد', gradient: 'from-red-900 to-rose-800' },
+    { id: 8, title: 'توحید و اقسام آن', description: 'شرح اقسام توحید (ربوبیت، الوهیت، اسماء و صفات) با ادله از قرآن و سنت.', author: 'شیخ عبدالله نوری', date: '۲ حمل ۱۴۰۴', category: 'توحید و عقیده', gradient: 'from-indigo-900 to-blue-800' },
+    { id: 9, title: 'موضع اسلام در مسائل سیاسی معاصر', description: 'تحلیل مسائل سیاسی معاصر از منظر شریعت اسلامی و موضع‌گیری فقهی.', author: 'دکتر محمد حسینی', date: '۱ حمل ۱۴۰۴', category: 'قضایای سیاسی', gradient: 'from-slate-900 to-gray-800' },
+    { id: 10, title: 'فضائل شهادت در اسلام', description: 'بررسی آیات و احادیث مربوط به فضائل شهادت و مقام شهید در اسلام.', author: 'مفتی احمد رحمانی', date: '۲۹ حوت ۱۴۰۳', category: 'جهاد و استشهاد', gradient: 'from-green-900 to-emerald-800' },
+    { id: 11, title: 'بیانیه درباره روز عرفه', description: 'بیانیه دارالإفتاء درباره فضایل روز عرفه و اعمال مستحب آن.', author: 'دارالإفتاء', date: '۲۸ حوت ۱۴۰۳', category: 'بیانیه‌ها', gradient: 'from-amber-900 to-yellow-800' },
+    { id: 12, title: 'قضایای سیاسی جهان اسلام', description: 'بررسی مهم‌ترین قضایای سیاسی جهان اسلام و موضع شرعی مسلمانان.', author: 'دکتر محمد حسینی', date: '۲۷ حوت ۱۴۰۳', category: 'قضایای سیاسی', gradient: 'from-cyan-900 to-teal-800' },
 ];
 
-const AUDIO: FatwaItem[] = [
-    { id: 1, title: 'احکام طهارت و وضو', description: 'شرح مفصل احکام طهارت، انواع نجاسات و طریقه صحیح وضو با ذکر ادله.', author: 'مفتی احمد رحمانی', date: '۹ حمل ۱۴۰۴', duration: '۴۰ دقیقه', gradient: 'from-green-900 to-emerald-800' },
-    { id: 2, title: 'حکم موسیقی در اسلام', description: 'بررسی جامع ادله تحریم موسیقی و انواع مجاز و غیرمجاز آن از دیدگاه فقها.', author: 'شیخ زهرا نوری', date: '۸ حمل ۱۴۰۴', duration: '۵۵ دقیقه', gradient: 'from-indigo-900 to-blue-800' },
-    { id: 3, title: 'مسائل غسل و جنابت', description: 'احکام تفصیلی غسل، موجبات آن و طریقه صحیح اغتسال بر اساس سنت نبوی.', author: 'مفتی محمد حسینی', date: '۷ حمل ۱۴۰۴', duration: '۳۵ دقیقه', gradient: 'from-pink-900 to-rose-800' },
-    { id: 4, title: 'حکم تصویر و عکاسی', description: 'فتوا در مورد تصویر از انسان و حیوانات، عکاسی، فیلمبرداری و استثناهای مجاز.', author: 'مفتی احمد رحمانی', date: '۶ حمل ۱۴۰۴', duration: '۴۲ دقیقه', gradient: 'from-slate-900 to-gray-800' },
-    { id: 5, title: 'احکام ذبح و قربانی', description: 'شرایط صحت ذبح، حیواناتی که ذبح آن‌ها جایز است و احکام قربانی در عید الاضحی.', author: 'شیخ عبدالله نوری', date: '۵ حمل ۱۴۰۴', duration: '۳۰ دقیقه', gradient: 'from-cyan-900 to-teal-800' },
-    { id: 6, title: 'حکم تبرج و حجاب', description: 'بیان وجوب حجاب شرعی برای زنان مسلمان، حدود و شروط آن با ادله قرآنی و حدیثی.', author: 'شیخ زهرا نوری', date: '۴ حمل ۱۴۰۴', duration: '۴۸ دقیقه', gradient: 'from-amber-900 to-yellow-800' },
-];
+const CATEGORIES: Category[] = ['همه', 'توحید و عقیده', 'جهاد و استشهاد', 'قضایای سیاسی', 'احکام شرعی عام', 'بیانیه‌ها'];
 
-const MANUSCRIPTS: FatwaItem[] = [
-    { id: 1, title: 'مجموعه فتاوای ابن تیمیه', description: 'نسخه خطی کمیاب از مجموعه فتاوای شیخ الاسلام ابن تیمیه، کتابت شده در قرن هشتم هجری.', author: 'ابن تیمیه', date: '۹ حمل ۱۴۰۴', pages: '۳۸۰ صفحه', gradient: 'from-amber-900 to-stone-800' },
-    { id: 2, title: 'الفقه الاکبر — ابوحنیفه', description: 'نسخه دست‌نویس از کتاب الفقه الاکبر امام ابوحنیفه نعمان بن ثابت رحمه الله.', author: 'امام ابوحنیفه', date: '۸ حمل ۱۴۰۴', pages: '۱۲۰ صفحه', gradient: 'from-stone-900 to-neutral-800' },
-    { id: 3, title: 'رسالة في أحكام الجهاد', description: 'رساله فقهی نادر در احکام جهاد، نوشته شده توسط یکی از علمای قرن دهم هجری.', author: 'مجهول', date: '۷ حمل ۱۴۰۴', pages: '۹۵ صفحه', gradient: 'from-neutral-900 to-zinc-800' },
-    { id: 4, title: 'شرح مختصر خلیل', description: 'نسخه خطی از شرح مختصر خلیل، از مهم‌ترین متون فقهی مذهب مالکی.', author: 'خلیل بن اسحاق', date: '۶ حمل ۱۴۰۴', pages: '۵۶۰ صفحه', gradient: 'from-zinc-900 to-slate-800' },
-    { id: 5, title: 'الأم — امام شافعی', description: 'نسخه قدیمی از کتاب الأم امام شافعی، از جامع‌ترین کتب فقه شافعی.', author: 'امام شافعی', date: '۵ حمل ۱۴۰۴', pages: '۸۲۰ صفحه', gradient: 'from-brown-900 to-amber-900' },
-    { id: 6, title: 'المغنی — ابن قدامه', description: 'نسخه دست‌نویس از کتاب المغنی که یکی از مراجع اصلی فقه حنبلی به شمار می‌رود.', author: 'ابن قدامه', date: '۴ حمل ۱۴۰۴', pages: '۴۴۰ صفحه', gradient: 'from-orange-900 to-amber-800' },
-];
-
-const TABS: { key: TabKey; label: string; icon: typeof PlayCircle; data: FatwaItem[] }[] = [
-    { key: 'videos',      label: 'ویدیوها',        icon: PlayCircle,  data: VIDEOS },
-    { key: 'audio',       label: 'صوت‌ها',         icon: Headphones,  data: AUDIO },
-    { key: 'manuscripts', label: 'نسخه‌های خطی',  icon: BookMarked,  data: MANUSCRIPTS },
-];
+const CAT_COLORS: Record<string, string> = {
+    'توحید و عقیده':  'bg-emerald-100 text-emerald-700',
+    'جهاد و استشهاد':  'bg-red-100     text-red-700',
+    'قضایای سیاسی':   'bg-violet-100  text-violet-700',
+    'احکام شرعی عام': 'bg-blue-100    text-blue-700',
+    'بیانیه‌ها':       'bg-amber-100   text-amber-700',
+};
 
 /* ── Card ────────────────────────────────────────────────── */
-function FatwaCard({ item, type }: { item: FatwaItem; type: TabKey }) {
+function FatwaCard({ item }: { item: FatwaItem }) {
+    const catClass = CAT_COLORS[item.category] ?? 'bg-gray-100 text-gray-700';
+
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Thumbnail */}
             <div className={`h-36 bg-gradient-to-br ${item.gradient} relative flex items-center justify-center`}>
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                {type === 'videos'      && <PlayCircle  className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />}
-                {type === 'audio'       && <Headphones  className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />}
-                {type === 'manuscripts' && <BookMarked  className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />}
+                <BookMarked className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />
+                <span className={`absolute top-3 end-3 text-[11px] font-bold px-2 py-0.5 rounded-full ${catClass}`}>
+                    {item.category}
+                </span>
             </div>
 
             {/* Body */}
@@ -75,14 +77,14 @@ function FatwaCard({ item, type }: { item: FatwaItem; type: TabKey }) {
                     </span>
                     <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {item.duration ?? item.pages}
+                        {item.date}
                     </span>
                 </div>
             </div>
 
             {/* CTA */}
             <a href="#" className="flex items-center justify-between px-4 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors border-t border-gray-100">
-                <span>{type === 'manuscripts' ? 'مشاهده نسخه' : type === 'audio' ? 'گوش دادن' : 'تماشا'}</span>
+                <span>مشاهده</span>
                 <ChevronLeft className="w-3.5 h-3.5" />
             </a>
         </div>
@@ -91,35 +93,61 @@ function FatwaCard({ item, type }: { item: FatwaItem; type: TabKey }) {
 
 /* ── Main export ─────────────────────────────────────────── */
 export function DarUlIftaList() {
-    const [activeTab, setActiveTab] = useState<TabKey>('videos');
-    const current = TABS.find((t) => t.key === activeTab)!;
+    const [active, setActive] = useState<Category>('همه');
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('category');
+        if (slug && CATEGORY_SLUG_MAP[slug]) {
+            setActive(CATEGORY_SLUG_MAP[slug] as Category);
+        }
+    }, []);
+
+    const filtered = active === 'همه' ? FATWA_ITEMS : FATWA_ITEMS.filter((item) => item.category === active);
 
     return (
         <div>
-            {/* Tabs */}
-            <div className="flex gap-1 mb-6 bg-white rounded-xl border border-gray-100 shadow-sm p-1.5">
-                {TABS.map(({ key, label, icon: Icon }) => (
+            {/* Stats bar */}
+            <div className="flex items-center gap-3 mb-5 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                <div className="w-10 h-10 rounded-lg bg-[#27ae60]/10 flex items-center justify-center">
+                    <BookMarked className="w-5 h-5 text-[#27ae60]" />
+                </div>
+                <div>
+                    <p className="text-[13px] font-bold text-gray-800">{FATWA_ITEMS.length} فتوا و بیانیه</p>
+                    <p className="text-[11px] text-gray-400">در {CATEGORIES.length - 1} دسته‌بندی</p>
+                </div>
+            </div>
+
+            {/* Category filter */}
+            <div className="flex flex-wrap gap-2 mb-6">
+                {CATEGORIES.map((cat) => (
                     <button
-                        key={key}
-                        onClick={() => setActiveTab(key)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-bold transition-all ${
-                            activeTab === key
-                                ? 'bg-[#27ae60] text-white shadow-sm'
-                                : 'text-gray-500 hover:text-[#27ae60]'
+                        key={cat}
+                        onClick={() => setActive(cat)}
+                        className={`text-[12px] px-3 py-1.5 rounded-full border font-medium transition-colors ${
+                            cat === active
+                                ? 'bg-[#27ae60] border-[#27ae60] text-white'
+                                : 'border-gray-200 text-gray-600 hover:border-[#27ae60] hover:text-[#27ae60]'
                         }`}
                     >
-                        <Icon className="w-4 h-4" />
-                        {label}
+                        {cat}
                     </button>
                 ))}
             </div>
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {current.data.map((item) => (
-                    <FatwaCard key={item.id} item={item} type={activeTab} />
+                {filtered.map((item) => (
+                    <FatwaCard key={item.id} item={item} />
                 ))}
             </div>
+
+            {filtered.length === 0 && (
+                <div className="text-center py-16 text-gray-400">
+                    <BookMarked className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p>هیچ موردی یافت نشد.</p>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TopBar }     from '@/components/home/top-bar';
 import { MainNav }    from '@/components/home/main-nav';
 import { NewsTicker } from '@/components/home/news-ticker';
@@ -22,25 +22,34 @@ interface VideoItem {
     description: string;
 }
 
+const CATEGORY_SLUG_MAP: Record<string, string> = {
+    aqeedah: 'عقیده و منهج',
+    advice: 'پند و موعظه',
+    jihad: 'جهاد و استشهاد',
+    politics: 'سیاست',
+    analysis: 'تحلیل و سخن روز',
+    history: 'تاریخ',
+};
+
 const MOCK_VIDEOS: VideoItem[] = [
-    { id: 1,  title: 'تفسیر سوره فاتحه',                   instructor: 'شیخ عبدالله نوری',   category: 'تفسیر',        duration: '1:12:00', views: 4200, year: 2024, status: 'available',   gradient: 'from-emerald-800 to-teal-700',    description: 'شرح و تفسیر جامع سوره مبارکه فاتحه با استناد به کتب معتبر تفسیری' },
-    { id: 2,  title: 'اصول عقیده اهل سنت',                 instructor: 'مفتی احمد رحمانی',   category: 'عقیده',        duration: '1:45:30', views: 3800, year: 2024, status: 'available',   gradient: 'from-indigo-800 to-blue-700',     description: 'شرح ارکان ایمان و اصول عقیده اهل سنت و الجماعت' },
-    { id: 3,  title: 'احکام نماز — فقه حنفی',              instructor: 'مفتی احمد رحمانی',   category: 'فقه',          duration: '2:10:00', views: 5100, year: 2023, status: 'available',   gradient: 'from-violet-800 to-purple-700',   description: 'شرح احکام نماز از دیدگاه فقه حنفی با دلایل فقهی' },
-    { id: 4,  title: 'سیره نبوی — مکه و مدینه',            instructor: 'دکتر محمد حسینی',    category: 'سیره',         duration: '2:30:00', views: 6200, year: 2024, status: 'available',   gradient: 'from-amber-800 to-orange-700',    description: 'بررسی زندگی پیامبر اکرم در دوران مکی و مدنی' },
-    { id: 5,  title: 'علم حدیث برای مبتدیان',              instructor: 'شیخ عبدالله نوری',   category: 'حدیث',         duration: '1:55:00', views: 2900, year: 2023, status: 'available',   gradient: 'from-cyan-800 to-teal-700',       description: 'آشنایی با اصول علم حدیث، انواع حدیث و اصطلاحات محدثان' },
-    { id: 6,  title: 'شرح اربعین نووی',                    instructor: 'مفتی احمد رحمانی',   category: 'حدیث',         duration: '3:20:00', views: 7800, year: 2024, status: 'available',   gradient: 'from-green-800 to-emerald-700',   description: 'شرح کامل چهل حدیث امام نووی، پایه‌های اسلام' },
-    { id: 7,  title: 'آموزش قرائت قرآن — روایت حفص',       instructor: 'قاری محمد امین',     category: 'قرآن',         duration: '4:00:00', views: 9500, year: 2023, status: 'available',   gradient: 'from-yellow-800 to-amber-700',    description: 'آموزش گام‌به‌گام تلاوت صحیح قرآن کریم با روایت حفص از عاصم' },
-    { id: 8,  title: 'تاریخ اسلام در خراسان',              instructor: 'دکتر محمد حسینی',    category: 'تاریخ',        duration: '1:40:00', views: 3400, year: 2023, status: 'available',   gradient: 'from-stone-800 to-zinc-700',      description: 'مروری بر تاریخ ورود و گسترش اسلام در خراسان بزرگ' },
-    { id: 9,  title: 'زکات و احکام آن',                    instructor: 'مفتی احمد رحمانی',   category: 'فقه',          duration: '1:25:00', views: 2600, year: 2024, status: 'available',   gradient: 'from-lime-800 to-green-700',      description: 'احکام فقهی زکات، نصاب، مستحقان و روش محاسبه' },
-    { id: 10, title: 'اخلاق اسلامی در زندگی روزمره',       instructor: 'شیخ عبدالله نوری',   category: 'اخلاق',        duration: '1:10:00', views: 4700, year: 2024, status: 'available',   gradient: 'from-rose-800 to-pink-700',       description: 'کاربرد ارزش‌های اخلاق اسلامی در تعاملات روزانه' },
-    { id: 11, title: 'غزوات پیامبر اکرم',                  instructor: 'دکتر محمد حسینی',    category: 'سیره',         duration: '2:50:00', views: 3100, year: 2022, status: 'restricted', gradient: 'from-red-800 to-rose-700',        description: 'بررسی غزوات مهم پیامبر و درس‌های آن‌ها' },
-    { id: 12, title: 'تفسیر سوره بقره — بخش اول',          instructor: 'شیخ عبدالله نوری',   category: 'تفسیر',        duration: '3:45:00', views: 8200, year: 2023, status: 'available',   gradient: 'from-teal-800 to-cyan-700',       description: 'تفسیر دقیق آیات ابتدایی سوره بقره با نگاه تفسیری' },
-    { id: 13, title: 'فلسفه اسلامی و عقل',                 instructor: 'دکتر محمد حسینی',    category: 'عقیده',        duration: '2:00:00', views: 1800, year: 2022, status: 'archived',   gradient: 'from-slate-800 to-gray-700',      description: 'رابطه فلسفه اسلامی با عقل و وحی در تفکر اسلامی' },
-    { id: 14, title: 'آداب دعا و ذکر',                     instructor: 'شیخ عبدالله نوری',   category: 'اخلاق',        duration: '0:55:00', views: 5600, year: 2024, status: 'available',   gradient: 'from-blue-800 to-indigo-700',     description: 'آداب دعا، اوقات مستجاب الدعوه و اذکار مأثور' },
-    { id: 15, title: 'احکام روزه — رمضان کریم',            instructor: 'مفتی احمد رحمانی',   category: 'فقه',          duration: '1:30:00', views: 11000, year: 2024, status: 'available',  gradient: 'from-purple-800 to-violet-700',   description: 'احکام فقهی روزه رمضان، مفطرات، کفارات و قضا' },
+    { id: 1,  title: 'تفسیر سوره فاتحه',                   instructor: 'شیخ عبدالله نوری',   category: 'عقیده و منهج',      duration: '1:12:00', views: 4200, year: 2024, status: 'available',   gradient: 'from-emerald-800 to-teal-700',    description: 'شرح و تفسیر جامع سوره مبارکه فاتحه با استناد به کتب معتبر تفسیری' },
+    { id: 2,  title: 'اصول عقیده اهل سنت',                 instructor: 'مفتی احمد رحمانی',   category: 'عقیده و منهج',      duration: '1:45:30', views: 3800, year: 2024, status: 'available',   gradient: 'from-indigo-800 to-blue-700',     description: 'شرح ارکان ایمان و اصول عقیده اهل سنت و الجماعت' },
+    { id: 3,  title: 'احکام نماز — فقه حنفی',              instructor: 'مفتی احمد رحمانی',   category: 'پند و موعظه',       duration: '2:10:00', views: 5100, year: 2023, status: 'available',   gradient: 'from-violet-800 to-purple-700',   description: 'شرح احکام نماز از دیدگاه فقه حنفی با دلایل فقهی' },
+    { id: 4,  title: 'سیره نبوی — مکه و مدینه',            instructor: 'دکتر محمد حسینی',    category: 'تاریخ',             duration: '2:30:00', views: 6200, year: 2024, status: 'available',   gradient: 'from-amber-800 to-orange-700',    description: 'بررسی زندگی پیامبر اکرم در دوران مکی و مدنی' },
+    { id: 5,  title: 'علم حدیث برای مبتدیان',              instructor: 'شیخ عبدالله نوری',   category: 'عقیده و منهج',      duration: '1:55:00', views: 2900, year: 2023, status: 'available',   gradient: 'from-cyan-800 to-teal-700',       description: 'آشنایی با اصول علم حدیث، انواع حدیث و اصطلاحات محدثان' },
+    { id: 6,  title: 'شرح اربعین نووی',                    instructor: 'مفتی احمد رحمانی',   category: 'پند و موعظه',       duration: '3:20:00', views: 7800, year: 2024, status: 'available',   gradient: 'from-green-800 to-emerald-700',   description: 'شرح کامل چهل حدیث امام نووی، پایه‌های اسلام' },
+    { id: 7,  title: 'آموزش قرائت قرآن — روایت حفص',       instructor: 'قاری محمد امین',     category: 'عقیده و منهج',      duration: '4:00:00', views: 9500, year: 2023, status: 'available',   gradient: 'from-yellow-800 to-amber-700',    description: 'آموزش گام‌به‌گام تلاوت صحیح قرآن کریم با روایت حفص از عاصم' },
+    { id: 8,  title: 'تاریخ اسلام در خراسان',              instructor: 'دکتر محمد حسینی',    category: 'تاریخ',             duration: '1:40:00', views: 3400, year: 2023, status: 'available',   gradient: 'from-stone-800 to-zinc-700',      description: 'مروری بر تاریخ ورود و گسترش اسلام در خراسان بزرگ' },
+    { id: 9,  title: 'زکات و احکام آن',                    instructor: 'مفتی احمد رحمانی',   category: 'سیاست',             duration: '1:25:00', views: 2600, year: 2024, status: 'available',   gradient: 'from-lime-800 to-green-700',      description: 'احکام فقهی زکات، نصاب، مستحقان و روش محاسبه' },
+    { id: 10, title: 'اخلاق اسلامی در زندگی روزمره',       instructor: 'شیخ عبدالله نوری',   category: 'پند و موعظه',       duration: '1:10:00', views: 4700, year: 2024, status: 'available',   gradient: 'from-rose-800 to-pink-700',       description: 'کاربرد ارزش‌های اخلاق اسلامی در تعاملات روزانه' },
+    { id: 11, title: 'غزوات پیامبر اکرم',                  instructor: 'دکتر محمد حسینی',    category: 'جهاد و استشهاد',    duration: '2:50:00', views: 3100, year: 2022, status: 'restricted', gradient: 'from-red-800 to-rose-700',        description: 'بررسی غزوات مهم پیامبر و درس‌های آن‌ها' },
+    { id: 12, title: 'تفسیر سوره بقره — بخش اول',          instructor: 'شیخ عبدالله نوری',   category: 'عقیده و منهج',      duration: '3:45:00', views: 8200, year: 2023, status: 'available',   gradient: 'from-teal-800 to-cyan-700',       description: 'تفسیر دقیق آیات ابتدایی سوره بقره با نگاه تفسیری' },
+    { id: 13, title: 'فلسفه اسلامی و عقل',                 instructor: 'دکتر محمد حسینی',    category: 'تحلیل و سخن روز',   duration: '2:00:00', views: 1800, year: 2022, status: 'archived',   gradient: 'from-slate-800 to-gray-700',      description: 'رابطه فلسفه اسلامی با عقل و وحی در تفکر اسلامی' },
+    { id: 14, title: 'آداب دعا و ذکر',                     instructor: 'شیخ عبدالله نوری',   category: 'پند و موعظه',       duration: '0:55:00', views: 5600, year: 2024, status: 'available',   gradient: 'from-blue-800 to-indigo-700',     description: 'آداب دعا، اوقات مستجاب الدعوه و اذکار مأثور' },
+    { id: 15, title: 'احکام روزه — رمضان کریم',            instructor: 'مفتی احمد رحمانی',   category: 'جهاد و استشهاد',    duration: '1:30:00', views: 11000, year: 2024, status: 'available',  gradient: 'from-purple-800 to-violet-700',   description: 'احکام فقهی روزه رمضان، مفطرات، کفارات و قضا' },
 ];
 
-const CATEGORIES = ['همه', 'تفسیر', 'عقیده', 'فقه', 'سیره', 'حدیث', 'قرآن', 'تاریخ', 'اخلاق'];
+const CATEGORIES = ['همه', 'عقیده و منهج', 'پند و موعظه', 'جهاد و استشهاد', 'سیاست', 'تحلیل و سخن روز', 'تاریخ'];
 
 const STATUS_CONFIG: Record<VideoStatus, { label: string; className: string }> = {
     available:  { label: 'در دسترس', className: 'bg-emerald-100 text-emerald-700 border border-emerald-200' },
@@ -98,6 +107,14 @@ export default function VideosIndex() {
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('همه');
     const [statusFilter, setStatusFilter] = useState('همه');
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('category');
+        if (slug && CATEGORY_SLUG_MAP[slug]) {
+            setCategory(CATEGORY_SLUG_MAP[slug]);
+        }
+    }, []);
 
     const filtered = MOCK_VIDEOS.filter((v) => {
         const matchSearch = v.title.includes(search) || v.instructor.includes(search) || v.category.includes(search);
