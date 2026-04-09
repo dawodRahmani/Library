@@ -6,14 +6,19 @@ use App\Models\Audio;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AudioController extends Controller
 {
     /** Public page */
     public function index(Request $request): Response
     {
+        $locale = app()->getLocale();
+
         $query = Audio::with('category')
             ->where('is_active', true)
             ->orderByDesc('created_at');
@@ -24,21 +29,24 @@ class AudioController extends Controller
 
         $audios = $query->get()->map(fn ($a) => [
             'id'           => $a->id,
-            'title'        => $a->title['da'] ?? '',
-            'description'  => $a->description['da'] ?? '',
+            'title'        => $a->title[$locale] ?? $a->title['da'] ?? '',
+            'description'  => $a->description[$locale] ?? $a->description['da'] ?? '',
             'author'       => $a->author,
-            'category'     => $a->category->name['da'] ?? '',
+            'category'     => $a->category->name[$locale] ?? $a->category->name['da'] ?? '',
             'categorySlug' => $a->category->slug,
             'duration'     => $a->duration,
             'episodes'     => $a->episodes,
+            'audio_source' => $a->audio_source ?? 'link',
             'audio_url'    => $a->audio_url,
+            'has_file'     => (bool) $a->file_path,
+            'file_size'    => $a->file_size,
             'date'         => $a->created_at->format('Y-m-d'),
         ]);
 
         $categories = Category::where('type', 'audio')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn ($c) => ['slug' => $c->slug, 'name' => $c->name['da'] ?? '']);
+            ->map(fn ($c) => ['slug' => $c->slug, 'name' => $c->name[$locale] ?? $c->name['da'] ?? '']);
 
         return Inertia::render('audio', [
             'audios'     => $audios,
@@ -46,30 +54,69 @@ class AudioController extends Controller
         ]);
     }
 
+    /** Stream uploaded audio file inline */
+    public function stream(Audio $audio): StreamedResponse
+    {
+        if ($audio->audio_source !== 'upload' || ! $audio->file_path || ! Storage::disk('public')->exists($audio->file_path)) {
+            abort(404);
+        }
+
+        $path     = Storage::disk('public')->path($audio->file_path);
+        $mimeType = mime_content_type($path) ?: 'audio/mpeg';
+        $filename = basename($audio->file_path);
+
+        return response()->streamDownload(function () use ($path) {
+            readfile($path);
+        }, $filename, [
+            'Content-Type'        => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
+    }
+
+    /** Force-download uploaded audio */
+    public function download(Audio $audio): StreamedResponse
+    {
+        if ($audio->audio_source !== 'upload' || ! $audio->file_path || ! Storage::disk('public')->exists($audio->file_path)) {
+            abort(404);
+        }
+
+        $locale   = app()->getLocale();
+        $title    = $audio->title[$locale] ?? $audio->title['da'] ?? 'audio';
+        $ext      = pathinfo($audio->file_path, PATHINFO_EXTENSION);
+        $filename = Str::slug($title) . '.' . $ext;
+
+        return Storage::disk('public')->download($audio->file_path, $filename);
+    }
+
     /** Admin CRUD */
     public function adminIndex(): Response
     {
+        $locale = app()->getLocale();
+
         $audios = Audio::with('category')
             ->orderByDesc('created_at')
             ->get()
             ->map(fn ($a) => [
-                'id'          => $a->id,
-                'title'       => $a->title,
-                'description' => $a->description,
-                'author'      => $a->author,
-                'category_id' => $a->category_id,
-                'category'    => $a->category->name['da'] ?? '',
-                'duration'    => $a->duration,
-                'episodes'    => $a->episodes,
-                'audio_url'   => $a->audio_url,
-                'is_active'   => $a->is_active,
-                'created_at'  => $a->created_at->toDateTimeString(),
+                'id'           => $a->id,
+                'title'        => $a->title,
+                'description'  => $a->description,
+                'author'       => $a->author,
+                'category_id'  => $a->category_id,
+                'category'     => $a->category->name[$locale] ?? $a->category->name['da'] ?? '',
+                'duration'     => $a->duration,
+                'episodes'     => $a->episodes,
+                'audio_source' => $a->audio_source ?? 'link',
+                'audio_url'    => $a->audio_url,
+                'file_path'    => $a->file_path,
+                'file_size'    => $a->file_size,
+                'is_active'    => $a->is_active,
+                'created_at'   => $a->created_at->toDateTimeString(),
             ]);
 
         $categories = Category::where('type', 'audio')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name]);
+            ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'slug' => $c->slug, 'sort_order' => $c->sort_order]);
 
         return Inertia::render('admin/audios/index', [
             'audios'     => $audios,
@@ -79,46 +126,62 @@ class AudioController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'title'       => ['required', 'array'],
-            'title.da'    => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'array'],
-            'author'      => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'duration'    => ['nullable', 'string', 'max:20'],
-            'episodes'    => ['nullable', 'integer', 'min:0'],
-            'audio_url'   => ['nullable', 'string', 'max:500'],
-            'is_active'   => ['boolean'],
-        ]);
-
+        $data = $this->validateAndProcess($request);
         Audio::create($data);
-
         return back();
     }
 
     public function update(Request $request, Audio $audio): RedirectResponse
     {
-        $data = $request->validate([
-            'title'       => ['required', 'array'],
-            'title.da'    => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'array'],
-            'author'      => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'duration'    => ['nullable', 'string', 'max:20'],
-            'episodes'    => ['nullable', 'integer', 'min:0'],
-            'audio_url'   => ['nullable', 'string', 'max:500'],
-            'is_active'   => ['boolean'],
-        ]);
-
+        $data = $this->validateAndProcess($request, $audio);
         $audio->update($data);
-
         return back();
     }
 
     public function destroy(Audio $audio): RedirectResponse
     {
         $audio->update(['is_active' => false]);
-
         return back();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function validateAndProcess(Request $request, ?Audio $existing = null): array
+    {
+        $source = $request->input('audio_source', 'link');
+
+        $data = $request->validate([
+            'title'        => ['required', 'array'],
+            'title.da'     => ['required', 'string', 'max:255'],
+            'title.en'     => ['nullable', 'string', 'max:255'],
+            'title.ar'     => ['nullable', 'string', 'max:255'],
+            'description'  => ['nullable', 'array'],
+            'description.en' => ['nullable', 'string'],
+            'description.ar' => ['nullable', 'string'],
+            'author'       => ['required', 'string', 'max:255'],
+            'category_id'  => ['required', 'exists:categories,id'],
+            'duration'     => ['nullable', 'string', 'max:20'],
+            'episodes'     => ['nullable', 'integer', 'min:0'],
+            'audio_source' => ['required', 'string', 'in:link,upload'],
+            'audio_url'    => ['nullable', 'string', 'max:500'],
+            'is_active'    => ['boolean'],
+            'file'         => ['nullable', 'file', 'max:204800', 'mimes:mp3,m4a,ogg,wav,aac,flac,opus,wma'],
+        ]);
+
+        if ($source === 'upload' && $request->hasFile('file')) {
+            if ($existing?->file_path) {
+                Storage::disk('public')->delete($existing->file_path);
+            }
+            $file = $request->file('file');
+            $data['file_path'] = $file->store('audios', 'public');
+            $data['file_size'] = $file->getSize();
+            $data['audio_url'] = null;
+        } else {
+            $data['file_path'] = $existing?->file_path;
+            $data['file_size'] = $existing?->file_size;
+        }
+
+        unset($data['file']);
+        return $data;
     }
 }

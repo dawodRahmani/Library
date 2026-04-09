@@ -1,39 +1,41 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { CategoryPanel } from '@/components/admin/category-panel';
+import type { CategoryItem } from '@/components/admin/category-panel';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileText, X, Download, Tags, BookOpen } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 
-interface Category {
-    id: number;
-    name: { da: string; en?: string };
-}
+type Category = CategoryItem;
 
 interface Book {
     id: number;
-    title: { da: string; en?: string };
+    title: { da: string; en?: string; ar?: string };
     author: string;
     category_id: number;
     category: string;
     year: number | null;
     isbn: string | null;
-    status: string;
     copies: number;
     available: number;
     rating: number;
-    description: { da: string; en?: string } | null;
+    description: { da: string; en?: string; ar?: string } | null;
     pages: number | null;
     publisher: string | null;
     cover_image: string | null;
+    file_path: string | null;
+    file_type: string | null;
+    file_size: number | null;
+    file_url: string | null;
     is_active: boolean;
     created_at: string;
 }
@@ -44,28 +46,37 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const emptyForm = {
-    title: { da: '' },
+    title: { da: '', en: '', ar: '' },
     author: '',
     category_id: '',
     year: '',
     isbn: '',
-    status: 'available',
     copies: 1,
     available: 1,
     rating: 0,
-    description: { da: '' },
+    description: { da: '', en: '', ar: '' },
     pages: '',
     publisher: '',
+    file_url: '',
     is_active: true,
 };
 
+function formatBytes(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
 export default function BooksIndex({ books, categories }: { books: Book[]; categories: Category[] }) {
+    const [tab, setTab] = useState<'books' | 'categories'>('books');
     const [search, setSearch] = useState('');
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Book | null>(null);
     const [form, setForm] = useState(emptyForm);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const filtered = books.filter(
         (b) =>
@@ -77,6 +88,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
     function openCreate() {
         setEditing(null);
         setForm(emptyForm);
+        setSelectedFile(null);
         setErrors({});
         setOpen(true);
     }
@@ -84,41 +96,57 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
     function openEdit(book: Book) {
         setEditing(book);
         setForm({
-            title: book.title ?? { da: '' },
+            title: { da: book.title?.da ?? '', en: book.title?.en ?? '', ar: book.title?.ar ?? '' },
             author: book.author,
             category_id: String(book.category_id),
             year: book.year ? String(book.year) : '',
             isbn: book.isbn ?? '',
-            status: book.status,
             copies: book.copies,
             available: book.available,
             rating: book.rating,
-            description: book.description ?? { da: '' },
+            description: { da: book.description?.da ?? '', en: book.description?.en ?? '', ar: book.description?.ar ?? '' },
             pages: book.pages ? String(book.pages) : '',
             publisher: book.publisher ?? '',
+            file_url: book.file_url ?? '',
             is_active: book.is_active,
         });
+        setSelectedFile(null);
         setErrors({});
         setOpen(true);
     }
 
     function submit() {
         setProcessing(true);
-        const payload = {
+
+        const payload: Record<string, unknown> = {
             ...form,
             category_id: Number(form.category_id),
             year: form.year ? Number(form.year) : null,
             pages: form.pages ? Number(form.pages) : null,
         };
 
-        const url = editing ? `/admin/books/${editing.id}` : '/admin/books';
-        const method = editing ? 'put' : 'post';
+        if (selectedFile) {
+            payload.file = selectedFile;
+        }
 
-        router[method](url, payload, {
-            onSuccess: () => { setOpen(false); setErrors({}); },
-            onError: (errs) => setErrors(errs),
-            onFinish: () => setProcessing(false),
-        });
+        const url = editing ? `/admin/books/${editing.id}` : '/admin/books';
+
+        if (editing) {
+            // Laravel requires _method spoofing for PUT with FormData
+            router.post(url, { ...payload, _method: 'PUT' }, {
+                forceFormData: true,
+                onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); },
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        } else {
+            router.post(url, payload, {
+                forceFormData: !!selectedFile,
+                onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); },
+                onError: (errs) => setErrors(errs),
+                onFinish: () => setProcessing(false),
+            });
+        }
     }
 
     function destroy(book: Book) {
@@ -133,11 +161,32 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
             <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-bold">مدیریت کتاب‌ها</h1>
-                    <Button onClick={openCreate} size="sm">
-                        <Plus className="w-4 h-4 me-1" /> افزودن کتاب
-                    </Button>
+                    {tab === 'books' && (
+                        <Button onClick={openCreate} size="sm">
+                            <Plus className="w-4 h-4 me-1" /> افزودن کتاب
+                        </Button>
+                    )}
                 </div>
 
+                {/* Tabs */}
+                <div className="flex gap-1 border-b border-gray-200">
+                    <button
+                        onClick={() => setTab('books')}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === 'books' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <BookOpen className="w-4 h-4" /> کتاب‌ها ({books.length})
+                    </button>
+                    <button
+                        onClick={() => setTab('categories')}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === 'categories' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <Tags className="w-4 h-4" /> دسته‌بندی‌ها ({categories.length})
+                    </button>
+                </div>
+
+                {tab === 'categories' && <CategoryPanel categories={categories} type="book" />}
+
+                {tab === 'books' && <>
                 {/* Search */}
                 <div className="relative max-w-sm">
                     <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -158,7 +207,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                                 <TableHead>عنوان</TableHead>
                                 <TableHead>نویسنده</TableHead>
                                 <TableHead>دسته‌بندی</TableHead>
-                                <TableHead>وضعیت</TableHead>
+                                <TableHead>فایل</TableHead>
                                 <TableHead>نسخه‌ها</TableHead>
                                 <TableHead className="w-24">عملیات</TableHead>
                             </TableRow>
@@ -178,9 +227,26 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                                     <TableCell>{book.author}</TableCell>
                                     <TableCell><Badge variant="secondary">{book.category}</Badge></TableCell>
                                     <TableCell>
-                                        <Badge variant={book.status === 'available' ? 'default' : 'outline'}>
-                                            {book.status === 'available' ? 'موجود' : book.status === 'borrowed' ? 'امانت' : 'رزرو'}
-                                        </Badge>
+                                        {book.file_path ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 gap-1">
+                                                    <FileText className="w-3 h-3" />
+                                                    {book.file_type?.toUpperCase()}
+                                                </Badge>
+                                                {book.file_size && (
+                                                    <span className="text-xs text-muted-foreground">{formatBytes(book.file_size)}</span>
+                                                )}
+                                                <button
+                                                    onClick={() => { window.location.href = `/library/books/${book.id}/download`; }}
+                                                    className="text-muted-foreground hover:text-foreground"
+                                                    title="دانلود"
+                                                >
+                                                    <Download className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">—</span>
+                                        )}
                                     </TableCell>
                                     <TableCell>{book.available}/{book.copies}</TableCell>
                                     <TableCell>
@@ -198,6 +264,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                         </TableBody>
                     </Table>
                 </div>
+                </>}
             </div>
 
             {/* Create/Edit Dialog */}
@@ -210,8 +277,16 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                     <div className="space-y-4 py-2">
                         <div>
                             <Label>عنوان (دری) *</Label>
-                            <Input value={form.title.da} onChange={(e) => setForm({ ...form, title: { ...form.title, da: e.target.value } })} />
+                            <Input value={form.title.da} onChange={(e) => setForm({ ...form, title: { ...form.title, da: e.target.value } })} placeholder="دری" />
                             <InputError message={errors['title.da']} />
+                        </div>
+                        <div>
+                            <Label>عنوان (English)</Label>
+                            <Input value={form.title.en ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, en: e.target.value } })} placeholder="English" dir="ltr" />
+                        </div>
+                        <div>
+                            <Label>عنوان (العربية)</Label>
+                            <Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" />
                         </div>
                         <div>
                             <Label>نویسنده *</Label>
@@ -239,17 +314,6 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                                 <Label>شابک</Label>
                                 <Input value={form.isbn} onChange={(e) => setForm({ ...form, isbn: e.target.value })} />
                             </div>
-                        </div>
-                        <div>
-                            <Label>وضعیت</Label>
-                            <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="available">موجود</SelectItem>
-                                    <SelectItem value="borrowed">امانت داده شده</SelectItem>
-                                    <SelectItem value="reserved">رزرو شده</SelectItem>
-                                </SelectContent>
-                            </Select>
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                             <div>
@@ -282,6 +346,99 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                                 onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })}
                                 rows={3}
                             />
+                        </div>
+                        <div>
+                            <Label>توضیحات (English)</Label>
+                            <Textarea
+                                value={form.description.en ?? ''}
+                                onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })}
+                                rows={3}
+                                dir="ltr"
+                            />
+                        </div>
+                        <div>
+                            <Label>توضیحات (العربية)</Label>
+                            <Textarea
+                                value={form.description.ar ?? ''}
+                                onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })}
+                                rows={3}
+                            />
+                        </div>
+
+                        {/* External URL */}
+                        <div>
+                            <Label>لینک خارجی کتاب (PDF URL)</Label>
+                            <Input
+                                type="url"
+                                placeholder="https://example.com/book.pdf"
+                                value={form.file_url}
+                                onChange={(e) => setForm({ ...form, file_url: e.target.value })}
+                                className="mt-1"
+                                dir="ltr"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">اگر فایل آپلود نشده، می‌توانید لینک مستقیم PDF را وارد کنید</p>
+                            <InputError message={errors.file_url} />
+                        </div>
+
+                        {/* File Upload */}
+                        <div>
+                            <Label>فایل کتاب (PDF, EPUB, DOC)</Label>
+
+                            {/* Show existing file when editing */}
+                            {editing?.file_path && !selectedFile && (
+                                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-emerald-200 bg-emerald-50 mt-1.5 mb-2">
+                                    <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-emerald-700 truncate">
+                                            {editing.file_type?.toUpperCase()} — {editing.file_size ? formatBytes(editing.file_size) : ''}
+                                        </p>
+                                        <p className="text-xs text-emerald-600">فایل موجود — آپلود جدید جایگزین می‌شود</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => { window.location.href = `/library/books/${editing.id}/download`; }}
+                                        className="text-emerald-600 hover:text-emerald-800 shrink-0"
+                                        title="دانلود"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Selected new file preview */}
+                            {selectedFile && (
+                                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-blue-200 bg-blue-50 mt-1.5 mb-2">
+                                    <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-blue-700 truncate">{selectedFile.name}</p>
+                                        <p className="text-xs text-blue-500">{formatBytes(selectedFile.size)}</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                        className="text-blue-400 hover:text-blue-700 shrink-0"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+
+                            <div
+                                className="mt-1.5 border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <Upload className="w-5 h-5 mx-auto mb-1.5 text-gray-400" />
+                                <p className="text-sm text-gray-500">برای آپلود کلیک کنید</p>
+                                <p className="text-xs text-gray-400 mt-0.5">PDF, EPUB, DOC, DOCX — حداکثر ۵۰ مگابایت</p>
+                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                accept=".pdf,.epub,.doc,.docx"
+                                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+                            />
+                            <InputError message={errors.file} />
                         </div>
                     </div>
 

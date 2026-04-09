@@ -1,16 +1,30 @@
 import { useState } from 'react';
-import { Facebook, Twitter, Youtube, Rss, Share2, Mail, PlayCircle } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { Facebook, Twitter, Youtube, Rss, Share2, Mail, PlayCircle, Linkedin } from 'lucide-react';
 import { SectionHeader } from './section-header';
 
-/* ── Social Widget ───────────────────────────────────────── */
-const SOCIALS = [
-    { icon: Facebook,  label: 'Likes',      count: '521',    color: 'bg-[#3b5998]' },
-    { icon: Twitter,   label: 'Followers',  count: '3,297',  color: 'bg-[#1da1f2]' },
-    { icon: Youtube,   label: 'Subscriber', count: '596K',   color: 'bg-[#ff0000]' },
-    { icon: Rss,       label: 'Subscriber', count: '1,240',  color: 'bg-[#f26522]' },
-];
+interface SocialLink { platform: string; url: string; count: string }
+interface SiteSettings { social_links?: SocialLink[] }
+interface SharedProps { siteSettings?: SiteSettings; [key: string]: unknown }
 
+const PLATFORM_ICONS: Record<string, React.ElementType> = {
+    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+};
+const PLATFORM_COLORS: Record<string, string> = {
+    facebook: 'bg-[#3b5998]', twitter: 'bg-[#1da1f2]',
+    youtube:  'bg-[#ff0000]', linkedin: 'bg-[#0077b5]', rss: 'bg-[#f26522]',
+};
+const PLATFORM_LABELS: Record<string, string> = {
+    facebook: 'Likes', twitter: 'Followers', youtube: 'Subscribers', linkedin: 'Connections', rss: 'Subscribers',
+};
+
+/* ── Social Widget ───────────────────────────────────────── */
 function SocialWidget() {
+    const { siteSettings } = usePage<SharedProps>().props;
+    const socials = siteSettings?.social_links ?? [];
+
+    if (socials.length === 0) return null;
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
             <div className="flex items-center gap-2 mb-1">
@@ -18,17 +32,24 @@ function SocialWidget() {
             </div>
             <SectionHeader title="در ارتباط بمانید" showNav={false} />
             <div className="grid grid-cols-2 gap-3 mt-2">
-                {SOCIALS.map(({ icon: Icon, label, count, color }) => (
-                    <a
-                        key={label + count}
-                        href="#"
-                        className={`${color} text-white rounded-lg p-3 flex flex-col items-center gap-1 hover:opacity-90 transition-opacity`}
-                    >
-                        <Icon className="w-5 h-5" />
-                        <span className="font-bold text-base leading-none">{count}</span>
-                        <span className="text-[11px] opacity-90">{label}</span>
-                    </a>
-                ))}
+                {socials.filter((s) => s.count).map((s) => {
+                    const Icon  = PLATFORM_ICONS[s.platform] ?? Rss;
+                    const color = PLATFORM_COLORS[s.platform] ?? 'bg-gray-500';
+                    const label = PLATFORM_LABELS[s.platform] ?? 'Followers';
+                    return (
+                        <a
+                            key={s.platform}
+                            href={s.url || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`${color} text-white rounded-lg p-3 flex flex-col items-center gap-1 hover:opacity-90 transition-opacity`}
+                        >
+                            <Icon className="w-5 h-5" />
+                            <span className="font-bold text-base leading-none">{s.count}</span>
+                            <span className="text-[11px] opacity-90">{label}</span>
+                        </a>
+                    );
+                })}
             </div>
         </div>
     );
@@ -37,7 +58,6 @@ function SocialWidget() {
 /* ── Subscribe Widget ────────────────────────────────────── */
 function SubscribeWidget() {
     const [email, setEmail] = useState('');
-
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
             <div className="flex items-center gap-2 mb-1">
@@ -63,26 +83,11 @@ function SubscribeWidget() {
     );
 }
 
-/* ── Video Widget ────────────────────────────────────────── */
+/* ── Video Widget (static recent-videos placeholder) ─────── */
 const VIDEOS = [
-    {
-        title: 'نشید جدید — بخش ایمان',
-        author: 'ادمین',
-        date: '۸ حمل ۱۴۰۴',
-        gradient: 'from-teal-800 to-emerald-700',
-    },
-    {
-        title: 'درس توحید — شرح عقیده طحاویه',
-        author: 'ادمین',
-        date: '۷ حمل ۱۴۰۴',
-        gradient: 'from-blue-800 to-indigo-700',
-    },
-    {
-        title: 'آموزش قرائت قرآن کریم',
-        author: 'ادمین',
-        date: '۶ حمل ۱۴۰۴',
-        gradient: 'from-violet-800 to-purple-700',
-    },
+    { title: 'نشید جدید — بخش ایمان',            gradient: 'from-teal-800 to-emerald-700' },
+    { title: 'درس توحید — شرح عقیده طحاویه',     gradient: 'from-blue-800 to-indigo-700' },
+    { title: 'آموزش قرائت قرآن کریم',             gradient: 'from-violet-800 to-purple-700' },
 ];
 
 function VideoWidget() {
@@ -91,10 +96,10 @@ function VideoWidget() {
             <div className="flex items-center gap-2 mb-1">
                 <PlayCircle className="w-4 h-4 text-[#27ae60]" />
             </div>
-            <SectionHeader title="ویدیوهای یوتیوب" />
+            <SectionHeader title="ویدیوهای اخیر" />
             <div className="space-y-3 mt-2">
                 {VIDEOS.map((v) => (
-                    <a key={v.title} href="#" className="flex gap-3 group">
+                    <a key={v.title} href="/library/videos" className="flex gap-3 group">
                         <div className={`shrink-0 w-20 h-14 rounded-lg bg-gradient-to-br ${v.gradient} flex items-center justify-center`}>
                             <PlayCircle className="w-5 h-5 text-white/80" />
                         </div>
@@ -102,11 +107,6 @@ function VideoWidget() {
                             <h4 className="text-[13px] font-bold text-gray-800 line-clamp-2 group-hover:text-[#27ae60] transition-colors leading-snug">
                                 {v.title}
                             </h4>
-                            <div className="flex gap-1.5 text-[11px] text-gray-400 mt-1">
-                                <span>{v.author}</span>
-                                <span>•</span>
-                                <span>{v.date}</span>
-                            </div>
                         </div>
                     </a>
                 ))}
@@ -115,7 +115,6 @@ function VideoWidget() {
     );
 }
 
-/* ── Sidebar assembly ────────────────────────────────────── */
 export function HomeSidebar() {
     return (
         <div>

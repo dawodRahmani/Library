@@ -8,36 +8,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
     public function index(): Response
     {
-        $users = User::with('roles')
-            ->orderBy('name')
+        $users = User::orderBy('name')
             ->get()
             ->map(fn ($u) => [
-                'id'                => $u->id,
-                'name'              => $u->name,
-                'email'             => $u->email,
-                'email_verified_at' => $u->email_verified_at?->toDateTimeString(),
-                'is_active'         => (bool) $u->is_active,
-                'roles'             => $u->roles->map(fn ($r) => [
-                    'id'   => $r->id,
-                    'name' => $r->name,
-                ])->values(),
-                'created_at'        => $u->created_at->toDateTimeString(),
-                'updated_at'        => $u->updated_at->toDateTimeString(),
+                'id'         => $u->id,
+                'name'       => $u->name,
+                'email'      => $u->email,
+                'is_active'  => (bool) $u->is_active,
+                'created_at' => $u->created_at->toDateTimeString(),
             ]);
-
-        $roles = Role::orderBy('name')
-            ->get()
-            ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name]);
 
         return Inertia::render('users/index', [
             'users' => $users,
-            'roles' => $roles,
         ]);
     }
 
@@ -47,7 +34,6 @@ class UserController extends Controller
             'name'                  => ['required', 'string', 'max:255'],
             'email'                 => ['required', 'email', 'unique:users,email'],
             'password'              => ['required', 'string', 'min:8', 'confirmed'],
-            'role'                  => ['required', 'string', 'exists:roles,name'],
             'is_active'             => ['boolean'],
         ]);
 
@@ -58,19 +44,19 @@ class UserController extends Controller
             'is_active' => $data['is_active'] ?? true,
         ]);
 
-        $user->assignRole($data['role']);
+        // New users get librarian role — full content access, no user/settings management
+        $user->assignRole('librarian');
 
-        return back();
+        return back()->with('success', 'کاربر با موفقیت ایجاد شد.');
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
         $data = $request->validate([
-            'name'      => ['required', 'string', 'max:255'],
-            'email'     => ['required', 'email', "unique:users,email,{$user->id}"],
-            'password'  => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role'      => ['required', 'string', 'exists:roles,name'],
-            'is_active' => ['boolean'],
+            'name'                  => ['required', 'string', 'max:255'],
+            'email'                 => ['required', 'email', "unique:users,email,{$user->id}"],
+            'password'              => ['nullable', 'string', 'min:8', 'confirmed'],
+            'is_active'             => ['boolean'],
         ]);
 
         $updateData = [
@@ -84,21 +70,24 @@ class UserController extends Controller
         }
 
         $user->update($updateData);
-        $user->syncRoles([$data['role']]);
 
-        return back();
+        return back()->with('success', 'کاربر با موفقیت ویرایش شد.');
     }
 
     public function destroy(User $user): RedirectResponse
     {
-        // Soft-deactivate — preserves order history and foreign key integrity
-        $user->update(['is_active' => false]);
+        // Prevent deleting yourself
+        abort_if($user->id === auth()->id(), 403, 'نمی‌توانید حساب خود را حذف کنید.');
 
-        return back();
+        $user->delete();
+
+        return back()->with('success', 'کاربر حذف شد.');
     }
 
     public function toggleActive(User $user): RedirectResponse
     {
+        abort_if($user->id === auth()->id(), 403, 'نمی‌توانید حساب خود را غیرفعال کنید.');
+
         $user->update(['is_active' => ! $user->is_active]);
 
         return back();

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 const languages = [
     { code: 'da', label: 'دری', dir: 'rtl' },
     { code: 'en', label: 'EN', dir: 'ltr' },
+    { code: 'ar', label: 'ع', dir: 'rtl' },
 ];
 
 export function LanguageSwitcher() {
@@ -14,6 +15,8 @@ export function LanguageSwitcher() {
         if (lang) {
             i18n.changeLanguage(langCode);
             localStorage.setItem('language', langCode);
+            // Set cookie for backend locale detection
+            document.cookie = `locale=${langCode}; path=/; max-age=${365 * 24 * 60 * 60}; SameSite=Lax`;
             document.documentElement.dir = lang.dir;
             document.documentElement.lang = langCode;
         }

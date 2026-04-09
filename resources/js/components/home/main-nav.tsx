@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Menu, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { usePage } from '@inertiajs/react';
+import { SearchBar } from '@/components/home/search-bar';
 
 interface NavChild {
     label: string;
@@ -11,61 +14,6 @@ interface NavItem {
     children?: NavChild[];
 }
 
-const NAV_ITEMS: NavItem[] = [
-    { label: 'خانه', href: '/' },
-    {
-        label: 'کتابخانه',
-        href: '/library',
-        children: [
-            { label: 'عقیده و منهج', href: '/library?category=aqeedah' },
-            { label: 'جهاد و استشهاد', href: '/library?category=jihad' },
-            { label: 'مقاله‌ها', href: '/library?category=articles' },
-            { label: 'سیاست', href: '/library?category=politics' },
-            { label: 'تاریخ', href: '/library?category=history' },
-            { label: 'کتاب‌های گوناگون', href: '/library?category=various' },
-        ],
-    },
-    {
-        label: 'دارالإفتاء',
-        href: '/dar-ul-ifta',
-        children: [
-            { label: 'توحید و عقیده', href: '/dar-ul-ifta?category=tawheed' },
-            { label: 'جهاد و استشهاد', href: '/dar-ul-ifta?category=jihad' },
-            { label: 'قضایای سیاسی', href: '/dar-ul-ifta?category=political' },
-            { label: 'احکام شرعی عام', href: '/dar-ul-ifta?category=rulings' },
-            { label: 'بیانیه‌ها', href: '/dar-ul-ifta?category=statements' },
-        ],
-    },
-    {
-        label: 'ویدیوها',
-        href: '/library/videos',
-        children: [
-            { label: 'عقیده و منهج', href: '/library/videos?category=aqeedah' },
-            { label: 'پند و موعظه', href: '/library/videos?category=advice' },
-            { label: 'جهاد و استشهاد', href: '/library/videos?category=jihad' },
-            { label: 'سیاست', href: '/library/videos?category=politics' },
-            { label: 'تحلیل و سخن روز', href: '/library/videos?category=analysis' },
-            { label: 'تاریخ', href: '/library/videos?category=history' },
-        ],
-    },
-    {
-        label: 'صوتی‌ها',
-        href: '/audio',
-        children: [
-            { label: 'عقیده و منهج', href: '/audio?category=aqeedah' },
-            { label: 'پند و موعظه', href: '/audio?category=advice' },
-            { label: 'جهاد و استشهاد', href: '/audio?category=jihad' },
-            { label: 'سیاست', href: '/audio?category=politics' },
-            { label: 'تحلیل و سخن روز', href: '/audio?category=analysis' },
-            { label: 'تاریخ', href: '/audio?category=history' },
-            { label: 'نشید و ترانه', href: '/audio?category=nasheed' },
-        ],
-    },
-    { label: 'بیانیه‌ها', href: '/dar-ul-ifta?category=statements' },
-    { label: 'مجله', href: '/majalla' },
-    { label: 'درباره ما', href: '/about' },
-    { label: 'تماس با ما', href: '/contact' },
-];
 
 function DropdownItem({ item }: { item: NavItem }) {
     const [open, setOpen] = useState(false);
@@ -95,7 +43,7 @@ function DropdownItem({ item }: { item: NavItem }) {
     }
 
     return (
-        <li ref={ref} className="relative">
+        <li ref={ref} className="relative" onMouseLeave={() => setOpen(false)}>
             <div
                 className="flex items-center"
                 onMouseEnter={() => setOpen(true)}
@@ -114,10 +62,7 @@ function DropdownItem({ item }: { item: NavItem }) {
                 </button>
             </div>
             {open && (
-                <div
-                    className="absolute top-full end-0 min-w-[190px] bg-white shadow-xl rounded-b-md z-50 border-t-2 border-[#27ae60] overflow-hidden"
-                    onMouseLeave={() => setOpen(false)}
-                >
+                <div className="absolute top-full end-0 min-w-[190px] bg-white shadow-xl rounded-b-md z-50 border-t-2 border-[#27ae60] overflow-hidden">
                     {item.children.map((child) => (
                         <a
                             key={child.label}
@@ -133,15 +78,74 @@ function DropdownItem({ item }: { item: NavItem }) {
     );
 }
 
+interface NavCategory {
+    slug: string;
+    name: string;
+}
+
+interface SharedProps {
+    navCategories?: {
+        books: NavCategory[];
+        videos: NavCategory[];
+        audios: NavCategory[];
+        fatwas: NavCategory[];
+    };
+    [key: string]: unknown;
+}
+
 export function MainNav() {
     const [sticky, setSticky] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { t } = useTranslation();
+    const { navCategories } = usePage<SharedProps>().props;
+
+    const cats = navCategories ?? { books: [], videos: [], audios: [], fatwas: [] };
 
     useEffect(() => {
         const onScroll = () => setSticky(window.scrollY > 60);
         window.addEventListener('scroll', onScroll);
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
+
+    const getNavItems = (): NavItem[] => [
+        { label: t('nav.home'), href: '/' },
+        {
+            label: t('nav.library'),
+            href: '/library',
+            children: cats.books.map((c) => ({
+                label: c.name,
+                href: `/library?category=${c.slug}`,
+            })),
+        },
+        {
+            label: t('nav.darUlIfta'),
+            href: '/dar-ul-ifta',
+            children: cats.fatwas.map((c) => ({
+                label: c.name,
+                href: `/dar-ul-ifta?category=${c.slug}`,
+            })),
+        },
+        {
+            label: t('nav.videos'),
+            href: '/library/videos',
+            children: cats.videos.map((c) => ({
+                label: c.name,
+                href: `/library/videos?category=${c.slug}`,
+            })),
+        },
+        {
+            label: t('nav.audio'),
+            href: '/audio',
+            children: cats.audios.map((c) => ({
+                label: c.name,
+                href: `/audio?category=${c.slug}`,
+            })),
+        },
+        { label: t('nav.statements'), href: '/bayania' },
+        { label: t('nav.magazine'), href: '/majalla' },
+        { label: t('nav.about'), href: '/about' },
+        { label: t('nav.contact'), href: '/contact' },
+    ];
 
     return (
         <nav
@@ -156,10 +160,15 @@ export function MainNav() {
 
                     {/* Desktop nav */}
                     <ul className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
-                        {NAV_ITEMS.map((item) => (
+                        {getNavItems().map((item) => (
                             <DropdownItem key={item.label} item={item} />
                         ))}
                     </ul>
+
+                    {/* Desktop search */}
+                    <div className="hidden lg:block shrink-0">
+                        <SearchBar />
+                    </div>
 
                     {/* Mobile toggle */}
                     <button
@@ -173,7 +182,11 @@ export function MainNav() {
                 {/* Mobile menu */}
                 {mobileOpen && (
                     <div className="lg:hidden border-t border-white/10 pb-4">
-                        {NAV_ITEMS.map((item) => (
+                        {/* Mobile search */}
+                        <div className="px-3 py-3 border-b border-white/10">
+                            <SearchBar />
+                        </div>
+                        {getNavItems().map((item) => (
                             <div key={item.label}>
                                 <a
                                     href={item.href ?? '#'}

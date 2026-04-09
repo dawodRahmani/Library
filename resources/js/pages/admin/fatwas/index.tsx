@@ -10,19 +10,22 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Tags, MessageSquare } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
+import { CategoryPanel } from '@/components/admin/category-panel';
+import type { CategoryItem } from '@/components/admin/category-panel';
 
-interface Category { id: number; name: { da: string; en?: string } }
+type Category = CategoryItem;
 interface FatwaItem {
-    id: number; title: { da: string; en?: string }; description: { da: string; en?: string } | null; author: string;
+    id: number; title: { da: string; en?: string; ar?: string }; description: { da: string; en?: string; ar?: string } | null; author: string;
     category_id: number; category: string; is_active: boolean; created_at: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'دارالإفتاء', href: '/admin/fatwas' }];
-const emptyForm = { title: { da: '' }, description: { da: '' }, author: '', category_id: '', is_active: true };
+const emptyForm = { title: { da: '', en: '', ar: '' }, description: { da: '', en: '', ar: '' }, author: '', category_id: '', is_active: true };
 
 export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[]; categories: Category[] }) {
+    const [tab, setTab] = useState<'fatwas' | 'categories'>('fatwas');
     const [search, setSearch] = useState('');
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<FatwaItem | null>(null);
@@ -35,7 +38,7 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
     function openCreate() { setEditing(null); setForm(emptyForm); setErrors({}); setOpen(true); }
     function openEdit(f: FatwaItem) {
         setEditing(f);
-        setForm({ title: f.title ?? { da: '' }, description: f.description ?? { da: '' }, author: f.author, category_id: String(f.category_id), is_active: f.is_active });
+        setForm({ title: { da: f.title?.da ?? '', en: f.title?.en ?? '', ar: f.title?.ar ?? '' }, description: { da: f.description?.da ?? '', en: f.description?.en ?? '', ar: f.description?.ar ?? '' }, author: f.author, category_id: String(f.category_id), is_active: f.is_active });
         setErrors({}); setOpen(true);
     }
 
@@ -54,8 +57,18 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
             <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-bold">مدیریت دارالإفتاء</h1>
-                    <Button onClick={openCreate} size="sm"><Plus className="w-4 h-4 me-1" /> افزودن فتوا</Button>
+                    {tab === 'fatwas' && <Button onClick={openCreate} size="sm"><Plus className="w-4 h-4 me-1" /> افزودن فتوا</Button>}
                 </div>
+                <div className="flex gap-1 border-b border-gray-200">
+                    <button onClick={() => setTab('fatwas')} className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === 'fatwas' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                        <MessageSquare className="w-4 h-4" /> فتاوی ({fatwas.length})
+                    </button>
+                    <button onClick={() => setTab('categories')} className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === 'categories' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                        <Tags className="w-4 h-4" /> دسته‌بندی‌ها ({categories.length})
+                    </button>
+                </div>
+                {tab === 'categories' && <CategoryPanel categories={categories} type="fatwa" />}
+                {tab === 'fatwas' && <>
                 <div className="relative max-w-sm"><Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="جستجو..." value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9" /></div>
                 <div className="border rounded-lg overflow-hidden">
                     <Table>
@@ -77,17 +90,22 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                         </TableBody>
                     </Table>
                 </div>
+                </>}
             </div>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle>{editing ? 'ویرایش فتوا' : 'افزودن فتوای جدید'}</DialogTitle></DialogHeader>
                     <div className="space-y-4 py-2">
-                        <div><Label>عنوان (دری) *</Label><Input value={form.title.da} onChange={(e) => setForm({ ...form, title: { ...form.title, da: e.target.value } })} /><InputError message={errors['title.da']} /></div>
+                        <div><Label>عنوان (دری) *</Label><Input value={form.title.da} onChange={(e) => setForm({ ...form, title: { ...form.title, da: e.target.value } })} placeholder="دری" /><InputError message={errors['title.da']} /></div>
+                        <div><Label>عنوان (English)</Label><Input value={form.title.en ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, en: e.target.value } })} placeholder="English" dir="ltr" /></div>
+                        <div><Label>عنوان (العربية)</Label><Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" /></div>
                         <div><Label>نویسنده *</Label><Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /><InputError message={errors.author} /></div>
                         <div><Label>دسته‌بندی *</Label>
                             <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}><SelectTrigger><SelectValue placeholder="انتخاب" /></SelectTrigger><SelectContent>{categories.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name.da}</SelectItem>)}</SelectContent></Select>
                             <InputError message={errors.category_id} /></div>
                         <div><Label>توضیحات (دری)</Label><Textarea value={form.description.da} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={4} /></div>
+                        <div><Label>توضیحات (English)</Label><Textarea value={form.description.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={4} dir="ltr" /></div>
+                        <div><Label>توضیحات (العربية)</Label><Textarea value={form.description.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={4} /></div>
                     </div>
                     <DialogFooter><DialogClose asChild><Button variant="outline">انصراف</Button></DialogClose><Button onClick={submit} disabled={processing}>{processing ? 'در حال ذخیره...' : editing ? 'بروزرسانی' : 'ذخیره'}</Button></DialogFooter>
                 </DialogContent>

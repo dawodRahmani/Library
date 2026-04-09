@@ -1,19 +1,18 @@
 import { Link } from '@inertiajs/react';
-import { useTranslation } from 'react-i18next';
 import {
     BookOpen,
     FileText,
     Headphones,
-    KeyRound,
     LayoutGrid,
-    Layers,
+    Mail,
     MessageSquare,
     Newspaper,
     Settings,
-    Shield,
-    ShieldCheck,
+    Users,
     Video,
+    Globe,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import AppLogo from '@/components/app-logo';
 import { NavGroup } from '@/components/nav-group';
 import { NavMain } from '@/components/nav-main';
@@ -46,29 +45,28 @@ export function AppSidebar() {
     // ── Content Management ────────────────────────────────
     const contentItems: NavItem[] = [];
     if (can('books.view')) {
-        contentItems.push({ title: 'کتاب‌ها', href: '/admin/books', icon: BookOpen });
+        contentItems.push({ title: t('sidebar.books'), href: '/admin/books', icon: BookOpen });
     }
     if (can('videos.view')) {
-        contentItems.push({ title: 'ویدیوها', href: '/admin/videos', icon: Video });
+        contentItems.push({ title: t('sidebar.videos'), href: '/admin/videos', icon: Video });
     }
     if (can('audios.view')) {
-        contentItems.push({ title: 'صوتی‌ها', href: '/admin/audios', icon: Headphones });
+        contentItems.push({ title: t('sidebar.audios'), href: '/admin/audios', icon: Headphones });
     }
     if (can('fatwas.view')) {
-        contentItems.push({ title: 'دارالإفتاء', href: '/admin/fatwas', icon: MessageSquare });
+        contentItems.push({ title: t('sidebar.fatwas'), href: '/admin/fatwas', icon: MessageSquare });
+        contentItems.push({ title: 'بیانیه‌ها', href: '/admin/statements', icon: FileText });
     }
     if (can('articles.view')) {
-        contentItems.push({ title: 'مقاله‌ها', href: '/admin/articles', icon: FileText });
+        contentItems.push({ title: t('sidebar.articles'), href: '/admin/articles', icon: FileText });
     }
     if (can('magazines.view')) {
-        contentItems.push({ title: 'مجله', href: '/admin/magazines', icon: Newspaper });
+        contentItems.push({ title: t('sidebar.magazines'), href: '/admin/magazines', icon: Newspaper });
     }
-    if (can('categories.manage')) {
-        contentItems.push({ title: 'دسته‌بندی‌ها', href: '/admin/categories', icon: Layers });
-    }
+    // Categories are now managed inline within each content section's page
 
     const contentGroups = contentItems.length > 0 ? [{
-        title: 'مدیریت محتوا',
+        title: t('sidebar.contentManagement'),
         icon: BookOpen,
         items: contentItems,
     }] : [];
@@ -76,12 +74,12 @@ export function AppSidebar() {
     // ── Settings ──────────────────────────────────────────
     const settingsItems: NavItem[] = [];
     if (can('users.view')) {
-        settingsItems.push({ title: t('sidebar.users'), href: '/users', icon: ShieldCheck });
+        settingsItems.push({ title: t('sidebar.users'), href: '/users', icon: Users });
     }
     if (can('settings.manage')) {
         settingsItems.push(
-            { title: t('sidebar.roles'), href: '/roles', icon: Shield },
-            { title: t('sidebar.permissions'), href: '/permissions', icon: KeyRound },
+            { title: 'تنظیمات سایت', href: '/admin/site-settings', icon: Globe },
+            { title: 'پیام‌های تماس', href: '/admin/messages', icon: Mail },
         );
     }
     settingsItems.push({ title: t('sidebar.settings'), href: '/settings/profile', icon: Settings });
@@ -108,7 +106,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                {contentGroups.length > 0 && <NavGroup groups={contentGroups} label="مدیریت محتوا" />}
+                {contentGroups.length > 0 && <NavGroup groups={contentGroups} label={t('sidebar.contentManagement')} />}
                 <NavGroup groups={settingsGroups} />
             </SidebarContent>
 

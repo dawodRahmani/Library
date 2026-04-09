@@ -21,6 +21,10 @@ class Book extends Model
         'pages',
         'publisher',
         'cover_image',
+        'file_path',
+        'file_type',
+        'file_size',
+        'file_url',
         'is_active',
     ];
 

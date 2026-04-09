@@ -1,44 +1,27 @@
+import { usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Facebook, Twitter, Youtube, Linkedin, Rss } from 'lucide-react';
 
-/* ── Sitemap links ───────────────────────────────────────── */
-const SITEMAP = [
-    { label: 'کتابخانه', href: '/library' },
-    { label: 'دارالإفتاء', href: '/dar-ul-ifta' },
-    { label: 'ویدیوها', href: '/library/videos' },
-    { label: 'صوتی‌ها', href: '/audio' },
-    { label: 'مجله', href: '/majalla' },
-    { label: 'درباره ما', href: '/about' },
-    { label: 'تماس با ما', href: '/contact' },
-];
+interface SocialLink { platform: string; url: string; count: string }
+interface SiteSettings {
+    site_name?:    { da: string; en: string };
+    footer_about?: { da: string; en: string };
+    social_links?: SocialLink[];
+}
+interface SharedProps { siteSettings?: SiteSettings; [key: string]: unknown }
 
-const RECENT_BOOKS = [
-    'مختصر صحیح البخاری',
-    'ریاض الصالحین',
-    'فتح الباری شرح البخاری',
-    'تفسیر ابن کثیر',
-];
+const PLATFORM_ICONS: Record<string, React.ElementType> = {
+    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+};
+const PLATFORM_COLORS: Record<string, string> = {
+    facebook: 'hover:bg-[#3b5998]',
+    twitter:  'hover:bg-[#1da1f2]',
+    youtube:  'hover:bg-[#ff0000]',
+    linkedin: 'hover:bg-[#0077b5]',
+    rss:      'hover:bg-[#f26522]',
+};
 
-const RECENT_ARTICLES = [
-    'تفسیر سوره بقره — بخش اول',
-    'فقه الحنفی — کتاب الصلاة',
-    'تاریخ اسلام در ماوراءالنهر',
-    'شرح حدیث جبریل',
-];
-
-const SOCIAL_LINKS = [
-    { icon: Facebook,  href: '#', color: 'hover:bg-[#3b5998]' },
-    { icon: Twitter,   href: '#', color: 'hover:bg-[#1da1f2]' },
-    { icon: Youtube,   href: '#', color: 'hover:bg-[#ff0000]' },
-    { icon: Linkedin,  href: '#', color: 'hover:bg-[#0077b5]' },
-    { icon: Rss,       href: '#', color: 'hover:bg-[#f26522]' },
-];
-
-/* ── Widget column ───────────────────────────────────────── */
-function FooterWidget({ title, icon, children }: {
-    title: string;
-    icon?: string;
-    children: React.ReactNode;
-}) {
+function FooterWidget({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <div>
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10 relative">
@@ -47,38 +30,50 @@ function FooterWidget({ title, icon, children }: {
                     <span className="w-1 h-4 bg-[#27ae60] rounded-full inline-block" />
                     {title}
                 </h3>
-                {icon && <span className="text-gray-500 text-sm">{icon}</span>}
             </div>
             {children}
         </div>
     );
 }
 
-/* ── Footer ──────────────────────────────────────────────── */
 export function HomeFooter() {
+    const { t, i18n } = useTranslation();
+    const { siteSettings } = usePage<SharedProps>().props;
+    const locale = ['da', 'en', 'ar'].includes(i18n.language) ? i18n.language : 'da';
+
+    const siteName   = siteSettings?.site_name?.[locale]   || siteSettings?.site_name?.da    || t('app.name');
+    const aboutText  = siteSettings?.footer_about?.[locale] || siteSettings?.footer_about?.da || t('footer.description');
+    const socials    = siteSettings?.social_links ?? [];
+
+    const navLinks = [
+        { label: t('nav.library'),    href: '/library' },
+        { label: t('nav.darUlIfta'), href: '/dar-ul-ifta' },
+        { label: t('nav.videos'),     href: '/library/videos' },
+        { label: t('nav.audio'),      href: '/audio' },
+        { label: t('nav.magazine'),   href: '/majalla' },
+        { label: t('nav.about'),      href: '/about' },
+        { label: t('nav.contact'),    href: '/contact' },
+    ];
+
     return (
         <footer>
-            {/* Main footer */}
             <div className="bg-[#1a252f] pt-10 pb-6">
                 <div className="max-w-[1240px] mx-auto px-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
                         {/* About */}
-                        <FooterWidget title="درباره ما">
+                        <FooterWidget title={t('footer.about')}>
                             <p className="text-gray-400 text-[13px] leading-loose line-clamp-6">
-                                کتابخانه رسالت یک مرکز دیجیتال برای نشر و آموزش علوم اسلامی به زبان دری است. هدف ما فراهم‌آوری منابع علمی معتبر برای همه مسلمانان فارسی‌زبان می‌باشد.
+                                {aboutText}
                             </p>
                         </FooterWidget>
 
                         {/* Sitemap */}
-                        <FooterWidget title="نقشه سایت">
+                        <FooterWidget title={t('footer.sitemap')}>
                             <ul className="space-y-2">
-                                {SITEMAP.map((item) => (
-                                    <li key={item.label}>
-                                        <a
-                                            href={item.href}
-                                            className="text-gray-400 text-[13px] hover:text-[#27ae60] transition-colors flex items-center gap-2"
-                                        >
+                                {navLinks.map((item) => (
+                                    <li key={item.href}>
+                                        <a href={item.href} className="text-gray-400 text-[13px] hover:text-[#27ae60] transition-colors flex items-center gap-2">
                                             <span className="w-1 h-1 rounded-full bg-[#27ae60] shrink-0" />
                                             {item.label}
                                         </a>
@@ -87,73 +82,57 @@ export function HomeFooter() {
                             </ul>
                         </FooterWidget>
 
-                        {/* Recent books */}
-                        <FooterWidget title="کتاب‌های جدید">
-                            <ul className="space-y-2">
-                                {RECENT_BOOKS.map((title) => (
-                                    <li key={title}>
-                                        <a
-                                            href="#"
-                                            className="text-gray-400 text-[13px] hover:text-[#27ae60] transition-colors flex items-center gap-2 line-clamp-1"
-                                        >
-                                            <span className="w-1 h-1 rounded-full bg-[#27ae60] shrink-0" />
-                                            {title}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </FooterWidget>
-
-                        {/* Recent articles */}
-                        <FooterWidget title="مقاله‌ها">
-                            <ul className="space-y-2">
-                                {RECENT_ARTICLES.map((title) => (
-                                    <li key={title}>
-                                        <a
-                                            href="#"
-                                            className="text-gray-400 text-[13px] hover:text-[#27ae60] transition-colors flex items-center gap-2 line-clamp-1"
-                                        >
-                                            <span className="w-1 h-1 rounded-full bg-[#27ae60] shrink-0" />
-                                            {title}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </FooterWidget>
+                        {/* Social links */}
+                        {socials.length > 0 && (
+                            <FooterWidget title={t('footer.followUs') || 'ما را دنبال کنید'}>
+                                <div className="flex flex-wrap gap-2">
+                                    {socials.map((s) => {
+                                        const Icon  = PLATFORM_ICONS[s.platform] ?? Rss;
+                                        const color = PLATFORM_COLORS[s.platform] ?? 'hover:bg-gray-600';
+                                        return (
+                                            <a
+                                                key={s.platform}
+                                                href={s.url || '#'}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`flex items-center gap-2 bg-white/5 ${color} text-gray-300 hover:text-white text-[12px] px-3 py-2 rounded-lg transition-all`}
+                                            >
+                                                <Icon className="w-3.5 h-3.5" />
+                                                {s.count && <span className="font-bold">{s.count}</span>}
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            </FooterWidget>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Copyright bar */}
+            {/* Copyright */}
             <div className="bg-[#0d1117] py-4">
                 <div className="max-w-[1240px] mx-auto px-4 flex flex-wrap items-center justify-between gap-3">
-                    {/* Copyright */}
                     <p className="text-gray-500 text-[13px]">
                         &copy; {new Date().getFullYear()}{' '}
-                        <a href="/" className="text-[#27ae60] hover:text-[#2ecc71] transition-colors">
-                            کتابخانه رسالت
-                        </a>
-                        . تمامی حقوق محفوظ است.
+                        <a href="/" className="text-[#27ae60] hover:text-[#2ecc71] transition-colors">{siteName}</a>.
+                        {' '}{t('footer.copyright')}
                     </p>
-
-                    {/* Links */}
-                    <div className="flex items-center gap-4 text-gray-500 text-[12px]">
-                        {['خانه', 'سوالات متداول', 'پشتیبانی'].map((l) => (
-                            <a key={l} href="#" className="hover:text-white transition-colors">{l}</a>
-                        ))}
-                    </div>
-
-                    {/* Social icons */}
                     <div className="flex items-center gap-1.5">
-                        {SOCIAL_LINKS.map(({ icon: Icon, href, color }) => (
-                            <a
-                                key={href + color}
-                                href={href}
-                                className={`w-7 h-7 flex items-center justify-center rounded bg-white/5 text-gray-400 hover:text-white transition-all ${color}`}
-                            >
-                                <Icon className="w-3.5 h-3.5" />
-                            </a>
-                        ))}
+                        {socials.map((s) => {
+                            const Icon  = PLATFORM_ICONS[s.platform] ?? Rss;
+                            const color = PLATFORM_COLORS[s.platform] ?? 'hover:bg-gray-600';
+                            return (
+                                <a
+                                    key={s.platform}
+                                    href={s.url || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`w-7 h-7 flex items-center justify-center rounded bg-white/5 text-gray-400 hover:text-white transition-all ${color}`}
+                                >
+                                    <Icon className="w-3.5 h-3.5" />
+                                </a>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

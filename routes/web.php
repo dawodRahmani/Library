@@ -1,52 +1,56 @@
 <?php
 
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AudioController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FatwaController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MagazineController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SiteSettingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\StatementController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public pages ──────────────────────────────────────────────
-Route::get('/', fn () => inertia('welcome'))->name('home');
+Route::get('/search', [SearchController::class, 'search'])->name('search');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/library', [BookController::class, 'index'])->name('library.index');
+Route::get('/library/books/{book}/read', [BookController::class, 'read'])->name('library.books.read');
+Route::get('/library/books/{book}/download', [BookController::class, 'download'])->name('library.books.download');
 Route::get('/library/videos', [VideoController::class, 'index'])->name('library.videos');
+Route::get('/library/videos/{video}/stream', [VideoController::class, 'stream'])->name('library.videos.stream');
+Route::get('/library/videos/{video}/download', [VideoController::class, 'download'])->name('library.videos.download');
 Route::get('/audio', [AudioController::class, 'index'])->name('audio');
+Route::get('/audio/{audio}/stream', [AudioController::class, 'stream'])->name('audio.stream');
+Route::get('/audio/{audio}/download', [AudioController::class, 'download'])->name('audio.download');
 Route::get('/dar-ul-ifta', [FatwaController::class, 'index'])->name('dar-ul-ifta');
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles');
 Route::get('/articles/{slug}', fn ($slug) => inertia('articles'))->name('articles.show');
 Route::get('/majalla', [MagazineController::class, 'index'])->name('majalla');
+Route::get('/majalla/{magazine}/read', [MagazineController::class, 'read'])->name('majalla.read');
+Route::get('/majalla/{magazine}/download', [MagazineController::class, 'download'])->name('majalla.download');
+Route::get('/bayania', [StatementController::class, 'index'])->name('bayania');
 Route::get('/about', fn () => inertia('about'))->name('about');
 Route::get('/contact', fn () => inertia('contact'))->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 // ── Authenticated routes ──────────────────────────────────────
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // ── Users ──────────────────────────────────────────────────
+    // ── Users (admin only) ─────────────────────────────────────
     Route::middleware('permission:users.view')->group(function () {
         Route::get('users', [UserController::class, 'index'])->name('users.index');
-        Route::post('users', [UserController::class, 'store'])->middleware('permission:users.create')->name('users.store');
-        Route::put('users/{user}', [UserController::class, 'update'])->middleware('permission:users.edit')->name('users.update');
-        Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('permission:users.delete')->name('users.destroy');
-        Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->middleware('permission:users.edit')->name('users.toggle-active');
-    });
-
-    // ── Roles & Permissions ────────────────────────────────────
-    Route::middleware('permission:settings.manage')->group(function () {
-        Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
-        Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
-        Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
-        Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
-        Route::patch('roles/{role}/permissions', [RoleController::class, 'syncPermissions'])->name('roles.permissions');
-        Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     });
 
     // ── Books ──────────────────────────────────────────────────
@@ -84,9 +88,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ── Articles ───────────────────────────────────────────────
     Route::middleware('permission:articles.view')->group(function () {
         Route::get('admin/articles', [ArticleController::class, 'adminIndex'])->name('admin.articles.index');
+        Route::get('admin/articles/create', [ArticleController::class, 'create'])->middleware('permission:articles.create')->name('admin.articles.create');
+        Route::get('admin/articles/{article}/edit', [ArticleController::class, 'editForm'])->middleware('permission:articles.edit')->name('admin.articles.edit');
         Route::post('admin/articles', [ArticleController::class, 'store'])->middleware('permission:articles.create')->name('admin.articles.store');
+        Route::post('admin/articles/upload-image', [ArticleController::class, 'uploadImage'])->middleware('permission:articles.create')->name('admin.articles.upload-image');
         Route::put('admin/articles/{article}', [ArticleController::class, 'update'])->middleware('permission:articles.edit')->name('admin.articles.update');
         Route::delete('admin/articles/{article}', [ArticleController::class, 'destroy'])->middleware('permission:articles.delete')->name('admin.articles.destroy');
+    });
+
+    // ── Statements (بیانیه) ────────────────────────────────────
+    Route::middleware('permission:fatwas.view')->group(function () {
+        Route::get('admin/statements', [StatementController::class, 'adminIndex'])->name('admin.statements.index');
+        Route::get('admin/statements/create', [StatementController::class, 'create'])->name('admin.statements.create');
+        Route::get('admin/statements/{statement}/edit', [StatementController::class, 'editForm'])->name('admin.statements.edit');
+        Route::post('admin/statements', [StatementController::class, 'store'])->name('admin.statements.store');
+        Route::put('admin/statements/{statement}', [StatementController::class, 'update'])->name('admin.statements.update');
+        Route::delete('admin/statements/{statement}', [StatementController::class, 'destroy'])->name('admin.statements.destroy');
     });
 
     // ── Magazines ──────────────────────────────────────────────
@@ -95,6 +112,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('admin/magazines', [MagazineController::class, 'store'])->middleware('permission:magazines.create')->name('admin.magazines.store');
         Route::put('admin/magazines/{magazine}', [MagazineController::class, 'update'])->middleware('permission:magazines.edit')->name('admin.magazines.update');
         Route::delete('admin/magazines/{magazine}', [MagazineController::class, 'destroy'])->middleware('permission:magazines.delete')->name('admin.magazines.destroy');
+    });
+
+    // ── Site Settings ──────────────────────────────────────────
+    Route::middleware('permission:settings.manage')->group(function () {
+        Route::get('admin/site-settings', [SiteSettingController::class, 'adminIndex'])->name('admin.site-settings.index');
+        Route::post('admin/site-settings', [SiteSettingController::class, 'bulkUpdate'])->name('admin.site-settings.update');
+        Route::post('admin/site-settings/logo', [SiteSettingController::class, 'uploadLogo'])->name('admin.site-settings.logo');
+        Route::delete('admin/site-settings/logo', [SiteSettingController::class, 'removeLogo'])->name('admin.site-settings.logo.remove');
+    });
+
+    // ── Contact Messages ───────────────────────────────────────
+    Route::middleware('permission:settings.manage')->group(function () {
+        Route::get('admin/messages', [ContactController::class, 'adminIndex'])->name('admin.messages.index');
+        Route::patch('admin/messages/{message}/read', [ContactController::class, 'markRead'])->name('admin.messages.read');
+        Route::patch('admin/messages/{message}/unread', [ContactController::class, 'markUnread'])->name('admin.messages.unread');
+        Route::delete('admin/messages/{message}', [ContactController::class, 'destroy'])->name('admin.messages.destroy');
     });
 
     // ── Categories ─────────────────────────────────────────────

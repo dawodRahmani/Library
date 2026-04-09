@@ -31,11 +31,6 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
             href: editAppearance(),
             icon: null,
         },
-        {
-            title: t('settings.restaurant'),
-            href: '/settings/restaurant',
-            icon: null,
-        },
     ];
 
     // When server-side rendering, we only render the layout on the client...

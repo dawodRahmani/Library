@@ -24,10 +24,10 @@ class FatwaController extends Controller
 
         $fatwas = $query->get()->map(fn ($f) => [
             'id'           => $f->id,
-            'title'        => $f->title['da'] ?? '',
-            'description'  => $f->description['da'] ?? '',
+            'title'        => $f->title[app()->getLocale()] ?? $f->title['da'] ?? '',
+            'description'  => $f->description[app()->getLocale()] ?? $f->description['da'] ?? '',
             'author'       => $f->author,
-            'category'     => $f->category->name['da'] ?? '',
+            'category'     => $f->category->name[app()->getLocale()] ?? $f->category->name['da'] ?? '',
             'categorySlug' => $f->category->slug,
             'date'         => $f->created_at->format('Y-m-d'),
         ]);
@@ -35,7 +35,7 @@ class FatwaController extends Controller
         $categories = Category::where('type', 'fatwa')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn ($c) => ['slug' => $c->slug, 'name' => $c->name['da'] ?? '']);
+            ->map(fn ($c) => ['slug' => $c->slug, 'name' => $c->name[app()->getLocale()] ?? $c->name['da'] ?? '']);
 
         return Inertia::render('dar-ul-ifta', [
             'fatwas'     => $fatwas,
@@ -55,7 +55,7 @@ class FatwaController extends Controller
                 'description' => $f->description,
                 'author'      => $f->author,
                 'category_id' => $f->category_id,
-                'category'    => $f->category->name['da'] ?? '',
+                'category'    => $f->category->name[app()->getLocale()] ?? $f->category->name['da'] ?? '',
                 'is_active'   => $f->is_active,
                 'created_at'  => $f->created_at->toDateTimeString(),
             ]);
@@ -63,7 +63,7 @@ class FatwaController extends Controller
         $categories = Category::where('type', 'fatwa')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name]);
+            ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'slug' => $c->slug, 'sort_order' => $c->sort_order]);
 
         return Inertia::render('admin/fatwas/index', [
             'fatwas'     => $fatwas,
@@ -74,12 +74,16 @@ class FatwaController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'title'       => ['required', 'array'],
-            'title.da'    => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'array'],
-            'author'      => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'is_active'   => ['boolean'],
+            'title'          => ['required', 'array'],
+            'title.da'       => ['required', 'string', 'max:255'],
+            'title.en'       => ['nullable', 'string', 'max:255'],
+            'title.ar'       => ['nullable', 'string', 'max:255'],
+            'description'    => ['nullable', 'array'],
+            'description.en' => ['nullable', 'string'],
+            'description.ar' => ['nullable', 'string'],
+            'author'         => ['required', 'string', 'max:255'],
+            'category_id'    => ['required', 'exists:categories,id'],
+            'is_active'      => ['boolean'],
         ]);
 
         Fatwa::create($data);
@@ -90,12 +94,16 @@ class FatwaController extends Controller
     public function update(Request $request, Fatwa $fatwa): RedirectResponse
     {
         $data = $request->validate([
-            'title'       => ['required', 'array'],
-            'title.da'    => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'array'],
-            'author'      => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'is_active'   => ['boolean'],
+            'title'          => ['required', 'array'],
+            'title.da'       => ['required', 'string', 'max:255'],
+            'title.en'       => ['nullable', 'string', 'max:255'],
+            'title.ar'       => ['nullable', 'string', 'max:255'],
+            'description'    => ['nullable', 'array'],
+            'description.en' => ['nullable', 'string'],
+            'description.ar' => ['nullable', 'string'],
+            'author'         => ['required', 'string', 'max:255'],
+            'category_id'    => ['required', 'exists:categories,id'],
+            'is_active'      => ['boolean'],
         ]);
 
         $fatwa->update($data);

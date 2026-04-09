@@ -1,0 +1,680 @@
+import { Head, router, usePage } from '@inertiajs/react';
+import { useRef, useState } from 'react';
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import InputError from '@/components/input-error';
+import {
+    Globe, Share2, Radio, FileText, ImageIcon, Info,
+    Save, Plus, Trash2, Upload, X,
+    Facebook, Twitter, Youtube, Linkedin, Rss,
+    BookOpen, Headphones, Video, Users, Target, Heart,
+    Star, Award, School, Library, Landmark, Lightbulb,
+} from 'lucide-react';
+import type { BreadcrumbItem } from '@/types';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface SocialLink  { platform: string; url: string; count: string }
+interface TickerItem  { da: string; en: string }
+interface ML          { da: string; en: string }
+interface AboutStat   { icon: string; value: string; label: ML }
+interface AboutValue  { icon: string; title: ML; body: ML }
+interface AboutMember { name: string; role: ML; bio: ML; gradient: string }
+interface AboutHero   { title: ML; subtitle: ML }
+
+interface Settings {
+    site_name?:        ML;
+    site_tagline?:     ML;
+    contact_email?:    string;
+    contact_phone?:    string;
+    contact_address?:  ML;
+    contact_hours?:    ML;
+    social_links?:     SocialLink[];
+    ticker_items?:     TickerItem[];
+    footer_about?:     ML;
+    about_hero?:       AboutHero;
+    about_stats?:      AboutStat[];
+    about_values?:     AboutValue[];
+    about_team?:       AboutMember[];
+}
+
+interface SharedProps { logoUrl?: string | null; [key: string]: unknown }
+interface Props { settings: Settings }
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'داشبورد', href: '/dashboard' },
+    { title: 'تنظیمات سایت', href: '/admin/site-settings' },
+];
+
+const PLATFORM_ICONS: Record<string, React.ElementType> = {
+    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+};
+const PLATFORM_LABELS: Record<string, string> = {
+    facebook: 'فیسبوک', twitter: 'توییتر', youtube: 'یوتیوب', linkedin: 'لینکدین', rss: 'RSS',
+};
+
+const ICON_OPTIONS = [
+    { value: 'BookOpen',   label: 'کتاب',        Icon: BookOpen   },
+    { value: 'Headphones', label: 'صوت',          Icon: Headphones },
+    { value: 'Video',      label: 'ویدیو',        Icon: Video      },
+    { value: 'FileText',   label: 'مقاله',        Icon: FileText   },
+    { value: 'Users',      label: 'کاربران',      Icon: Users      },
+    { value: 'Globe',      label: 'جهانی',        Icon: Globe      },
+    { value: 'Target',     label: 'هدف',          Icon: Target     },
+    { value: 'Heart',      label: 'قلب',          Icon: Heart      },
+    { value: 'Star',       label: 'ستاره',        Icon: Star       },
+    { value: 'Award',      label: 'جایزه',        Icon: Award      },
+    { value: 'School',     label: 'مدرسه',        Icon: School     },
+    { value: 'Library',    label: 'کتابخانه',     Icon: Library    },
+    { value: 'Landmark',   label: 'بنا',          Icon: Landmark   },
+    { value: 'Lightbulb',  label: 'ایده',         Icon: Lightbulb  },
+];
+
+const GRADIENT_OPTIONS = [
+    { value: 'from-emerald-700 to-teal-600',  label: 'سبز'    },
+    { value: 'from-blue-700 to-indigo-600',   label: 'آبی'    },
+    { value: 'from-violet-700 to-purple-600', label: 'بنفش'   },
+    { value: 'from-rose-700 to-pink-600',     label: 'صورتی'  },
+    { value: 'from-amber-700 to-orange-600',  label: 'نارنجی' },
+    { value: 'from-slate-700 to-gray-600',    label: 'خاکستری'},
+];
+
+type Tab = 'general' | 'social' | 'ticker' | 'footer' | 'about';
+
+const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+    { id: 'general', label: 'عمومی',             icon: Globe    },
+    { id: 'about',   label: 'درباره ما',          icon: Info     },
+    { id: 'social',  label: 'شبکه‌های اجتماعی',  icon: Share2   },
+    { id: 'ticker',  label: 'خبرتیکر',            icon: Radio    },
+    { id: 'footer',  label: 'فوتر',               icon: FileText },
+];
+
+// ── Default about data ────────────────────────────────────────────────────────
+const DEF_ABOUT_HERO: AboutHero = {
+    title:    { da: 'کتابخانه رسالت',  en: 'Resalat Library' },
+    subtitle: { da: 'مرکز دیجیتال علوم اسلامی به زبان دری.', en: 'Digital centre for Islamic sciences in Dari.' },
+};
+const DEF_ABOUT_STATS: AboutStat[] = [
+    { icon: 'BookOpen',   value: '۳٬۵۰۰+', label: { da: 'کتاب دیجیتال',   en: 'Digital Books'    } },
+    { icon: 'Headphones', value: '۱٬۲۰۰+', label: { da: 'فایل صوتی',      en: 'Audio Files'      } },
+    { icon: 'Video',      value: '۸۰۰+',   label: { da: 'ویدیو آموزشی',   en: 'Videos'           } },
+    { icon: 'FileText',   value: '۵۰۰+',   label: { da: 'مقاله علمی',     en: 'Articles'         } },
+    { icon: 'Users',      value: '۲۵٬۰۰۰+',label: { da: 'کاربر فعال',     en: 'Active Users'     } },
+    { icon: 'Globe',      value: '۴۵+',    label: { da: 'کشور پوشش داده', en: 'Countries Covered'} },
+];
+const DEF_ABOUT_VALUES: AboutValue[] = [
+    { icon: 'Target', title: { da: 'رسالت ما',     en: 'Our Mission' }, body: { da: '',  en: '' } },
+    { icon: 'Heart',  title: { da: 'ارزش‌های ما',  en: 'Our Values'  }, body: { da: '',  en: '' } },
+    { icon: 'Globe',  title: { da: 'چشم‌انداز ما', en: 'Our Vision'  }, body: { da: '',  en: '' } },
+];
+const DEF_ABOUT_TEAM: AboutMember[] = [];
+
+// ── Component ─────────────────────────────────────────────────────────────────
+export default function SiteSettingsIndex({ settings }: Props) {
+    const { logoUrl } = usePage<SharedProps>().props;
+
+    const [tab, setTab]           = useState<Tab>('general');
+    const [errors, setErrors]     = useState<Record<string, string>>({});
+    const [processing, setProcessing] = useState(false);
+
+    // Logo
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const [logoPreview, setLogoPreview]     = useState<string | null>(null);
+    const [logoProcessing, setLogoProcessing] = useState(false);
+
+    // General
+    const [general, setGeneral] = useState({
+        site_name:       { da: settings.site_name?.da        ?? '', en: settings.site_name?.en        ?? '' },
+        site_tagline:    { da: settings.site_tagline?.da     ?? '', en: settings.site_tagline?.en     ?? '' },
+        contact_email:   settings.contact_email   ?? '',
+        contact_phone:   settings.contact_phone   ?? '',
+        contact_address: { da: settings.contact_address?.da  ?? '', en: settings.contact_address?.en  ?? '' },
+        contact_hours:   { da: settings.contact_hours?.da    ?? '', en: settings.contact_hours?.en    ?? '' },
+    });
+
+    // Social
+    const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
+        settings.social_links ?? [
+            { platform: 'facebook', url: '#', count: '' },
+            { platform: 'twitter',  url: '#', count: '' },
+            { platform: 'youtube',  url: '#', count: '' },
+            { platform: 'linkedin', url: '#', count: '' },
+            { platform: 'rss',      url: '#', count: '' },
+        ]
+    );
+
+    // Ticker
+    const [tickerItems, setTickerItems] = useState<TickerItem[]>(
+        settings.ticker_items ?? [{ da: '', en: '' }]
+    );
+
+    // Footer
+    const [footerAbout, setFooterAbout] = useState<ML>({
+        da: settings.footer_about?.da ?? '',
+        en: settings.footer_about?.en ?? '',
+    });
+
+    // About
+    const [aboutHero, setAboutHero] = useState<AboutHero>(settings.about_hero ?? DEF_ABOUT_HERO);
+    const [aboutStats, setAboutStats]   = useState<AboutStat[]>(settings.about_stats   ?? DEF_ABOUT_STATS);
+    const [aboutValues, setAboutValues] = useState<AboutValue[]>(settings.about_values ?? DEF_ABOUT_VALUES);
+    const [aboutTeam, setAboutTeam]     = useState<AboutMember[]>(settings.about_team   ?? DEF_ABOUT_TEAM);
+
+    // ── Save ──────────────────────────────────────────────────────────────────
+    function save() {
+        setProcessing(true);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = {
+            ...general,
+            social_links:  socialLinks,
+            ticker_items:  tickerItems,
+            footer_about:  footerAbout,
+            about_hero:    aboutHero,
+            about_stats:   aboutStats,
+            about_values:  aboutValues,
+            about_team:    aboutTeam,
+        };
+        router.post('/admin/site-settings', payload, {
+            onError:  (e) => setErrors(e),
+            onFinish: () => setProcessing(false),
+        });
+    }
+
+    // ── Logo ──────────────────────────────────────────────────────────────────
+    function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setLogoPreview(URL.createObjectURL(file));
+    }
+    function uploadLogo() {
+        const file = logoInputRef.current?.files?.[0];
+        if (!file) return;
+        setLogoProcessing(true);
+        const form = new FormData();
+        form.append('logo', file);
+        router.post('/admin/site-settings/logo', form, {
+            forceFormData: true,
+            onSuccess: () => setLogoPreview(null),
+            onFinish:  () => setLogoProcessing(false),
+        });
+    }
+    function removeLogo() {
+        if (!confirm('آیا مطمئن هستید که می‌خواهید لوگو را حذف کنید؟')) return;
+        router.delete('/admin/site-settings/logo');
+    }
+
+    // ── Ticker helpers ────────────────────────────────────────────────────────
+    function addTicker()  { setTickerItems([...tickerItems, { da: '', en: '' }]); }
+    function removeTicker(i: number) { setTickerItems(tickerItems.filter((_, idx) => idx !== i)); }
+    function updateTicker(i: number, field: 'da' | 'en', val: string) {
+        setTickerItems(tickerItems.map((t, idx) => idx === i ? { ...t, [field]: val } : t));
+    }
+
+    // ── Social helpers ────────────────────────────────────────────────────────
+    function updateSocial(i: number, field: keyof SocialLink, val: string) {
+        setSocialLinks(socialLinks.map((s, idx) => idx === i ? { ...s, [field]: val } : s));
+    }
+
+    // ── About stat helpers ────────────────────────────────────────────────────
+    function addStat()    { setAboutStats([...aboutStats, { icon: 'BookOpen', value: '', label: { da: '', en: '' } }]); }
+    function removeStat(i: number) { setAboutStats(aboutStats.filter((_, idx) => idx !== i)); }
+    function updateStat(i: number, patch: Partial<AboutStat>) {
+        setAboutStats(aboutStats.map((s, idx) => idx === i ? { ...s, ...patch } : s));
+    }
+    function updateStatLabel(i: number, field: 'da' | 'en', val: string) {
+        setAboutStats(aboutStats.map((s, idx) => idx === i ? { ...s, label: { ...s.label, [field]: val } } : s));
+    }
+
+    // ── About value helpers ───────────────────────────────────────────────────
+    function addValue()   { setAboutValues([...aboutValues, { icon: 'Target', title: { da: '', en: '' }, body: { da: '', en: '' } }]); }
+    function removeValue(i: number) { setAboutValues(aboutValues.filter((_, idx) => idx !== i)); }
+    function updateValue(i: number, patch: Partial<AboutValue>) {
+        setAboutValues(aboutValues.map((v, idx) => idx === i ? { ...v, ...patch } : v));
+    }
+    function updateValueML(i: number, field: 'title' | 'body', lang: 'da' | 'en', val: string) {
+        setAboutValues(aboutValues.map((v, idx) => idx === i ? { ...v, [field]: { ...v[field], [lang]: val } } : v));
+    }
+
+    // ── About team helpers ────────────────────────────────────────────────────
+    function addTeam()    { setAboutTeam([...aboutTeam, { name: '', role: { da: '', en: '' }, bio: { da: '', en: '' }, gradient: GRADIENT_OPTIONS[0].value }]); }
+    function removeTeam(i: number) { setAboutTeam(aboutTeam.filter((_, idx) => idx !== i)); }
+    function updateTeam(i: number, patch: Partial<AboutMember>) {
+        setAboutTeam(aboutTeam.map((m, idx) => idx === i ? { ...m, ...patch } : m));
+    }
+    function updateTeamML(i: number, field: 'role' | 'bio', lang: 'da' | 'en', val: string) {
+        setAboutTeam(aboutTeam.map((m, idx) => idx === i ? { ...m, [field]: { ...m[field], [lang]: val } } : m));
+    }
+
+    const currentLogo = logoPreview ?? logoUrl ?? null;
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="تنظیمات سایت" />
+            <div className="p-6 space-y-5 max-w-4xl" dir="rtl">
+
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-bold">تنظیمات سایت</h1>
+                        <p className="text-sm text-muted-foreground mt-0.5">محتوای سایت را از اینجا مدیریت کنید</p>
+                    </div>
+                    <Button onClick={save} disabled={processing}>
+                        <Save className="w-4 h-4 me-1.5" />
+                        {processing ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
+                    </Button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">
+                    {TABS.map(({ id, label, icon: Icon }) => (
+                        <button
+                            key={id}
+                            onClick={() => setTab(id)}
+                            className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                                tab === id
+                                    ? 'border-emerald-600 text-emerald-600'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <Icon className="w-4 h-4" />
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* ── Tab: General ──────────────────────────────────────────── */}
+                {tab === 'general' && (
+                    <div className="space-y-6">
+                        <Section title="لوگوی سایت">
+                            <div className="flex flex-col sm:flex-row items-start gap-6">
+                                <div className="flex-shrink-0">
+                                    <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                        {currentLogo ? (
+                                            <img src={currentLogo} alt="Logo" className="w-full h-full object-contain p-2" />
+                                        ) : (
+                                            <div className="text-center text-gray-400">
+                                                <ImageIcon className="w-8 h-8 mx-auto mb-1" />
+                                                <span className="text-xs">بدون لوگو</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex-1 space-y-3">
+                                    <p className="text-sm text-muted-foreground">
+                                        لوگو در نوار بالا، فوتر و صفحات سایت نمایش داده می‌شود.
+                                        فرمت‌های مجاز: PNG، JPG، WebP (حداکثر ۲ مگابایت).
+                                    </p>
+                                    <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onLogoChange} />
+                                    <div className="flex flex-wrap gap-2">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
+                                            <Upload className="w-4 h-4 me-1.5" />انتخاب فایل
+                                        </Button>
+                                        {logoPreview && (
+                                            <Button type="button" size="sm" onClick={uploadLogo} disabled={logoProcessing}>
+                                                <Save className="w-4 h-4 me-1.5" />
+                                                {logoProcessing ? 'در حال آپلود...' : 'ذخیره لوگو'}
+                                            </Button>
+                                        )}
+                                        {logoPreview && (
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => { setLogoPreview(null); if (logoInputRef.current) logoInputRef.current.value = ''; }}>
+                                                <X className="w-4 h-4 me-1.5" />لغو
+                                            </Button>
+                                        )}
+                                        {logoUrl && !logoPreview && (
+                                            <Button type="button" variant="destructive" size="sm" onClick={removeLogo}>
+                                                <Trash2 className="w-4 h-4 me-1.5" />حذف لوگو
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </Section>
+
+                        <Section title="هویت سایت">
+                            <TwoLang label="نام سایت" da={general.site_name.da} en={general.site_name.en}
+                                onDa={(v) => setGeneral({ ...general, site_name: { ...general.site_name, da: v } })}
+                                onEn={(v) => setGeneral({ ...general, site_name: { ...general.site_name, en: v } })} />
+                            <TwoLang label="شعار سایت (tagline)" da={general.site_tagline.da} en={general.site_tagline.en}
+                                onDa={(v) => setGeneral({ ...general, site_tagline: { ...general.site_tagline, da: v } })}
+                                onEn={(v) => setGeneral({ ...general, site_tagline: { ...general.site_tagline, en: v } })} />
+                        </Section>
+
+                        <Section title="اطلاعات تماس">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label>ایمیل</Label>
+                                    <Input value={general.contact_email} onChange={(e) => setGeneral({ ...general, contact_email: e.target.value })} placeholder="info@example.com" dir="ltr" />
+                                </div>
+                                <div>
+                                    <Label>شماره تلفن</Label>
+                                    <Input value={general.contact_phone} onChange={(e) => setGeneral({ ...general, contact_phone: e.target.value })} placeholder="+93 ..." dir="ltr" />
+                                </div>
+                            </div>
+                            <TwoLang label="آدرس" da={general.contact_address.da} en={general.contact_address.en}
+                                onDa={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, da: v } })}
+                                onEn={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, en: v } })} />
+                            <TwoLang label="ساعات کاری" da={general.contact_hours.da} en={general.contact_hours.en}
+                                onDa={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, da: v } })}
+                                onEn={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, en: v } })} />
+                        </Section>
+                    </div>
+                )}
+
+                {/* ── Tab: About ────────────────────────────────────────────── */}
+                {tab === 'about' && (
+                    <div className="space-y-6">
+
+                        {/* Hero */}
+                        <Section title="بنر معرفی (Hero)">
+                            <TwoLang label="عنوان" da={aboutHero.title.da} en={aboutHero.title.en}
+                                onDa={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, da: v } })}
+                                onEn={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, en: v } })} />
+                            <div className="space-y-2">
+                                <Label>توضیحات کوتاه</Label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">دری</p>
+                                        <Textarea rows={3} value={aboutHero.subtitle.da} dir="rtl"
+                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, da: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">English</p>
+                                        <Textarea rows={3} value={aboutHero.subtitle.en} dir="ltr"
+                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, en: e.target.value } })} />
+                                    </div>
+                                </div>
+                            </div>
+                        </Section>
+
+                        {/* Stats */}
+                        <Section title="آمار و ارقام">
+                            <p className="text-sm text-muted-foreground -mt-2 mb-3">در بخش «کتابخانه در اعداد» نمایش داده می‌شود.</p>
+                            <div className="space-y-3">
+                                {aboutStats.map((s, i) => (
+                                    <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-muted-foreground font-medium">آمار {i + 1}</span>
+                                            <button type="button" onClick={() => removeStat(i)} className="text-red-400 hover:text-red-600">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div>
+                                                <Label className="text-xs">آیکون</Label>
+                                                <IconSelect value={s.icon} onChange={(v) => updateStat(i, { icon: v })} />
+                                            </div>
+                                            <div>
+                                                <Label className="text-xs">عدد / مقدار</Label>
+                                                <Input value={s.value} onChange={(e) => updateStat(i, { value: e.target.value })} placeholder="مثال: ۳٬۵۰۰+" dir="rtl" />
+                                            </div>
+                                            <div className="sm:col-span-1" />
+                                        </div>
+                                        <TwoLang label="برچسب" da={s.label.da} en={s.label.en}
+                                            onDa={(v) => updateStatLabel(i, 'da', v)}
+                                            onEn={(v) => updateStatLabel(i, 'en', v)} />
+                                    </div>
+                                ))}
+                            </div>
+                            <Button type="button" variant="outline" size="sm" onClick={addStat} className="mt-2">
+                                <Plus className="w-4 h-4 me-1.5" />افزودن آمار
+                            </Button>
+                        </Section>
+
+                        {/* Values */}
+                        <Section title="رسالت، ارزش‌ها و چشم‌انداز">
+                            <p className="text-sm text-muted-foreground -mt-2 mb-3">کارت‌های معرفی در صفحه درباره ما.</p>
+                            <div className="space-y-4">
+                                {aboutValues.map((v, i) => (
+                                    <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-muted-foreground font-medium">کارت {i + 1}</span>
+                                            <button type="button" onClick={() => removeValue(i)} className="text-red-400 hover:text-red-600">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <Label className="text-xs">آیکون</Label>
+                                            <IconSelect value={v.icon} onChange={(val) => updateValue(i, { icon: val })} />
+                                        </div>
+                                        <TwoLang label="عنوان" da={v.title.da} en={v.title.en}
+                                            onDa={(val) => updateValueML(i, 'title', 'da', val)}
+                                            onEn={(val) => updateValueML(i, 'title', 'en', val)} />
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">متن</Label>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">دری</p>
+                                                    <Textarea rows={3} value={v.body.da} dir="rtl"
+                                                        onChange={(e) => updateValueML(i, 'body', 'da', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">English</p>
+                                                    <Textarea rows={3} value={v.body.en} dir="ltr"
+                                                        onChange={(e) => updateValueML(i, 'body', 'en', e.target.value)} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <Button type="button" variant="outline" size="sm" onClick={addValue} className="mt-2">
+                                <Plus className="w-4 h-4 me-1.5" />افزودن کارت
+                            </Button>
+                        </Section>
+
+                        {/* Team */}
+                        <Section title="تیم علمی">
+                            <p className="text-sm text-muted-foreground -mt-2 mb-3">اعضای تیم که در صفحه درباره ما نمایش داده می‌شوند.</p>
+                            <div className="space-y-4">
+                                {aboutTeam.map((m, i) => (
+                                    <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-muted-foreground font-medium">عضو {i + 1}</span>
+                                            <button type="button" onClick={() => removeTeam(i)} className="text-red-400 hover:text-red-600">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <Label className="text-xs">نام</Label>
+                                                <Input value={m.name} onChange={(e) => updateTeam(i, { name: e.target.value })} placeholder="نام کامل..." dir="rtl" />
+                                            </div>
+                                            <div>
+                                                <Label className="text-xs">رنگ کارت</Label>
+                                                <GradientSelect value={m.gradient} onChange={(v) => updateTeam(i, { gradient: v })} />
+                                            </div>
+                                        </div>
+                                        <TwoLang label="سمت / نقش" da={m.role.da} en={m.role.en}
+                                            onDa={(v) => updateTeamML(i, 'role', 'da', v)}
+                                            onEn={(v) => updateTeamML(i, 'role', 'en', v)} />
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">بیوگرافی</Label>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">دری</p>
+                                                    <Textarea rows={3} value={m.bio.da} dir="rtl"
+                                                        onChange={(e) => updateTeamML(i, 'bio', 'da', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">English</p>
+                                                    <Textarea rows={3} value={m.bio.en} dir="ltr"
+                                                        onChange={(e) => updateTeamML(i, 'bio', 'en', e.target.value)} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <Button type="button" variant="outline" size="sm" onClick={addTeam} className="mt-2">
+                                <Plus className="w-4 h-4 me-1.5" />افزودن عضو
+                            </Button>
+                        </Section>
+                    </div>
+                )}
+
+                {/* ── Tab: Social ───────────────────────────────────────────── */}
+                {tab === 'social' && (
+                    <Section title="لینک‌های شبکه‌های اجتماعی">
+                        <p className="text-sm text-muted-foreground -mt-2 mb-2">
+                            این اطلاعات در سایدبار، فوتر و نوار بالا نمایش داده می‌شوند.
+                        </p>
+                        <div className="space-y-4">
+                            {socialLinks.map((s, i) => {
+                                const Icon = PLATFORM_ICONS[s.platform] ?? Globe;
+                                const label = PLATFORM_LABELS[s.platform] ?? s.platform;
+                                return (
+                                    <div key={s.platform} className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div className="sm:col-span-1 flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                                                <Icon className="w-4 h-4 text-gray-600" />
+                                            </div>
+                                            <span className="text-sm font-medium">{label}</span>
+                                        </div>
+                                        <div className="sm:col-span-3">
+                                            <Label className="text-xs">لینک</Label>
+                                            <Input value={s.url} onChange={(e) => updateSocial(i, 'url', e.target.value)} placeholder="https://..." dir="ltr" />
+                                        </div>
+                                        <div className="sm:col-span-1">
+                                            <Label className="text-xs">تعداد دنبال‌کننده</Label>
+                                            <Input value={s.count} onChange={(e) => updateSocial(i, 'count', e.target.value)} placeholder="مثال: 1.2K" dir="ltr" />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </Section>
+                )}
+
+                {/* ── Tab: Ticker ───────────────────────────────────────────── */}
+                {tab === 'ticker' && (
+                    <Section title="آیتم‌های خبرتیکر">
+                        <p className="text-sm text-muted-foreground -mt-2 mb-3">این متن‌ها در نوار متحرک زیر منو نمایش داده می‌شوند.</p>
+                        <div className="space-y-3">
+                            {tickerItems.map((item, i) => (
+                                <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground font-medium">آیتم {i + 1}</span>
+                                        <button type="button" onClick={() => removeTicker(i)} className="text-red-400 hover:text-red-600">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <Label className="text-xs">دری</Label>
+                                        <Input value={item.da} onChange={(e) => updateTicker(i, 'da', e.target.value)} placeholder="متن به زبان دری..." dir="rtl" />
+                                    </div>
+                                    <div>
+                                        <Label className="text-xs">English</Label>
+                                        <Input value={item.en} onChange={(e) => updateTicker(i, 'en', e.target.value)} placeholder="Text in English..." dir="ltr" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <Button type="button" variant="outline" size="sm" onClick={addTicker} className="mt-2">
+                            <Plus className="w-4 h-4 me-1.5" />افزودن آیتم
+                        </Button>
+                        <InputError message={errors.ticker_items} />
+                    </Section>
+                )}
+
+                {/* ── Tab: Footer ───────────────────────────────────────────── */}
+                {tab === 'footer' && (
+                    <Section title="متن «درباره ما» در فوتر">
+                        <p className="text-sm text-muted-foreground -mt-2 mb-3">این متن در ستون اول فوتر سایت نمایش داده می‌شود.</p>
+                        <div className="space-y-4">
+                            <div>
+                                <Label>دری</Label>
+                                <Textarea value={footerAbout.da} onChange={(e) => setFooterAbout({ ...footerAbout, da: e.target.value })} rows={5} placeholder="توضیحات به زبان دری..." dir="rtl" />
+                            </div>
+                            <div>
+                                <Label>English</Label>
+                                <Textarea value={footerAbout.en} onChange={(e) => setFooterAbout({ ...footerAbout, en: e.target.value })} rows={5} placeholder="Description in English..." dir="ltr" />
+                            </div>
+                        </div>
+                    </Section>
+                )}
+
+                {/* Bottom save */}
+                <div className="flex justify-end pt-2">
+                    <Button onClick={save} disabled={processing}>
+                        <Save className="w-4 h-4 me-1.5" />
+                        {processing ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
+                    </Button>
+                </div>
+            </div>
+        </AppLayout>
+    );
+}
+
+// ── Helper components ─────────────────────────────────────────────────────────
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2 pb-2 border-b border-gray-100">
+                <span className="w-1 h-4 bg-emerald-500 rounded-full inline-block" />
+                {title}
+            </h3>
+            {children}
+        </div>
+    );
+}
+
+function TwoLang({ label, da, en, onDa, onEn }: { label: string; da: string; en: string; onDa: (v: string) => void; onEn: (v: string) => void }) {
+    return (
+        <div className="space-y-2">
+            <Label>{label}</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <p className="text-xs text-muted-foreground mb-1">دری</p>
+                    <Input value={da} onChange={(e) => onDa(e.target.value)} placeholder="..." dir="rtl" />
+                </div>
+                <div>
+                    <p className="text-xs text-muted-foreground mb-1">English</p>
+                    <Input value={en} onChange={(e) => onEn(e.target.value)} placeholder="..." dir="ltr" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function IconSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    return (
+        <div className="flex flex-wrap gap-1.5 mt-1">
+            {ICON_OPTIONS.map(({ value: v, label, Icon }) => (
+                <button
+                    key={v}
+                    type="button"
+                    title={label}
+                    onClick={() => onChange(v)}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${
+                        value === v
+                            ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
+                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-400'
+                    }`}
+                >
+                    <Icon className="w-4 h-4" />
+                </button>
+            ))}
+        </div>
+    );
+}
+
+function GradientSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    return (
+        <div className="flex flex-wrap gap-1.5 mt-1">
+            {GRADIENT_OPTIONS.map(({ value: v, label }) => (
+                <button
+                    key={v}
+                    type="button"
+                    title={label}
+                    onClick={() => onChange(v)}
+                    className={`w-8 h-8 rounded-lg bg-gradient-to-br ${v} border-2 transition-all ${
+                        value === v ? 'border-gray-800 scale-110' : 'border-transparent'
+                    }`}
+                />
+            ))}
+        </div>
+    );
+}

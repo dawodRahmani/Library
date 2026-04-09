@@ -1,14 +1,40 @@
-import { useState } from 'react';
-import { CalendarDays, Globe, ChevronDown, Facebook, Twitter, Youtube, Rss } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { usePage } from '@inertiajs/react';
+import { CalendarDays, Facebook, Twitter, Youtube, Rss, Linkedin } from 'lucide-react';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
-const LANGUAGES = [
-    { label: 'فارسی', active: true },
-    { label: 'English' },
-    { label: 'العربية' },
-];
+interface SocialLink { platform: string; url: string; count: string }
+interface SharedProps { siteSettings?: { social_links?: SocialLink[] }; [key: string]: unknown }
+
+const PLATFORM_ICONS: Record<string, React.ElementType> = {
+    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+};
+
 
 export function TopBar() {
-    const [langOpen, setLangOpen] = useState(false);
+    const { t, i18n } = useTranslation();
+    const { siteSettings } = usePage<SharedProps>().props;
+    const socials = siteSettings?.social_links ?? [];
+
+    // Format date based on current language
+    const formatDate = () => {
+        const now = new Date();
+        const localeMap: Record<string, string> = {
+            'da': 'fa-AF', // Dari -> Persian (Afghanistan)
+            'en': 'en-US',
+            'ar': 'ar-SA', // Arabic -> Saudi Arabia
+        };
+        const locale = localeMap[i18n.language] || 'en-US';
+
+        const dateFormatter = new Intl.DateTimeFormat(locale, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+
+        return dateFormatter.format(now);
+    };
 
     return (
         <div className="bg-[#141824] text-gray-400 text-[13px] border-b border-white/5">
@@ -16,50 +42,27 @@ export function TopBar() {
                 {/* Date */}
                 <div className="flex items-center gap-2">
                     <CalendarDays className="w-3.5 h-3.5 text-gray-500" />
-                    <span>امروز — یکشنبه ۹ حمل ۱۴۰۴</span>
+                    <span>{t('today')} — {formatDate()}</span>
                 </div>
 
                 {/* Language + Social */}
                 <div className="flex items-center gap-4">
-                    {/* Language dropdown */}
-                    <div className="relative">
-                        <button
-                            className="flex items-center gap-1 hover:text-white transition-colors"
-                            onClick={() => setLangOpen((v) => !v)}
-                        >
-                            <Globe className="w-3.5 h-3.5" />
-                            <span>فارسی</span>
-                            <ChevronDown className="w-3 h-3" />
-                        </button>
-                        {langOpen && (
-                            <>
-                                <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setLangOpen(false)}
-                                />
-                                <div className="absolute end-0 top-full mt-1 bg-white text-gray-800 shadow-xl rounded-md z-50 min-w-[130px] overflow-hidden">
-                                    {LANGUAGES.map((l) => (
-                                        <a
-                                            key={l.label}
-                                            href="#"
-                                            className={`block px-4 py-2 text-sm hover:bg-gray-50 hover:text-[#27ae60] transition-colors ${l.active ? 'font-bold text-[#27ae60]' : ''}`}
-                                        >
-                                            {l.label}
-                                        </a>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    {/* Language switcher */}
+                    <LanguageSwitcher />
 
                     {/* Social icons */}
-                    <div className="hidden sm:flex items-center gap-3">
-                        {[Facebook, Twitter, Youtube, Rss].map((Icon, i) => (
-                            <a key={i} href="#" className="hover:text-white transition-colors">
-                                <Icon className="w-3.5 h-3.5" />
-                            </a>
-                        ))}
-                    </div>
+                    {socials.length > 0 && (
+                        <div className="hidden sm:flex items-center gap-3">
+                            {socials.map((s) => {
+                                const Icon = PLATFORM_ICONS[s.platform] ?? Rss;
+                                return (
+                                    <a key={s.platform} href={s.url || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                                        <Icon className="w-3.5 h-3.5" />
+                                    </a>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

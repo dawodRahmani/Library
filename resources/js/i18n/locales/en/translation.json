@@ -3,6 +3,11 @@
         "name": "Resalat Library",
         "tagline": "Digital Library Management System"
     },
+    "lang": {
+        "dari": "Dari",
+        "english": "English",
+        "arabic": "Arabic"
+    },
     "auth": {
         "login": "Log in to your account",
         "loginDescription": "Enter your email and password below to log in",
@@ -12,6 +17,29 @@
         "loginButton": "Log in",
         "forgotPassword": "Forgot password?",
         "logout": "Logout"
+    },
+    "nav": {
+        "home": "Home",
+        "library": "Library",
+        "darUlIfta": "Dar-ul-Ifta",
+        "videos": "Videos",
+        "audio": "Audio",
+        "statements": "Statements",
+        "magazine": "Magazine",
+        "about": "About Us",
+        "contact": "Contact Us",
+        "aqeedah": "Aqeedah and Manhaj",
+        "jihad": "Jihad and Martyrdom",
+        "articles": "Articles",
+        "politics": "Politics",
+        "history": "History",
+        "various": "Various Books",
+        "tawheed": "Tawheed and Aqeedah",
+        "political": "Political Issues",
+        "rulings": "General Sharia Rulings",
+        "advice": "Advice and Sermons",
+        "analysis": "Analysis and Daily Talk",
+        "nasheed": "Nasheeds and Songs"
     },
     "sidebar": {
         "platform": "Main Menu",
@@ -46,8 +74,26 @@
         "settingsGroup": "Settings",
         "library": "Library",
         "books": "Books",
-        "videos": "Videos"
+        "videos": "Videos",
+        "audios": "Audio",
+        "fatwas": "Dar-ul-Ifta",
+        "articles": "Articles",
+        "magazines": "Magazine",
+        "categories": "Categories",
+        "contentManagement": "Content Management"
     },
+    "footer": {
+        "about": "About Us",
+        "sitemap": "Sitemap",
+        "recentBooks": "Recent Books",
+        "recentArticles": "Recent Articles",
+        "copyright": "All rights reserved",
+        "home": "Home",
+        "faq": "FAQ",
+        "support": "Support",
+        "description": "Resalat Library is a digital center for publishing and teaching Islamic sciences in Dari language. Our goal is to provide authentic scientific resources for all Persian-speaking Muslims."
+    },
+    "today": "Today",
     "dashboard": {
         "title": "Dashboard",
         "todaySales": "Today's Sales",
@@ -758,6 +804,18 @@
     "notifications": {
         "dataUpdated": "Data Updated",
         "dataUpdatedDesc": "New changes have been received"
+    },
+    "search": {
+        "placeholder": "Search books, videos...",
+        "noResults": "No results found",
+        "types": {
+            "book": "Book",
+            "video": "Video",
+            "audio": "Audio",
+            "fatwa": "Fatwa",
+            "article": "Article",
+            "magazine": "Magazine"
+        }
     },
     "common": {
         "save": "Save",

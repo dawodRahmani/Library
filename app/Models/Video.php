@@ -18,6 +18,9 @@ class Video extends Model
         'description',
         'thumbnail',
         'video_url',
+        'video_source',
+        'file_path',
+        'file_size',
         'is_active',
     ];
 

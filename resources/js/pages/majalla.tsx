@@ -7,7 +7,27 @@ import { MajallaList } from '@/components/home/majalla-list';
 import { HomeSidebar } from '@/components/home/home-sidebar';
 import { HomeFooter }  from '@/components/home/home-footer';
 
-export default function Majalla() {
+interface MagazineItem {
+    id: number;
+    number: number;
+    title: string;
+    theme: string;
+    year: string;
+    articleCount: number;
+    description: string;
+    featured: boolean;
+    articles: string[];
+    cover_image?: string;
+    has_file: boolean;
+    file_size: number | null;
+    date: string;
+}
+
+interface PageProps {
+    magazines: MagazineItem[];
+}
+
+export default function Majalla({ magazines }: PageProps) {
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="مجله — کتابخانه رسالت" />
@@ -27,7 +47,7 @@ export default function Majalla() {
             <div className="max-w-[1240px] mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <MajallaList />
+                        <MajallaList magazines={magazines} />
                     </div>
                     <div className="lg:col-span-1">
                         <HomeSidebar />

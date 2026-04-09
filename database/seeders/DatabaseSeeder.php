@@ -14,6 +14,13 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleSeeder::class,
             CategorySeeder::class,
+            BookSeeder::class,
+            VideoSeeder::class,
+            AudioSeeder::class,
+            FatwaSeeder::class,
+            ArticleSeeder::class,
+            MagazineSeeder::class,
+            SiteSettingSeeder::class,
         ]);
 
         $admin = User::firstOrCreate(

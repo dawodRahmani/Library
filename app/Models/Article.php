@@ -15,6 +15,7 @@ class Article extends Model
         'author',
         'category_id',
         'read_time',
+        'cover_image',
         'is_active',
     ];
 

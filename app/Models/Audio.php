@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Audio extends Model
 {
+    protected $table = 'audios';
+
     protected $fillable = [
         'title',
         'description',
@@ -15,6 +17,9 @@ class Audio extends Model
         'duration',
         'episodes',
         'audio_url',
+        'audio_source',
+        'file_path',
+        'file_size',
         'is_active',
     ];
 

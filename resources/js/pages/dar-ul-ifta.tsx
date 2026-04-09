@@ -7,7 +7,27 @@ import { DarUlIftaList }   from '@/components/home/dar-ul-ifta-list';
 import { HomeSidebar }     from '@/components/home/home-sidebar';
 import { HomeFooter }      from '@/components/home/home-footer';
 
-export default function DarUlIfta() {
+interface FatwaItem {
+    id: number;
+    title: string;
+    description: string;
+    author: string;
+    category: string;
+    categorySlug: string;
+    date: string;
+}
+
+interface Category {
+    slug: string;
+    name: string;
+}
+
+interface PageProps {
+    fatwas: FatwaItem[];
+    categories: Category[];
+}
+
+export default function DarUlIfta({ fatwas, categories }: PageProps) {
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="دارالافتاء — کتابخانه رسالت" />
@@ -27,7 +47,10 @@ export default function DarUlIfta() {
             <div className="max-w-[1240px] mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <DarUlIftaList />
+                        <DarUlIftaList
+                            fatwas={fatwas}
+                            categories={categories}
+                        />
                     </div>
                     <div className="lg:col-span-1">
                         <HomeSidebar />

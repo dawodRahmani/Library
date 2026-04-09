@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Calendar, ChevronLeft, FileText, Newspaper, Star } from 'lucide-react';
-
-type YearKey = 'همه' | '۱۴۰۴' | '۱۴۰۳' | '۱۴۰۲';
+import { BookOpen, Calendar, FileText, Newspaper, Star, Download, Eye } from 'lucide-react';
 
 interface Issue {
     id: number;
@@ -12,106 +10,42 @@ interface Issue {
     year: string;
     articleCount: number;
     description: string;
-    gradient: string;
-    featured?: boolean;
+    featured: boolean;
     articles: string[];
+    cover_image?: string;
+    has_file: boolean;
+    file_size: number | null;
 }
 
-/* ── Mock issues ─────────────────────────────────────────── */
-const ISSUES: Issue[] = [
-    {
-        id: 1, number: 24, title: 'اسلام و دنیای مدرن', theme: 'عقیده و فکر',
-        date: 'حمل ۱۴۰۴', year: '۱۴۰۴', articleCount: 8, featured: true,
-        description: 'این شماره از مجله به بررسی رابطه اسلام با دنیای مدرن، چالش‌های پیش روی مسلمانان و راه‌حل‌های قرآنی و سنتی می‌پردازد.',
-        gradient: 'from-indigo-900 via-blue-900 to-teal-900',
-        articles: ['اسلام و مدرنیته', 'هویت مسلمان در غرب', 'فناوری و شریعت', 'جوانان مسلمان'],
-    },
-    {
-        id: 2, number: 23, title: 'علم و دانش در اسلام', theme: 'تعلیم و تربیت',
-        date: 'دلو ۱۴۰۳', year: '۱۴۰۳', articleCount: 7,
-        description: 'شماره‌ای اختصاصی به فضیلت علم در اسلام، تاریخچه مدارس اسلامی و نقش دانشمندان مسلمان در تمدن بشری.',
-        gradient: 'from-amber-900 via-orange-900 to-red-900',
-        articles: ['تمدن اسلامی', 'مدارس دینی', 'علمای بزرگ', 'طلب علم در سنت'],
-    },
-    {
-        id: 3, number: 22, title: 'خانواده مسلمان', theme: 'فقه و اخلاق',
-        date: 'جدی ۱۴۰۳', year: '۱۴۰۳', articleCount: 9,
-        description: 'بررسی جایگاه خانواده در اسلام، حقوق زن و مرد، تربیت فرزند و چالش‌های خانواده مسلمان در عصر حاضر.',
-        gradient: 'from-rose-900 via-pink-900 to-purple-900',
-        articles: ['حقوق زوجین', 'تربیت اسلامی', 'خانواده قرآنی', 'بحران خانواده'],
-    },
-    {
-        id: 4, number: 21, title: 'قرآن و زندگی', theme: 'تفسیر و قرآن',
-        date: 'قوس ۱۴۰۳', year: '۱۴۰۳', articleCount: 8,
-        description: 'چگونگی تعامل روزانه با قرآن کریم، اهمیت تدبر در آیات و تأثیر قرآن در زندگی فردی و اجتماعی مسلمانان.',
-        gradient: 'from-emerald-900 via-green-900 to-teal-900',
-        articles: ['تدبر قرآنی', 'قرآن و درمان', 'حفظ قرآن', 'آداب تلاوت'],
-    },
-    {
-        id: 5, number: 20, title: 'تاریخ اسلام در خراسان', theme: 'تاریخ',
-        date: 'عقرب ۱۴۰۳', year: '۱۴۰۳', articleCount: 6,
-        description: 'مروری جامع بر تاریخ ورود اسلام به خراسان، دانشمندان بزرگ منطقه و میراث علمی و فرهنگی اسلامی در این سرزمین.',
-        gradient: 'from-stone-900 via-zinc-900 to-slate-900',
-        articles: ['فتح خراسان', 'علمای خراسان', 'نسخه‌های خطی', 'میراث اسلامی'],
-    },
-    {
-        id: 6, number: 19, title: 'رمضان — ماه تحول', theme: 'عبادت و تقوا',
-        date: 'میزان ۱۴۰۳', year: '۱۴۰۳', articleCount: 10,
-        description: 'ویژه‌نامه رمضان کریم: فضائل روزه، احکام، برنامه عبادی، تلاوت قرآن و توصیه‌های علما برای استفاده بهینه از این ماه مبارک.',
-        gradient: 'from-violet-900 via-indigo-900 to-blue-900',
-        articles: ['فقه روزه', 'برنامه رمضانی', 'قیام اللیل', 'عمره رمضان'],
-    },
-    {
-        id: 7, number: 18, title: 'اقتصاد اسلامی', theme: 'فقه معاملات',
-        date: 'سنبله ۱۴۰۳', year: '۱۴۰۳', articleCount: 7,
-        description: 'اصول اقتصاد اسلامی، احکام بانکداری اسلامی، زکات و وقف به عنوان ابزار توسعه اقتصادی در جوامع مسلمان.',
-        gradient: 'from-cyan-900 via-teal-900 to-emerald-900',
-        articles: ['بانکداری اسلامی', 'زکات و توسعه', 'وقف', 'حرام و حلال'],
-    },
-    {
-        id: 8, number: 17, title: 'سیره نبوی — الگوی جاودان', theme: 'سیره و حدیث',
-        date: 'اسد ۱۴۰۳', year: '۱۴۰۳', articleCount: 8,
-        description: 'بررسی جنبه‌های گوناگون سیره پیامبر اکرم صلی الله علیه وسلم به عنوان الگوی عملی برای زندگی مسلمانان.',
-        gradient: 'from-yellow-900 via-amber-900 to-orange-900',
-        articles: ['مکی و مدنی', 'اخلاق نبوی', 'معجزات', 'درس‌های سیره'],
-    },
-    {
-        id: 9, number: 16, title: 'جوانان و آینده امت', theme: 'امت اسلامی',
-        date: 'سرطان ۱۴۰۳', year: '۱۴۰۳', articleCount: 9,
-        description: 'نقش جوانان مسلمان در بازسازی امت، چالش‌های نسل جدید، هویت اسلامی و برنامه‌های عملی برای آینده‌سازی.',
-        gradient: 'from-lime-900 via-green-900 to-emerald-900',
-        articles: ['بحران هویت', 'رهبری جوان', 'امت آینده', 'چالش‌های نسل Z'],
-    },
-    {
-        id: 10, number: 15, title: 'علوم حدیث', theme: 'علوم اسلامی',
-        date: 'جوزا ۱۴۰۲', year: '۱۴۰۲', articleCount: 6,
-        description: 'معرفی علوم حدیث، روش محدثان در تحقیق سند و متن، کتب معتبر حدیثی و اهمیت آن در استنباط احکام اسلامی.',
-        gradient: 'from-blue-900 via-indigo-900 to-violet-900',
-        articles: ['اسناد حدیث', 'کتب صحاح', 'جرح و تعدیل', 'حدیث موضوع'],
-    },
-    {
-        id: 11, number: 14, title: 'تفسیر قرآن — مناهج و روش‌ها', theme: 'تفسیر',
-        date: 'ثور ۱۴۰۲', year: '۱۴۰۲', articleCount: 7,
-        description: 'معرفی مناهج گوناگون تفسیری، تفاوت تفسیر ماثور و رأی، مفسران برجسته و کتب تفسیری معتبر در تاریخ اسلام.',
-        gradient: 'from-teal-900 via-cyan-900 to-blue-900',
-        articles: ['مناهج تفسیر', 'تفسیر به رأی', 'مفسران کبار', 'تفسیر علمی'],
-    },
-    {
-        id: 12, number: 13, title: 'مسلمانان جهان', theme: 'جهان اسلام',
-        date: 'حمل ۱۴۰۲', year: '۱۴۰۲', articleCount: 8,
-        description: 'گزارشی از وضعیت مسلمانان در کشورهای مختلف جهان، چالش‌های اقلیت‌های مسلمان و همبستگی امت اسلامی.',
-        gradient: 'from-orange-900 via-red-900 to-rose-900',
-        articles: ['مسلمانان اروپا', 'آسیای مرکزی', 'آفریقا', 'همبستگی امت'],
-    },
-];
+interface MajallaListProps {
+    magazines: Issue[];
+}
 
-const YEARS: YearKey[] = ['همه', '۱۴۰۴', '۱۴۰۳', '۱۴۰۲'];
+const getGradient = (theme: string, id: number): string => {
+    const gradients = [
+        'from-indigo-900 via-blue-900 to-teal-900',
+        'from-amber-900 via-orange-900 to-red-900',
+        'from-rose-900 via-pink-900 to-purple-900',
+        'from-emerald-900 via-green-900 to-teal-900',
+        'from-stone-900 via-zinc-900 to-slate-900',
+        'from-violet-900 via-indigo-900 to-blue-900',
+        'from-cyan-900 via-teal-900 to-emerald-900',
+        'from-yellow-900 via-amber-900 to-orange-900',
+        'from-lime-900 via-green-900 to-emerald-900',
+        'from-blue-900 via-indigo-900 to-violet-900',
+        'from-teal-900 via-cyan-900 to-blue-900',
+        'from-orange-900 via-red-900 to-rose-900',
+    ];
+    const hash = theme.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return gradients[(hash + id) % gradients.length];
+};
 
 /* ── Featured issue card ─────────────────────────────────── */
 function FeaturedCard({ issue }: { issue: Issue }) {
+    const gradient = getGradient(issue.theme, issue.id);
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-lg transition-shadow mb-6">
-            <div className={`bg-gradient-to-br ${issue.gradient} relative p-8 flex gap-6 items-start`}>
+            <div className={`bg-gradient-to-br ${gradient} relative p-8 flex gap-6 items-start`}>
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                 {/* Cover */}
                 <div className="relative z-10 shrink-0 w-28 h-40 rounded-lg bg-white/10 border border-white/20 flex flex-col items-center justify-center gap-1 shadow-xl">
@@ -132,23 +66,44 @@ function FeaturedCard({ issue }: { issue: Issue }) {
             </div>
 
             <div className="p-5">
-                <p className="text-[12px] text-gray-500 font-bold mb-3">مقالات این شماره:</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                    {issue.articles.map((a) => (
-                        <span key={a} className="text-[12px] bg-[#f0faf5] text-[#27ae60] px-2.5 py-1 rounded-full border border-[#27ae60]/20">
-                            {a}
-                        </span>
-                    ))}
-                </div>
+                {issue.articles && issue.articles.length > 0 && (
+                    <>
+                        <p className="text-[12px] text-gray-500 font-bold mb-3">مقالات این شماره:</p>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {issue.articles.map((a) => (
+                                <span key={a} className="text-[12px] bg-[#f0faf5] text-[#27ae60] px-2.5 py-1 rounded-full border border-[#27ae60]/20">
+                                    {a}
+                                </span>
+                            ))}
+                        </div>
+                    </>
+                )}
                 <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-[12px] text-gray-400">
                         <FileText className="w-3.5 h-3.5" />
                         {issue.articleCount} مقاله
                     </span>
-                    <a href="#" className="flex items-center gap-1.5 text-[13px] text-[#27ae60] font-bold hover:underline">
-                        دانلود و مطالعه
-                        <ChevronLeft className="w-4 h-4" />
-                    </a>
+                    {issue.has_file ? (
+                        <div className="flex items-center gap-2">
+                            <a
+                                href={`/majalla/${issue.id}/read`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-[13px] text-[#27ae60] font-bold hover:underline"
+                            >
+                                <Eye className="w-4 h-4" /> مطالعه آنلاین
+                            </a>
+                            <span className="text-gray-300">|</span>
+                            <a
+                                href={`/majalla/${issue.id}/download`}
+                                className="flex items-center gap-1.5 text-[13px] text-gray-500 hover:text-gray-700 font-medium hover:underline"
+                            >
+                                <Download className="w-4 h-4" /> دانلود
+                            </a>
+                        </div>
+                    ) : (
+                        <span className="text-[12px] text-gray-400">PDF در دسترس نیست</span>
+                    )}
                 </div>
             </div>
         </div>
@@ -157,10 +112,11 @@ function FeaturedCard({ issue }: { issue: Issue }) {
 
 /* ── Regular issue card ──────────────────────────────────── */
 function IssueCard({ issue }: { issue: Issue }) {
+    const gradient = getGradient(issue.theme, issue.id);
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Cover thumbnail */}
-            <div className={`h-40 bg-gradient-to-br ${issue.gradient} relative flex flex-col items-center justify-center gap-2`}>
+            <div className={`h-40 bg-gradient-to-br ${gradient} relative flex flex-col items-center justify-center gap-2`}>
                 <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />
                 <div className="relative z-10 w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Newspaper className="w-5 h-5 text-white" />
@@ -169,12 +125,17 @@ function IssueCard({ issue }: { issue: Issue }) {
                 <span className="absolute top-3 end-3 bg-black/40 text-white text-[10px] px-2 py-0.5 rounded">
                     {issue.date}
                 </span>
+                {issue.has_file && (
+                    <span className="absolute top-3 start-3 bg-rose-600/80 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        <FileText className="w-2.5 h-2.5" /> PDF
+                    </span>
+                )}
             </div>
 
             <div className="p-4 flex flex-col flex-1">
                 <span className="text-[11px] text-[#27ae60] font-bold mb-1">{issue.theme}</span>
                 <h3 className="font-bold text-[14px] text-gray-900 leading-snug mb-2 line-clamp-2 group-hover:text-[#27ae60] transition-colors">
-                    <a href="#">{issue.title}</a>
+                    {issue.title}
                 </h3>
                 <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2 mb-3 flex-1">
                     {issue.description}
@@ -191,19 +152,48 @@ function IssueCard({ issue }: { issue: Issue }) {
                 </div>
             </div>
 
-            <a href="#" className="flex items-center justify-between px-4 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors border-t border-gray-100">
-                <span>مطالعه</span>
-                <ChevronLeft className="w-3.5 h-3.5" />
-            </a>
+            {issue.has_file ? (
+                <div className="flex border-t border-gray-100">
+                    <a
+                        href={`/majalla/${issue.id}/read`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors"
+                    >
+                        <Eye className="w-3.5 h-3.5" /> مطالعه
+                    </a>
+                    <div className="w-px bg-gray-100" />
+                    <a
+                        href={`/majalla/${issue.id}/download`}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 text-gray-600 text-[12px] font-bold hover:bg-gray-200 transition-colors"
+                    >
+                        <Download className="w-3.5 h-3.5" /> دانلود
+                    </a>
+                </div>
+            ) : (
+                <div className="flex items-center justify-center px-4 py-2.5 bg-gray-50 text-gray-400 text-[12px] border-t border-gray-100">
+                    PDF در دسترس نیست
+                </div>
+            )}
         </div>
     );
 }
 
-export function MajallaList() {
-    const [activeYear, setActiveYear] = useState<YearKey>('همه');
+export function MajallaList({ magazines }: MajallaListProps) {
+    const years = Array.from(new Set(magazines.map((m) => m.year))).sort().reverse();
+    const allYears = ['همه', ...years];
 
-    const featured = ISSUES[0];
-    const filtered = ISSUES.slice(1).filter((i) => activeYear === 'همه' || i.year === activeYear);
+    const [activeYear, setActiveYear] = useState<string>(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const year = params.get('year');
+            if (year && allYears.includes(year)) return year;
+        }
+        return 'همه';
+    });
+
+    const featured = magazines.find((m) => m.featured) || magazines[0];
+    const filtered  = magazines.filter((m) => activeYear === 'همه' || m.year === activeYear);
 
     return (
         <div>
@@ -214,16 +204,16 @@ export function MajallaList() {
                 </div>
                 <div>
                     <p className="text-[13px] font-bold text-gray-800">مجله کتابخانه رسالت</p>
-                    <p className="text-[11px] text-gray-400">{ISSUES.length} شماره منتشر شده</p>
+                    <p className="text-[11px] text-gray-400">{magazines.length} شماره منتشر شده</p>
                 </div>
             </div>
 
             {/* Featured */}
-            <FeaturedCard issue={featured} />
+            {featured && <FeaturedCard issue={featured} />}
 
             {/* Year filter */}
-            <div className="flex gap-2 mb-6">
-                {YEARS.map((y) => (
+            <div className="flex gap-2 mb-6 flex-wrap">
+                {allYears.map((y) => (
                     <button
                         key={y}
                         onClick={() => setActiveYear(y)}

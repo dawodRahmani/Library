@@ -16,6 +16,8 @@ class Magazine extends Model
         'featured',
         'articles',
         'cover_image',
+        'file_path',
+        'file_size',
         'is_active',
     ];
 

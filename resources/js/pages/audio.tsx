@@ -7,7 +7,33 @@ import { AudioList }  from '@/components/home/audio-list';
 import { HomeSidebar } from '@/components/home/home-sidebar';
 import { HomeFooter } from '@/components/home/home-footer';
 
-export default function Audio() {
+interface AudioItem {
+    id: number;
+    title: string;
+    description: string;
+    author: string;
+    category: string;
+    categorySlug: string;
+    duration: string;
+    episodes: number;
+    audio_source: 'link' | 'upload';
+    audio_url: string | null;
+    has_file: boolean;
+    file_size: number | null;
+    date: string;
+}
+
+interface Category {
+    slug: string;
+    name: string;
+}
+
+interface PageProps {
+    audios: AudioItem[];
+    categories: Category[];
+}
+
+export default function Audio({ audios, categories }: PageProps) {
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="صوت‌ها — کتابخانه رسالت" />
@@ -27,7 +53,10 @@ export default function Audio() {
             <div className="max-w-[1240px] mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <AudioList />
+                        <AudioList
+                            audios={audios}
+                            categories={categories}
+                        />
                     </div>
                     <div className="lg:col-span-1">
                         <HomeSidebar />

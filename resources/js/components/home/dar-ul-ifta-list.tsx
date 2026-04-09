@@ -1,44 +1,49 @@
-import { useState, useEffect } from 'react';
 import { BookMarked, Clock, User, ChevronLeft } from 'lucide-react';
+import { useState } from 'react';
 
 /* ── Types ───────────────────────────────────────────────── */
-type Category = 'همه' | 'توحید و عقیده' | 'جهاد و استشهاد' | 'قضایای سیاسی' | 'احکام شرعی عام' | 'بیانیه‌ها';
-
-const CATEGORY_SLUG_MAP: Record<string, string> = {
-    tawheed: 'توحید و عقیده',
-    jihad: 'جهاد و استشهاد',
-    political: 'قضایای سیاسی',
-    rulings: 'احکام شرعی عام',
-    statements: 'بیانیه‌ها',
-};
-
 interface FatwaItem {
     id: number;
     title: string;
     description: string;
     author: string;
     date: string;
-    category: Category;
-    gradient: string;
+    category: string;
+    categorySlug: string;
 }
 
-/* ── Mock data ───────────────────────────────────────────── */
-const FATWA_ITEMS: FatwaItem[] = [
-    { id: 1, title: 'حکم نماز جماعت در مسجد', description: 'بیان احکام و فضایل نماز جماعت و شرایط وجوب آن از دیدگاه فقهای اهل سنت.', author: 'شیخ عبدالله نوری', date: '۹ حمل ۱۴۰۴', category: 'توحید و عقیده', gradient: 'from-emerald-900 to-teal-800' },
-    { id: 2, title: 'مسائل زکات فطر', description: 'بررسی احکام تفصیلی زکات فطر، مقدار، وقت و مستحقین آن با دلایل از قرآن و سنت.', author: 'مفتی احمد رحمانی', date: '۸ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-blue-900 to-indigo-800' },
-    { id: 3, title: 'حکم روزه مسافر', description: 'تفصیل احکام روزه در سفر و شرایطی که افطار جایز یا واجب می‌شود.', author: 'شیخ عبدالله نوری', date: '۷ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-violet-900 to-purple-800' },
-    { id: 4, title: 'مسائل نکاح و طلاق', description: 'شرح مسائل مهم در باب نکاح، شرایط صحت آن و احکام طلاق از نظر فقه حنفی.', author: 'مفتی محمد حسینی', date: '۶ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-rose-900 to-red-800' },
-    { id: 5, title: 'بیانیه درباره وضعیت مسلمانان', description: 'بیانیه رسمی دارالإفتاء درباره وضعیت مسلمانان و مسئولیت‌های شرعی آنان.', author: 'دارالإفتاء', date: '۵ حمل ۱۴۰۴', category: 'بیانیه‌ها', gradient: 'from-amber-900 to-orange-800' },
-    { id: 6, title: 'احکام تجارت آنلاین', description: 'فتوا در مورد خرید و فروش آنلاین، شرایط صحت معامله و موارد حرام در تجارت اینترنتی.', author: 'مفتی محمد حسینی', date: '۴ حمل ۱۴۰۴', category: 'احکام شرعی عام', gradient: 'from-teal-900 to-cyan-800' },
-    { id: 7, title: 'حکم جهاد در عصر حاضر', description: 'بررسی احکام جهاد و شرایط آن در عصر حاضر از دیدگاه فقهای معاصر.', author: 'مفتی احمد رحمانی', date: '۳ حمل ۱۴۰۴', category: 'جهاد و استشهاد', gradient: 'from-red-900 to-rose-800' },
-    { id: 8, title: 'توحید و اقسام آن', description: 'شرح اقسام توحید (ربوبیت، الوهیت، اسماء و صفات) با ادله از قرآن و سنت.', author: 'شیخ عبدالله نوری', date: '۲ حمل ۱۴۰۴', category: 'توحید و عقیده', gradient: 'from-indigo-900 to-blue-800' },
-    { id: 9, title: 'موضع اسلام در مسائل سیاسی معاصر', description: 'تحلیل مسائل سیاسی معاصر از منظر شریعت اسلامی و موضع‌گیری فقهی.', author: 'دکتر محمد حسینی', date: '۱ حمل ۱۴۰۴', category: 'قضایای سیاسی', gradient: 'from-slate-900 to-gray-800' },
-    { id: 10, title: 'فضائل شهادت در اسلام', description: 'بررسی آیات و احادیث مربوط به فضائل شهادت و مقام شهید در اسلام.', author: 'مفتی احمد رحمانی', date: '۲۹ حوت ۱۴۰۳', category: 'جهاد و استشهاد', gradient: 'from-green-900 to-emerald-800' },
-    { id: 11, title: 'بیانیه درباره روز عرفه', description: 'بیانیه دارالإفتاء درباره فضایل روز عرفه و اعمال مستحب آن.', author: 'دارالإفتاء', date: '۲۸ حوت ۱۴۰۳', category: 'بیانیه‌ها', gradient: 'from-amber-900 to-yellow-800' },
-    { id: 12, title: 'قضایای سیاسی جهان اسلام', description: 'بررسی مهم‌ترین قضایای سیاسی جهان اسلام و موضع شرعی مسلمانان.', author: 'دکتر محمد حسینی', date: '۲۷ حوت ۱۴۰۳', category: 'قضایای سیاسی', gradient: 'from-cyan-900 to-teal-800' },
-];
+interface Category {
+    slug: string;
+    name: string;
+}
 
-const CATEGORIES: Category[] = ['همه', 'توحید و عقیده', 'جهاد و استشهاد', 'قضایای سیاسی', 'احکام شرعی عام', 'بیانیه‌ها'];
+interface DarUlIftaListProps {
+    fatwas: FatwaItem[];
+    categories: Category[];
+}
+
+// Generate gradient based on category and id
+const getGradient = (category: string, id: number): string => {
+    const gradients = [
+        'from-emerald-900 to-teal-800',
+        'from-blue-900 to-indigo-800',
+        'from-violet-900 to-purple-800',
+        'from-rose-900 to-red-800',
+        'from-amber-900 to-orange-800',
+        'from-teal-900 to-cyan-800',
+        'from-green-900 to-emerald-800',
+        'from-indigo-900 to-blue-800',
+        'from-pink-900 to-rose-800',
+        'from-slate-900 to-gray-800',
+        'from-cyan-900 to-teal-800',
+        'from-amber-900 to-yellow-800',
+    ];
+    // Use category hash to pick gradient
+    const hash = category.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const index = (hash + id) % gradients.length;
+
+    return gradients[index];
+};
 
 const CAT_COLORS: Record<string, string> = {
     'توحید و عقیده':  'bg-emerald-100 text-emerald-700',
@@ -46,16 +51,19 @@ const CAT_COLORS: Record<string, string> = {
     'قضایای سیاسی':   'bg-violet-100  text-violet-700',
     'احکام شرعی عام': 'bg-blue-100    text-blue-700',
     'بیانیه‌ها':       'bg-amber-100   text-amber-700',
+    // default fallback
+    'default': 'bg-gray-100 text-gray-700',
 };
 
 /* ── Card ────────────────────────────────────────────────── */
 function FatwaCard({ item }: { item: FatwaItem }) {
-    const catClass = CAT_COLORS[item.category] ?? 'bg-gray-100 text-gray-700';
+    const gradient = getGradient(item.category, item.id);
+    const catClass = CAT_COLORS[item.category] ?? CAT_COLORS.default;
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Thumbnail */}
-            <div className={`h-36 bg-gradient-to-br ${item.gradient} relative flex items-center justify-center`}>
+            <div className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}>
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                 <BookMarked className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />
                 <span className={`absolute top-3 end-3 text-[11px] font-bold px-2 py-0.5 rounded-full ${catClass}`}>
@@ -92,18 +100,31 @@ function FatwaCard({ item }: { item: FatwaItem }) {
 }
 
 /* ── Main export ─────────────────────────────────────────── */
-export function DarUlIftaList() {
-    const [active, setActive] = useState<Category>('همه');
+export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
+    // Create mapping from slug to category name
+    const slugToName = categories.reduce((acc, cat) => {
 
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const slug = params.get('category');
-        if (slug && CATEGORY_SLUG_MAP[slug]) {
-            setActive(CATEGORY_SLUG_MAP[slug] as Category);
+        acc[cat.slug] = cat.name;
+        return acc;
+    }, {} as Record<string, string>);
+
+    // All categories for filter (include "همه")
+    const allCategories = ['همه', ...categories.map(c => c.name)];
+
+    const [active, setActive] = useState<string>(() => {
+        // Compute initial active category from URL
+        if (typeof window !== 'undefined') {
+
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('category');
+            if (slug && slugToName[slug]) {
+                return slugToName[slug];
+            }
         }
-    }, []);
+        return 'همه';
+    });
 
-    const filtered = active === 'همه' ? FATWA_ITEMS : FATWA_ITEMS.filter((item) => item.category === active);
+    const filtered = active === 'همه' ? fatwas : fatwas.filter((item) => item.category === active);
 
     return (
         <div>
@@ -113,14 +134,14 @@ export function DarUlIftaList() {
                     <BookMarked className="w-5 h-5 text-[#27ae60]" />
                 </div>
                 <div>
-                    <p className="text-[13px] font-bold text-gray-800">{FATWA_ITEMS.length} فتوا و بیانیه</p>
-                    <p className="text-[11px] text-gray-400">در {CATEGORIES.length - 1} دسته‌بندی</p>
+                    <p className="text-[13px] font-bold text-gray-800">{fatwas.length} فتوا و بیانیه</p>
+                    <p className="text-[11px] text-gray-400">در {categories.length} دسته‌بندی</p>
                 </div>
             </div>
 
             {/* Category filter */}
             <div className="flex flex-wrap gap-2 mb-6">
-                {CATEGORIES.map((cat) => (
+                {allCategories.map((cat) => (
                     <button
                         key={cat}
                         onClick={() => setActive(cat)}

@@ -33,6 +33,8 @@ class CategoryController extends Controller
         $data = $request->validate([
             'name'       => ['required', 'array'],
             'name.da'    => ['required', 'string', 'max:255'],
+            'name.en'    => ['nullable', 'string', 'max:255'],
+            'name.ar'    => ['nullable', 'string', 'max:255'],
             'slug'       => ['required', 'string', 'max:255'],
             'type'       => ['required', 'string', 'in:book,video,audio,fatwa,article,magazine'],
             'sort_order' => ['integer'],
@@ -48,6 +50,8 @@ class CategoryController extends Controller
         $data = $request->validate([
             'name'       => ['required', 'array'],
             'name.da'    => ['required', 'string', 'max:255'],
+            'name.en'    => ['nullable', 'string', 'max:255'],
+            'name.ar'    => ['nullable', 'string', 'max:255'],
             'slug'       => ['required', 'string', 'max:255'],
             'type'       => ['required', 'string', 'in:book,video,audio,fatwa,article,magazine'],
             'sort_order' => ['integer'],

@@ -13,12 +13,12 @@ import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 
 interface CategoryItem {
-    id: number; name: { da: string; en?: string }; slug: string; type: string; sort_order: number;
+    id: number; name: { da: string; en?: string; ar?: string }; slug: string; type: string; sort_order: number;
 }
 
 const TYPE_LABELS: Record<string, string> = { book: 'کتاب', video: 'ویدیو', audio: 'صوت', fatwa: 'فتوا', article: 'مقاله', magazine: 'مجله' };
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'دسته‌بندی‌ها', href: '/admin/categories' }];
-const emptyForm = { name: { da: '', en: '' }, slug: '', type: 'book', sort_order: 0 };
+const emptyForm = { name: { da: '', en: '', ar: '' }, slug: '', type: 'book', sort_order: 0 };
 
 export default function CategoriesIndex({ categories }: { categories: CategoryItem[] }) {
     const [search, setSearch] = useState('');
@@ -33,7 +33,7 @@ export default function CategoriesIndex({ categories }: { categories: CategoryIt
     function openCreate() { setEditing(null); setForm(emptyForm); setErrors({}); setOpen(true); }
     function openEdit(c: CategoryItem) {
         setEditing(c);
-        setForm({ name: c.name ?? { da: '', en: '' }, slug: c.slug, type: c.type, sort_order: c.sort_order });
+        setForm({ name: { da: c.name?.da ?? '', en: c.name?.en ?? '', ar: c.name?.ar ?? '' }, slug: c.slug, type: c.type, sort_order: c.sort_order });
         setErrors({}); setOpen(true);
     }
 
@@ -57,7 +57,7 @@ export default function CategoriesIndex({ categories }: { categories: CategoryIt
                 <div className="border rounded-lg overflow-hidden">
                     <Table>
                         <TableHeader><TableRow>
-                            <TableHead className="w-10">#</TableHead><TableHead>نام (دری)</TableHead><TableHead>نام (انگلیسی)</TableHead><TableHead>اسلاگ</TableHead><TableHead>نوع</TableHead><TableHead>ترتیب</TableHead><TableHead className="w-24">عملیات</TableHead>
+                            <TableHead className="w-10">#</TableHead><TableHead>نام (دری)</TableHead><TableHead>نام (EN)</TableHead><TableHead>نام (AR)</TableHead><TableHead>اسلاگ</TableHead><TableHead>نوع</TableHead><TableHead>ترتیب</TableHead><TableHead className="w-24">عملیات</TableHead>
                         </TableRow></TableHeader>
                         <TableBody>
                             {filtered.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">هیچ دسته‌بندی یافت نشد</TableCell></TableRow>}
@@ -66,6 +66,7 @@ export default function CategoriesIndex({ categories }: { categories: CategoryIt
                                     <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                                     <TableCell className="font-medium">{c.name?.da}</TableCell>
                                     <TableCell className="text-muted-foreground">{c.name?.en ?? '—'}</TableCell>
+                                    <TableCell className="text-muted-foreground">{c.name?.ar ?? '—'}</TableCell>
                                     <TableCell><code className="text-xs">{c.slug}</code></TableCell>
                                     <TableCell><Badge variant="secondary">{TYPE_LABELS[c.type] ?? c.type}</Badge></TableCell>
                                     <TableCell>{c.sort_order}</TableCell>
@@ -80,8 +81,9 @@ export default function CategoriesIndex({ categories }: { categories: CategoryIt
                 <DialogContent className="max-w-lg">
                     <DialogHeader><DialogTitle>{editing ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی جدید'}</DialogTitle></DialogHeader>
                     <div className="space-y-4 py-2">
-                        <div><Label>نام (دری) *</Label><Input value={form.name.da} onChange={(e) => setForm({ ...form, name: { ...form.name, da: e.target.value } })} /><InputError message={errors['name.da']} /></div>
-                        <div><Label>نام (انگلیسی)</Label><Input value={form.name.en} onChange={(e) => setForm({ ...form, name: { ...form.name, en: e.target.value } })} /></div>
+                        <div><Label>نام (دری) *</Label><Input value={form.name.da} onChange={(e) => setForm({ ...form, name: { ...form.name, da: e.target.value } })} placeholder="دری" /><InputError message={errors['name.da']} /></div>
+                        <div><Label>نام (English)</Label><Input value={form.name.en ?? ''} onChange={(e) => setForm({ ...form, name: { ...form.name, en: e.target.value } })} placeholder="English" dir="ltr" /></div>
+                        <div><Label>نام (العربية)</Label><Input value={form.name.ar ?? ''} onChange={(e) => setForm({ ...form, name: { ...form.name, ar: e.target.value } })} placeholder="العربية" /></div>
                         <div><Label>اسلاگ *</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="e.g. aqeedah" /><InputError message={errors.slug} /></div>
                         <div><Label>نوع *</Label>
                             <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>

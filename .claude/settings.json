@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(grep -list)",
-      "Bash(find /c/Users/Rahmani/Desktop/Library/Library -path \"*pages*\" -name \"*.tsx\" -exec grep -l \"Form\\\\|useForm\" {})"
+      "Bash(find /c/Users/Rahmani/Desktop/Library/Library -path \"*pages*\" -name \"*.tsx\" -exec grep -l \"Form\\\\|useForm\" {})",
+      "Bash(/c/xampp/php/php.exe artisan:*)",
+      "Bash(C:xamppphpphp.exe artisan:*)",
+      "Bash(C:/xampp/php/php.exe artisan:*)",
+      "Bash(sqlite3 database/database.sqlite \".tables\")",
+      "Bash(grep -n 'name.*$c->name' c:/Users/Rahmani/Desktop/Library/Library/app/Http/Controllers/MagazineController.php)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(\"php\" artisan:*)",
+      "Read(//c/php/**)",
+      "Bash(/c/Users/Rahmani/.config/herd/bin/php.bat -r ':*)",
+      "Bash(\"C:/php/php.exe\" artisan:*)",
+      "Bash(grep -n \"localeMap\\\\|'da':\\\\|'en':\" /c/Users/Rahmani/Desktop/Library/Library/resources/js/components/home/*.tsx)"
     ]
   }
 }

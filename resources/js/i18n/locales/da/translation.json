@@ -3,6 +3,11 @@
         "name": "کتابخانه رسالت",
         "tagline": "سیستم مدیریت کتابخانه دیجیتال"
     },
+    "lang": {
+        "dari": "دری",
+        "english": "English",
+        "arabic": "العربية"
+    },
     "auth": {
         "login": "ورود به سیستم",
         "loginDescription": "ایمیل و رمز عبور خود را وارد کنید",
@@ -12,6 +17,29 @@
         "loginButton": "ورود",
         "forgotPassword": "فراموشی رمز عبور؟",
         "logout": "خروج"
+    },
+    "nav": {
+        "home": "خانه",
+        "library": "کتابخانه",
+        "darUlIfta": "دارالإفتاء",
+        "videos": "ویدیوها",
+        "audio": "صوتی‌ها",
+        "statements": "بیانیه‌ها",
+        "magazine": "مجله",
+        "about": "درباره ما",
+        "contact": "تماس با ما",
+        "aqeedah": "عقیده و منهج",
+        "jihad": "جهاد و استشهاد",
+        "articles": "مقاله‌ها",
+        "politics": "سیاست",
+        "history": "تاریخ",
+        "various": "کتاب‌های گوناگون",
+        "tawheed": "توحید و عقیده",
+        "political": "قضایای سیاسی",
+        "rulings": "احکام شرعی عام",
+        "advice": "پند و موعظه",
+        "analysis": "تحلیل و سخن روز",
+        "nasheed": "نشید و ترانه"
     },
     "sidebar": {
         "platform": "منوی اصلی",
@@ -46,8 +74,26 @@
         "settingsGroup": "تنظیمات",
         "library": "کتابخانه",
         "books": "کتاب‌ها",
-        "videos": "ویدیو ها"
+        "videos": "ویدیو‌ها",
+        "audios": "صوتی‌ها",
+        "fatwas": "دارالإفتاء",
+        "articles": "مقاله‌ها",
+        "magazines": "مجله",
+        "categories": "دسته‌بندی‌ها",
+        "contentManagement": "مدیریت محتوا"
     },
+    "footer": {
+        "about": "درباره ما",
+        "sitemap": "نقشه سایت",
+        "recentBooks": "کتاب‌های جدید",
+        "recentArticles": "مقاله‌ها",
+        "copyright": "کلیه حقوق این سایت محفوظ است",
+        "home": "خانه",
+        "faq": "سوالات متداول",
+        "support": "پشتیبانی",
+        "description": "کتابخانه رسالت یک مرکز دیجیتال برای نشر و آموزش علوم اسلامی به زبان دری است. هدف ما فراهم‌آوری منابع علمی معتبر برای همه مسلمانان فارسی‌زبان می‌باشد."
+    },
+    "today": "امروز",
     "dashboard": {
         "title": "داشبورد",
         "todaySales": "فروش امروز",
@@ -758,6 +804,18 @@
     "notifications": {
         "dataUpdated": "معلومات تازه شد",
         "dataUpdatedDesc": "تغییرات جدید وارد شده است"
+    },
+    "search": {
+        "placeholder": "جستجوی کتاب، ویدیو...",
+        "noResults": "نتیجه‌ای یافت نشد",
+        "types": {
+            "book": "کتاب",
+            "video": "ویدیو",
+            "audio": "صوتی",
+            "fatwa": "فتوا",
+            "article": "مقاله",
+            "magazine": "مجله"
+        }
     },
     "common": {
         "save": "ذخیره",
