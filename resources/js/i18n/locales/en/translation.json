@@ -91,6 +91,7 @@
         "home": "Home",
         "faq": "FAQ",
         "support": "Support",
+        "followUs": "Follow Us",
         "description": "Resalat Library is a digital center for publishing and teaching Islamic sciences in Dari language. Our goal is to provide authentic scientific resources for all Persian-speaking Muslims."
     },
     "today": "Today",
@@ -814,7 +815,8 @@
             "audio": "Audio",
             "fatwa": "Fatwa",
             "article": "Article",
-            "magazine": "Magazine"
+            "magazine": "Magazine",
+            "statement": "Statement"
         }
     },
     "common": {

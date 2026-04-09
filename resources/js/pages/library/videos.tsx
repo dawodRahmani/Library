@@ -5,7 +5,7 @@ import { MainNav }    from '@/components/home/main-nav';
 import { NewsTicker } from '@/components/home/news-ticker';
 import { PageHeader } from '@/components/home/page-header';
 import { HomeFooter } from '@/components/home/home-footer';
-import { PlayCircle, Search, Play, Clock, Eye, Filter, MonitorPlay, X, Download, ExternalLink, Youtube, Link as LinkIcon, Upload } from 'lucide-react';
+import { Search, Play, Clock, Eye, Filter, MonitorPlay, X, Download, ExternalLink, Youtube, Link as LinkIcon, Upload } from 'lucide-react';
 
 type VideoStatus = 'available' | 'restricted' | 'archived';
 type VideoSource = 'link' | 'youtube' | 'upload';
@@ -38,11 +38,12 @@ interface PageProps {
     categories: Category[];
 }
 
-const STATUS_CONFIG: Record<VideoStatus, { label: string; className: string }> = {
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     available:  { label: 'در دسترس', className: 'bg-emerald-100 text-emerald-700 border border-emerald-200' },
     restricted: { label: 'محدود',    className: 'bg-amber-100 text-amber-700 border border-amber-200' },
     archived:   { label: 'آرشیو',    className: 'bg-slate-100 text-slate-600 border border-slate-200' },
 };
+const DEFAULT_STATUS = { label: '—', className: 'bg-gray-100 text-gray-500 border border-gray-200' };
 
 const GRADIENTS = [
     'from-emerald-800 to-teal-700',
@@ -66,9 +67,27 @@ function getGradient(id: number): string {
     return GRADIENTS[id % GRADIENTS.length];
 }
 
+/** Extract YouTube video ID from any YouTube URL format */
+function extractYoutubeId(url: string | null): string | null {
+    if (!url) return null;
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+}
+
+/** True when the URL points directly to a video file */
+function isDirectVideoUrl(url: string | null): boolean {
+    if (!url) return false;
+    return /\.(mp4|webm|mov|avi|mkv|ogv)(\?.*)?$/i.test(url);
+}
+
 // ── Video Player Modal ────────────────────────────────────────────────────────
 function VideoPlayerModal({ video, onClose }: { video: VideoItem; onClose: () => void }) {
-    const { label, className } = STATUS_CONFIG[video.status];
+    const { label, className } = STATUS_CONFIG[video.status] ?? DEFAULT_STATUS;
+
+    // Resolve the best playback strategy regardless of stored source type
+    const youtubeId   = video.youtube_id ?? extractYoutubeId(video.video_url);
+    const isUploaded  = video.video_source === 'upload' && video.has_file;
+    const isDirectVid = !youtubeId && !isUploaded && isDirectVideoUrl(video.video_url);
 
     return (
         <div
@@ -81,23 +100,30 @@ function VideoPlayerModal({ video, onClose }: { video: VideoItem; onClose: () =>
             >
                 {/* Player area */}
                 <div className="relative bg-black w-full" style={{ aspectRatio: '16/9' }}>
-                    {video.video_source === 'youtube' && video.youtube_id ? (
+                    {youtubeId ? (
                         <iframe
                             className="absolute inset-0 w-full h-full"
-                            src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1`}
+                            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
                             title={video.title}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                         />
-                    ) : video.video_source === 'upload' && video.has_file ? (
+                    ) : isUploaded ? (
                         <video
                             className="absolute inset-0 w-full h-full"
                             src={`/library/videos/${video.id}/stream`}
                             controls
                             autoPlay
                         />
+                    ) : isDirectVid ? (
+                        <video
+                            className="absolute inset-0 w-full h-full"
+                            src={video.video_url!}
+                            controls
+                            autoPlay
+                        />
                     ) : (
-                        /* Link or no playable source */
+                        /* External link — cannot embed */
                         <div className={`absolute inset-0 bg-gradient-to-br ${getGradient(video.id)} flex flex-col items-center justify-center gap-4`}>
                             <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center">
                                 <Play className="w-7 h-7 text-white ms-1" />
@@ -151,9 +177,9 @@ function VideoPlayerModal({ video, onClose }: { video: VideoItem; onClose: () =>
 
                     {/* Action buttons */}
                     <div className="flex gap-2 flex-wrap pt-1">
-                        {video.video_source === 'youtube' && video.youtube_id && (
+                        {youtubeId && (
                             <a
-                                href={`https://www.youtube.com/watch?v=${video.youtube_id}`}
+                                href={`https://www.youtube.com/watch?v=${youtubeId}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
@@ -162,7 +188,7 @@ function VideoPlayerModal({ video, onClose }: { video: VideoItem; onClose: () =>
                                 مشاهده در یوتیوب
                             </a>
                         )}
-                        {video.video_source === 'upload' && video.has_file && (
+                        {isUploaded && (
                             <a
                                 href={`/library/videos/${video.id}/download`}
                                 className="flex items-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
@@ -171,7 +197,7 @@ function VideoPlayerModal({ video, onClose }: { video: VideoItem; onClose: () =>
                                 دانلود ویدیو
                             </a>
                         )}
-                        {video.video_source === 'link' && video.video_url && (
+                        {!youtubeId && !isUploaded && video.video_url && (
                             <a
                                 href={video.video_url}
                                 target="_blank"
@@ -198,7 +224,8 @@ function SourceIcon({ source }: { source: VideoSource }) {
 
 // ── Video Card ────────────────────────────────────────────────────────────────
 function VideoCard({ video, onPlay }: { video: VideoItem; onPlay: (v: VideoItem) => void }) {
-    const { label, className } = STATUS_CONFIG[video.status];
+    const { label, className } = STATUS_CONFIG[video.status] ?? DEFAULT_STATUS;
+    const youtubeId = video.youtube_id ?? extractYoutubeId(video.video_url);
 
     return (
         <div
@@ -206,7 +233,14 @@ function VideoCard({ video, onPlay }: { video: VideoItem; onPlay: (v: VideoItem)
             onClick={() => onPlay(video)}
         >
             {/* Thumbnail */}
-            <div className={`relative h-36 bg-gradient-to-br ${getGradient(video.id)} flex items-center justify-center`}>
+            <div className={`relative h-36 bg-gradient-to-br ${getGradient(video.id)} flex items-center justify-center overflow-hidden`}>
+                {youtubeId && (
+                    <img
+                        src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                        alt={video.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                )}
                 <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />
                 <div className="relative z-10 w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Play className="w-5 h-5 text-white ms-0.5" />
@@ -221,7 +255,7 @@ function VideoCard({ video, onPlay }: { video: VideoItem; onPlay: (v: VideoItem)
                 </span>
                 {/* Source indicator */}
                 <span className="absolute top-2 end-2 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
-                    <SourceIcon source={video.video_source} />
+                    {youtubeId ? <Youtube className="w-3.5 h-3.5 text-red-500" /> : <SourceIcon source={video.video_source} />}
                 </span>
             </div>
 
@@ -274,16 +308,6 @@ export default function VideosIndex({ videos, categories }: PageProps) {
         return matchSearch && matchCategory && matchStatus;
     });
 
-    const totalViews = videos.reduce((s, v) => s + v.views, 0);
-    const available  = videos.filter((v) => v.status === 'available').length;
-    const totalMins  = videos.reduce((s, v) => {
-        if (!v.duration) return s;
-        const parts = v.duration.split(':').map(Number);
-        if (parts.length === 2)      return s + parts[0] * 60 + parts[1];
-        if (parts.length === 3) return s + parts[0] * 3600 + parts[1] * 60 + parts[2];
-        return s;
-    }, 0);
-
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="ویدیوها — کتابخانه رسالت" />
@@ -301,26 +325,6 @@ export default function VideosIndex({ videos, categories }: PageProps) {
             />
 
             <div className="max-w-[1240px] mx-auto px-4 py-8 flex flex-col gap-6">
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                        { label: 'کل ویدیوها',   value: videos.length,                                                icon: PlayCircle, bg: 'bg-violet-50',  text: 'text-violet-600',  border: 'border-violet-200' },
-                        { label: 'مجموع بازدید', value: totalViews.toLocaleString(),                                  icon: Eye,        bg: 'bg-blue-50',    text: 'text-blue-600',    border: 'border-blue-200' },
-                        { label: 'در دسترس',     value: available,                                                   icon: Play,       bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
-                        { label: 'مجموع مدت',   value: `${Math.floor(totalMins / 60)}h ${totalMins % 60}m`,          icon: Clock,      bg: 'bg-amber-50',   text: 'text-amber-600',   border: 'border-amber-200' },
-                    ].map(({ label, value, icon: Icon, bg, text, border }) => (
-                        <div key={label} className={`rounded-xl border ${border} bg-white p-4 flex items-center gap-3`}>
-                            <div className={`w-10 h-10 rounded-lg ${bg} ${text} flex items-center justify-center shrink-0`}>
-                                <Icon className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-xl font-bold text-gray-800">{value}</p>
-                                <p className="text-xs text-gray-500">{label}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
 
                 {/* Filters */}
                 <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3">

@@ -1,5 +1,5 @@
 import { SectionHeader } from './section-header';
-import { BookOpen, Headphones, FileText } from 'lucide-react';
+import { BookOpen, Headphones, FileText, PlayCircle } from 'lucide-react';
 
 interface ListItem {
     title: string;
@@ -40,6 +40,24 @@ const AUDIO_ITEMS: ListItem[] = [
     },
 ];
 
+const VIDEOS: ListItem[] = [
+    {
+        title: 'اصول عقیده اهل سنت و الجماعت',
+        author: 'شیخ عبدالله نوری', date: '۹ حمل ۱۴۰۴',
+        category: 'ویدیو', gradient: 'from-indigo-800 to-blue-700',
+    },
+    {
+        title: 'توحید — بنیاد اسلام',
+        author: 'مفتی احمد رحمانی', date: '۸ حمل ۱۴۰۴',
+        category: 'ویدیو', gradient: 'from-teal-800 to-emerald-700',
+    },
+    {
+        title: 'شرح عقیده طحاویه',
+        author: 'دکتر محمد حسینی', date: '۷ حمل ۱۴۰۴',
+        category: 'ویدیو', gradient: 'from-violet-800 to-purple-700',
+    },
+];
+
 const BOOKS: ListItem[] = [
     {
         title: 'مختصر صحیح البخاری',
@@ -58,12 +76,12 @@ const BOOKS: ListItem[] = [
     },
 ];
 
-function ContentCard({ item }: { item: ListItem }) {
+function ContentCard({ item, icon: Icon = BookOpen }: { item: ListItem; icon?: typeof BookOpen }) {
     return (
         <div className="flex gap-4 py-4 border-b border-gray-100 last:border-0 group">
             {/* Thumbnail */}
             <div className={`shrink-0 w-24 h-16 rounded-lg bg-gradient-to-br ${item.gradient} flex items-center justify-center overflow-hidden`}>
-                <BookOpen className="w-6 h-6 text-white/70" />
+                <Icon className="w-6 h-6 text-white/70" />
             </div>
             {/* Info */}
             <div className="flex-1 min-w-0">
@@ -83,7 +101,7 @@ function ContentCard({ item }: { item: ListItem }) {
     );
 }
 
-function Section({ title, items, icon: Icon }: { title: string; items: ListItem[]; icon: typeof BookOpen }) {
+function Section({ title, items, icon: Icon, href, itemIcon }: { title: string; items: ListItem[]; icon: typeof BookOpen; href?: string; itemIcon?: typeof BookOpen }) {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
             <div className="flex items-center gap-2 mb-1">
@@ -93,9 +111,14 @@ function Section({ title, items, icon: Icon }: { title: string; items: ListItem[
             <SectionHeader title={title} />
             <div>
                 {items.map((item) => (
-                    <ContentCard key={item.title} item={item} />
+                    <ContentCard key={item.title} item={item} icon={itemIcon} />
                 ))}
             </div>
+            {href && (
+                <a href={href} className="mt-3 flex items-center justify-center gap-1 text-[13px] text-[#27ae60] hover:text-[#1e8449] font-medium transition-colors">
+                    مشاهده همه
+                </a>
+            )}
         </div>
     );
 }
@@ -104,6 +127,7 @@ export function HomeMainColumn() {
     return (
         <div>
             <Section title="پست‌های جدید" items={RECENT_POSTS} icon={FileText} />
+            <Section title="ویدیوهای جدید" items={VIDEOS} icon={PlayCircle} href="/library/videos" itemIcon={PlayCircle} />
             <Section title="صوت‌های جدید" items={AUDIO_ITEMS} icon={Headphones} />
             <Section title="کتاب‌های جدید" items={BOOKS} icon={BookOpen} />
         </div>

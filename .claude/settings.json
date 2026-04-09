@@ -13,7 +13,13 @@
       "Read(//c/php/**)",
       "Bash(/c/Users/Rahmani/.config/herd/bin/php.bat -r ':*)",
       "Bash(\"C:/php/php.exe\" artisan:*)",
-      "Bash(grep -n \"localeMap\\\\|'da':\\\\|'en':\" /c/Users/Rahmani/Desktop/Library/Library/resources/js/components/home/*.tsx)"
+      "Bash(grep -n \"localeMap\\\\|'da':\\\\|'en':\" /c/Users/Rahmani/Desktop/Library/Library/resources/js/components/home/*.tsx)",
+      "Bash(php.exe -l \"c:/Users/Rahmani/Desktop/Library/Library/app/Http/Controllers/SearchController.php\")",
+      "Bash(\"C:/xampp/php/php.exe\" -l \"c:/Users/Rahmani/Desktop/Library/Library/app/Http/Controllers/SearchController.php\")",
+      "Bash(dir \"c:\\\\Users\\\\Rahmani\\\\Desktop\\\\Library\\\\Library\\\\database\")",
+      "Bash(winpty php:*)",
+      "Bash(where php.exe)",
+      "Bash(cmd /c \"php artisan migrate:status\")"
     ]
   }
 }

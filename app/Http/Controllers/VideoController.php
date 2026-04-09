@@ -37,12 +37,12 @@ class VideoController extends Controller
             'views'        => $v->views,
             'year'         => $v->year,
             'status'       => $v->status,
-            'description'  => $v->description[$locale] ?? $v->description['da'] ?? '',
+            'description'  => $v->description[$locale] ?? ($v->description['da'] ?? ''),
             'thumbnail'    => $v->thumbnail,
             'video_source' => $v->video_source ?? 'link',
             'video_url'    => $v->video_url,
             'has_file'     => (bool) $v->file_path,
-            'youtube_id'   => $v->video_source === 'youtube' ? self::extractYoutubeId($v->video_url) : null,
+            'youtube_id'   => self::extractYoutubeId($v->video_url),
         ]);
 
         $categories = Category::where('type', 'video')

@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { usePage } from '@inertiajs/react';
-import { Facebook, Twitter, Youtube, Rss, Share2, Mail, PlayCircle, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Youtube, Rss, Share2, PlayCircle, Linkedin } from 'lucide-react';
 import { SectionHeader } from './section-header';
 
 interface SocialLink { platform: string; url: string; count: string }
@@ -55,34 +54,6 @@ function SocialWidget() {
     );
 }
 
-/* ── Subscribe Widget ────────────────────────────────────── */
-function SubscribeWidget() {
-    const [email, setEmail] = useState('');
-    return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
-            <div className="flex items-center gap-2 mb-1">
-                <Mail className="w-4 h-4 text-[#27ae60]" />
-            </div>
-            <SectionHeader title="در وب‌سایت ما عضو شوید" showNav={false} />
-            <p className="text-[13px] text-gray-500 mb-3 leading-relaxed">
-                برای دریافت جدیدترین به‌روزرسانی‌ها، ایمیل خود را وارد کنید.
-            </p>
-            <div className="flex gap-2">
-                <input
-                    type="email"
-                    placeholder="آدرس ایمیل"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#27ae60] transition-colors"
-                />
-                <button className="shrink-0 bg-[#27ae60] hover:bg-[#229954] text-white px-3 py-2 rounded-lg transition-colors">
-                    <Mail className="w-4 h-4" />
-                </button>
-            </div>
-        </div>
-    );
-}
-
 /* ── Video Widget (static recent-videos placeholder) ─────── */
 const VIDEOS = [
     { title: 'نشید جدید — بخش ایمان',            gradient: 'from-teal-800 to-emerald-700' },
@@ -119,7 +90,6 @@ export function HomeSidebar() {
     return (
         <div>
             <SocialWidget />
-            <SubscribeWidget />
             <VideoWidget />
         </div>
     );

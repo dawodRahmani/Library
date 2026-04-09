@@ -17,8 +17,8 @@ import type { BreadcrumbItem } from '@/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface SocialLink  { platform: string; url: string; count: string }
-interface TickerItem  { da: string; en: string }
-interface ML          { da: string; en: string }
+interface TickerItem  { da: string; en: string; ar?: string }
+interface ML          { da: string; en: string; ar?: string }
 interface AboutStat   { icon: string; value: string; label: ML }
 interface AboutValue  { icon: string; title: ML; body: ML }
 interface AboutMember { name: string; role: ML; bio: ML; gradient: string }
@@ -94,21 +94,21 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 
 // ── Default about data ────────────────────────────────────────────────────────
 const DEF_ABOUT_HERO: AboutHero = {
-    title:    { da: 'کتابخانه رسالت',  en: 'Resalat Library' },
-    subtitle: { da: 'مرکز دیجیتال علوم اسلامی به زبان دری.', en: 'Digital centre for Islamic sciences in Dari.' },
+    title:    { da: 'کتابخانه رسالت',  en: 'Resalat Library', ar: 'مكتبة رسالت' },
+    subtitle: { da: 'مرکز دیجیتال علوم اسلامی به زبان دری.', en: 'Digital centre for Islamic sciences in Dari.', ar: 'مركز رقمي لعلوم إسلامية باللغة الدرية.' },
 };
 const DEF_ABOUT_STATS: AboutStat[] = [
-    { icon: 'BookOpen',   value: '۳٬۵۰۰+', label: { da: 'کتاب دیجیتال',   en: 'Digital Books'    } },
-    { icon: 'Headphones', value: '۱٬۲۰۰+', label: { da: 'فایل صوتی',      en: 'Audio Files'      } },
-    { icon: 'Video',      value: '۸۰۰+',   label: { da: 'ویدیو آموزشی',   en: 'Videos'           } },
-    { icon: 'FileText',   value: '۵۰۰+',   label: { da: 'مقاله علمی',     en: 'Articles'         } },
-    { icon: 'Users',      value: '۲۵٬۰۰۰+',label: { da: 'کاربر فعال',     en: 'Active Users'     } },
-    { icon: 'Globe',      value: '۴۵+',    label: { da: 'کشور پوشش داده', en: 'Countries Covered'} },
+    { icon: 'BookOpen',   value: '۳٬۵۰۰+', label: { da: 'کتاب دیجیتال',   en: 'Digital Books',     ar: 'كتب رقمية'       } },
+    { icon: 'Headphones', value: '۱٬۲۰۰+', label: { da: 'فایل صوتی',      en: 'Audio Files',       ar: 'ملفات صوتية'     } },
+    { icon: 'Video',      value: '۸۰۰+',   label: { da: 'ویدیو آموزشی',   en: 'Videos',            ar: 'مقاطع فيديو'     } },
+    { icon: 'FileText',   value: '۵۰۰+',   label: { da: 'مقاله علمی',     en: 'Articles',          ar: 'مقالات علمية'    } },
+    { icon: 'Users',      value: '۲۵٬۰۰۰+',label: { da: 'کاربر فعال',     en: 'Active Users',      ar: 'مستخدم نشط'      } },
+    { icon: 'Globe',      value: '۴۵+',    label: { da: 'کشور پوشش داده', en: 'Countries Covered',  ar: 'دولة مشمولة'     } },
 ];
 const DEF_ABOUT_VALUES: AboutValue[] = [
-    { icon: 'Target', title: { da: 'رسالت ما',     en: 'Our Mission' }, body: { da: '',  en: '' } },
-    { icon: 'Heart',  title: { da: 'ارزش‌های ما',  en: 'Our Values'  }, body: { da: '',  en: '' } },
-    { icon: 'Globe',  title: { da: 'چشم‌انداز ما', en: 'Our Vision'  }, body: { da: '',  en: '' } },
+    { icon: 'Target', title: { da: 'رسالت ما',     en: 'Our Mission', ar: 'رسالتنا'   }, body: { da: '', en: '', ar: '' } },
+    { icon: 'Heart',  title: { da: 'ارزش‌های ما',  en: 'Our Values',  ar: 'قيمنا'     }, body: { da: '', en: '', ar: '' } },
+    { icon: 'Globe',  title: { da: 'چشم‌انداز ما', en: 'Our Vision',  ar: 'رؤيتنا'    }, body: { da: '', en: '', ar: '' } },
 ];
 const DEF_ABOUT_TEAM: AboutMember[] = [];
 
@@ -127,12 +127,12 @@ export default function SiteSettingsIndex({ settings }: Props) {
 
     // General
     const [general, setGeneral] = useState({
-        site_name:       { da: settings.site_name?.da        ?? '', en: settings.site_name?.en        ?? '' },
-        site_tagline:    { da: settings.site_tagline?.da     ?? '', en: settings.site_tagline?.en     ?? '' },
+        site_name:       { da: settings.site_name?.da        ?? '', en: settings.site_name?.en        ?? '', ar: settings.site_name?.ar        ?? '' },
+        site_tagline:    { da: settings.site_tagline?.da     ?? '', en: settings.site_tagline?.en     ?? '', ar: settings.site_tagline?.ar     ?? '' },
         contact_email:   settings.contact_email   ?? '',
         contact_phone:   settings.contact_phone   ?? '',
-        contact_address: { da: settings.contact_address?.da  ?? '', en: settings.contact_address?.en  ?? '' },
-        contact_hours:   { da: settings.contact_hours?.da    ?? '', en: settings.contact_hours?.en    ?? '' },
+        contact_address: { da: settings.contact_address?.da  ?? '', en: settings.contact_address?.en  ?? '', ar: settings.contact_address?.ar  ?? '' },
+        contact_hours:   { da: settings.contact_hours?.da    ?? '', en: settings.contact_hours?.en    ?? '', ar: settings.contact_hours?.ar    ?? '' },
     });
 
     // Social
@@ -148,13 +148,14 @@ export default function SiteSettingsIndex({ settings }: Props) {
 
     // Ticker
     const [tickerItems, setTickerItems] = useState<TickerItem[]>(
-        settings.ticker_items ?? [{ da: '', en: '' }]
+        settings.ticker_items ?? [{ da: '', en: '', ar: '' }]
     );
 
     // Footer
     const [footerAbout, setFooterAbout] = useState<ML>({
         da: settings.footer_about?.da ?? '',
         en: settings.footer_about?.en ?? '',
+        ar: settings.footer_about?.ar ?? '',
     });
 
     // About
@@ -207,9 +208,9 @@ export default function SiteSettingsIndex({ settings }: Props) {
     }
 
     // ── Ticker helpers ────────────────────────────────────────────────────────
-    function addTicker()  { setTickerItems([...tickerItems, { da: '', en: '' }]); }
+    function addTicker()  { setTickerItems([...tickerItems, { da: '', en: '', ar: '' }]); }
     function removeTicker(i: number) { setTickerItems(tickerItems.filter((_, idx) => idx !== i)); }
-    function updateTicker(i: number, field: 'da' | 'en', val: string) {
+    function updateTicker(i: number, field: 'da' | 'en' | 'ar', val: string) {
         setTickerItems(tickerItems.map((t, idx) => idx === i ? { ...t, [field]: val } : t));
     }
 
@@ -219,32 +220,32 @@ export default function SiteSettingsIndex({ settings }: Props) {
     }
 
     // ── About stat helpers ────────────────────────────────────────────────────
-    function addStat()    { setAboutStats([...aboutStats, { icon: 'BookOpen', value: '', label: { da: '', en: '' } }]); }
+    function addStat()    { setAboutStats([...aboutStats, { icon: 'BookOpen', value: '', label: { da: '', en: '', ar: '' } }]); }
     function removeStat(i: number) { setAboutStats(aboutStats.filter((_, idx) => idx !== i)); }
     function updateStat(i: number, patch: Partial<AboutStat>) {
         setAboutStats(aboutStats.map((s, idx) => idx === i ? { ...s, ...patch } : s));
     }
-    function updateStatLabel(i: number, field: 'da' | 'en', val: string) {
+    function updateStatLabel(i: number, field: 'da' | 'en' | 'ar', val: string) {
         setAboutStats(aboutStats.map((s, idx) => idx === i ? { ...s, label: { ...s.label, [field]: val } } : s));
     }
 
     // ── About value helpers ───────────────────────────────────────────────────
-    function addValue()   { setAboutValues([...aboutValues, { icon: 'Target', title: { da: '', en: '' }, body: { da: '', en: '' } }]); }
+    function addValue()   { setAboutValues([...aboutValues, { icon: 'Target', title: { da: '', en: '', ar: '' }, body: { da: '', en: '', ar: '' } }]); }
     function removeValue(i: number) { setAboutValues(aboutValues.filter((_, idx) => idx !== i)); }
     function updateValue(i: number, patch: Partial<AboutValue>) {
         setAboutValues(aboutValues.map((v, idx) => idx === i ? { ...v, ...patch } : v));
     }
-    function updateValueML(i: number, field: 'title' | 'body', lang: 'da' | 'en', val: string) {
+    function updateValueML(i: number, field: 'title' | 'body', lang: 'da' | 'en' | 'ar', val: string) {
         setAboutValues(aboutValues.map((v, idx) => idx === i ? { ...v, [field]: { ...v[field], [lang]: val } } : v));
     }
 
     // ── About team helpers ────────────────────────────────────────────────────
-    function addTeam()    { setAboutTeam([...aboutTeam, { name: '', role: { da: '', en: '' }, bio: { da: '', en: '' }, gradient: GRADIENT_OPTIONS[0].value }]); }
+    function addTeam()    { setAboutTeam([...aboutTeam, { name: '', role: { da: '', en: '', ar: '' }, bio: { da: '', en: '', ar: '' }, gradient: GRADIENT_OPTIONS[0].value }]); }
     function removeTeam(i: number) { setAboutTeam(aboutTeam.filter((_, idx) => idx !== i)); }
     function updateTeam(i: number, patch: Partial<AboutMember>) {
         setAboutTeam(aboutTeam.map((m, idx) => idx === i ? { ...m, ...patch } : m));
     }
-    function updateTeamML(i: number, field: 'role' | 'bio', lang: 'da' | 'en', val: string) {
+    function updateTeamML(i: number, field: 'role' | 'bio', lang: 'da' | 'en' | 'ar', val: string) {
         setAboutTeam(aboutTeam.map((m, idx) => idx === i ? { ...m, [field]: { ...m[field], [lang]: val } } : m));
     }
 
@@ -334,12 +335,14 @@ export default function SiteSettingsIndex({ settings }: Props) {
                         </Section>
 
                         <Section title="هویت سایت">
-                            <TwoLang label="نام سایت" da={general.site_name.da} en={general.site_name.en}
+                            <ThreeLang label="نام سایت" da={general.site_name.da} en={general.site_name.en} ar={general.site_name.ar ?? ''}
                                 onDa={(v) => setGeneral({ ...general, site_name: { ...general.site_name, da: v } })}
-                                onEn={(v) => setGeneral({ ...general, site_name: { ...general.site_name, en: v } })} />
-                            <TwoLang label="شعار سایت (tagline)" da={general.site_tagline.da} en={general.site_tagline.en}
+                                onEn={(v) => setGeneral({ ...general, site_name: { ...general.site_name, en: v } })}
+                                onAr={(v) => setGeneral({ ...general, site_name: { ...general.site_name, ar: v } })} />
+                            <ThreeLang label="شعار سایت (tagline)" da={general.site_tagline.da} en={general.site_tagline.en} ar={general.site_tagline.ar ?? ''}
                                 onDa={(v) => setGeneral({ ...general, site_tagline: { ...general.site_tagline, da: v } })}
-                                onEn={(v) => setGeneral({ ...general, site_tagline: { ...general.site_tagline, en: v } })} />
+                                onEn={(v) => setGeneral({ ...general, site_tagline: { ...general.site_tagline, en: v } })}
+                                onAr={(v) => setGeneral({ ...general, site_tagline: { ...general.site_tagline, ar: v } })} />
                         </Section>
 
                         <Section title="اطلاعات تماس">
@@ -353,12 +356,14 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                     <Input value={general.contact_phone} onChange={(e) => setGeneral({ ...general, contact_phone: e.target.value })} placeholder="+93 ..." dir="ltr" />
                                 </div>
                             </div>
-                            <TwoLang label="آدرس" da={general.contact_address.da} en={general.contact_address.en}
+                            <ThreeLang label="آدرس" da={general.contact_address.da} en={general.contact_address.en} ar={general.contact_address.ar ?? ''}
                                 onDa={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, da: v } })}
-                                onEn={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, en: v } })} />
-                            <TwoLang label="ساعات کاری" da={general.contact_hours.da} en={general.contact_hours.en}
+                                onEn={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, en: v } })}
+                                onAr={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, ar: v } })} />
+                            <ThreeLang label="ساعات کاری" da={general.contact_hours.da} en={general.contact_hours.en} ar={general.contact_hours.ar ?? ''}
                                 onDa={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, da: v } })}
-                                onEn={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, en: v } })} />
+                                onEn={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, en: v } })}
+                                onAr={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, ar: v } })} />
                         </Section>
                     </div>
                 )}
@@ -369,12 +374,13 @@ export default function SiteSettingsIndex({ settings }: Props) {
 
                         {/* Hero */}
                         <Section title="بنر معرفی (Hero)">
-                            <TwoLang label="عنوان" da={aboutHero.title.da} en={aboutHero.title.en}
+                            <ThreeLang label="عنوان" da={aboutHero.title.da} en={aboutHero.title.en} ar={aboutHero.title.ar ?? ''}
                                 onDa={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, da: v } })}
-                                onEn={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, en: v } })} />
+                                onEn={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, en: v } })}
+                                onAr={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, ar: v } })} />
                             <div className="space-y-2">
                                 <Label>توضیحات کوتاه</Label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
                                         <p className="text-xs text-muted-foreground mb-1">دری</p>
                                         <Textarea rows={3} value={aboutHero.subtitle.da} dir="rtl"
@@ -384,6 +390,11 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                         <p className="text-xs text-muted-foreground mb-1">English</p>
                                         <Textarea rows={3} value={aboutHero.subtitle.en} dir="ltr"
                                             onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, en: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">العربية</p>
+                                        <Textarea rows={3} value={aboutHero.subtitle.ar ?? ''} dir="rtl"
+                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, ar: e.target.value } })} />
                                     </div>
                                 </div>
                             </div>
@@ -412,9 +423,10 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                             </div>
                                             <div className="sm:col-span-1" />
                                         </div>
-                                        <TwoLang label="برچسب" da={s.label.da} en={s.label.en}
+                                        <ThreeLang label="برچسب" da={s.label.da} en={s.label.en} ar={s.label.ar ?? ''}
                                             onDa={(v) => updateStatLabel(i, 'da', v)}
-                                            onEn={(v) => updateStatLabel(i, 'en', v)} />
+                                            onEn={(v) => updateStatLabel(i, 'en', v)}
+                                            onAr={(v) => updateStatLabel(i, 'ar', v)} />
                                     </div>
                                 ))}
                             </div>
@@ -439,12 +451,13 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                             <Label className="text-xs">آیکون</Label>
                                             <IconSelect value={v.icon} onChange={(val) => updateValue(i, { icon: val })} />
                                         </div>
-                                        <TwoLang label="عنوان" da={v.title.da} en={v.title.en}
+                                        <ThreeLang label="عنوان" da={v.title.da} en={v.title.en} ar={v.title.ar ?? ''}
                                             onDa={(val) => updateValueML(i, 'title', 'da', val)}
-                                            onEn={(val) => updateValueML(i, 'title', 'en', val)} />
+                                            onEn={(val) => updateValueML(i, 'title', 'en', val)}
+                                            onAr={(val) => updateValueML(i, 'title', 'ar', val)} />
                                         <div className="space-y-2">
                                             <Label className="text-xs">متن</Label>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                 <div>
                                                     <p className="text-xs text-muted-foreground mb-1">دری</p>
                                                     <Textarea rows={3} value={v.body.da} dir="rtl"
@@ -454,6 +467,11 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                                     <p className="text-xs text-muted-foreground mb-1">English</p>
                                                     <Textarea rows={3} value={v.body.en} dir="ltr"
                                                         onChange={(e) => updateValueML(i, 'body', 'en', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">العربية</p>
+                                                    <Textarea rows={3} value={v.body.ar ?? ''} dir="rtl"
+                                                        onChange={(e) => updateValueML(i, 'body', 'ar', e.target.value)} />
                                                 </div>
                                             </div>
                                         </div>
@@ -487,12 +505,13 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                                 <GradientSelect value={m.gradient} onChange={(v) => updateTeam(i, { gradient: v })} />
                                             </div>
                                         </div>
-                                        <TwoLang label="سمت / نقش" da={m.role.da} en={m.role.en}
+                                        <ThreeLang label="سمت / نقش" da={m.role.da} en={m.role.en} ar={m.role.ar ?? ''}
                                             onDa={(v) => updateTeamML(i, 'role', 'da', v)}
-                                            onEn={(v) => updateTeamML(i, 'role', 'en', v)} />
+                                            onEn={(v) => updateTeamML(i, 'role', 'en', v)}
+                                            onAr={(v) => updateTeamML(i, 'role', 'ar', v)} />
                                         <div className="space-y-2">
                                             <Label className="text-xs">بیوگرافی</Label>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                 <div>
                                                     <p className="text-xs text-muted-foreground mb-1">دری</p>
                                                     <Textarea rows={3} value={m.bio.da} dir="rtl"
@@ -502,6 +521,11 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                                     <p className="text-xs text-muted-foreground mb-1">English</p>
                                                     <Textarea rows={3} value={m.bio.en} dir="ltr"
                                                         onChange={(e) => updateTeamML(i, 'bio', 'en', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">العربية</p>
+                                                    <Textarea rows={3} value={m.bio.ar ?? ''} dir="rtl"
+                                                        onChange={(e) => updateTeamML(i, 'bio', 'ar', e.target.value)} />
                                                 </div>
                                             </div>
                                         </div>
@@ -569,6 +593,10 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                         <Label className="text-xs">English</Label>
                                         <Input value={item.en} onChange={(e) => updateTicker(i, 'en', e.target.value)} placeholder="Text in English..." dir="ltr" />
                                     </div>
+                                    <div>
+                                        <Label className="text-xs">العربية</Label>
+                                        <Input value={item.ar ?? ''} onChange={(e) => updateTicker(i, 'ar', e.target.value)} placeholder="النص بالعربية..." dir="rtl" />
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -591,6 +619,10 @@ export default function SiteSettingsIndex({ settings }: Props) {
                             <div>
                                 <Label>English</Label>
                                 <Textarea value={footerAbout.en} onChange={(e) => setFooterAbout({ ...footerAbout, en: e.target.value })} rows={5} placeholder="Description in English..." dir="ltr" />
+                            </div>
+                            <div>
+                                <Label>العربية</Label>
+                                <Textarea value={footerAbout.ar ?? ''} onChange={(e) => setFooterAbout({ ...footerAbout, ar: e.target.value })} rows={5} placeholder="الوصف بالعربية..." dir="rtl" />
                             </div>
                         </div>
                     </Section>
@@ -621,11 +653,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     );
 }
 
-function TwoLang({ label, da, en, onDa, onEn }: { label: string; da: string; en: string; onDa: (v: string) => void; onEn: (v: string) => void }) {
+function ThreeLang({ label, da, en, ar, onDa, onEn, onAr }: { label: string; da: string; en: string; ar: string; onDa: (v: string) => void; onEn: (v: string) => void; onAr: (v: string) => void }) {
     return (
         <div className="space-y-2">
             <Label>{label}</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                     <p className="text-xs text-muted-foreground mb-1">دری</p>
                     <Input value={da} onChange={(e) => onDa(e.target.value)} placeholder="..." dir="rtl" />
@@ -633,6 +665,10 @@ function TwoLang({ label, da, en, onDa, onEn }: { label: string; da: string; en:
                 <div>
                     <p className="text-xs text-muted-foreground mb-1">English</p>
                     <Input value={en} onChange={(e) => onEn(e.target.value)} placeholder="..." dir="ltr" />
+                </div>
+                <div>
+                    <p className="text-xs text-muted-foreground mb-1">العربية</p>
+                    <Input value={ar} onChange={(e) => onAr(e.target.value)} placeholder="..." dir="rtl" />
                 </div>
             </div>
         </div>

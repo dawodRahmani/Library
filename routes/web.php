@@ -35,6 +35,8 @@ Route::get('/majalla', [MagazineController::class, 'index'])->name('majalla');
 Route::get('/majalla/{magazine}/read', [MagazineController::class, 'read'])->name('majalla.read');
 Route::get('/majalla/{magazine}/download', [MagazineController::class, 'download'])->name('majalla.download');
 Route::get('/bayania', [StatementController::class, 'index'])->name('bayania');
+Route::get('/bayania/{statement}', [StatementController::class, 'show'])->name('bayania.show');
+Route::get('/fikr', fn () => inertia('fikr'))->name('fikr');
 Route::get('/about', fn () => inertia('about'))->name('about');
 Route::get('/contact', fn () => inertia('contact'))->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');

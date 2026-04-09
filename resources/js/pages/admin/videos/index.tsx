@@ -118,7 +118,8 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
 
     function submit() {
         setProcessing(true);
-        const payload: Record<string, unknown> = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = {
             ...form,
             category_id: Number(form.category_id),
             year: form.year ? Number(form.year) : null,

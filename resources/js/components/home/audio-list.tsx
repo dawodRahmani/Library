@@ -1,4 +1,4 @@
-import { Headphones, Play, Pause, Clock, User, Mic, Download, Link as LinkIcon, Upload, ExternalLink, X } from 'lucide-react';
+import { Headphones, Play, Clock, User, Mic, Download, Link as LinkIcon, Upload, ExternalLink, X } from 'lucide-react';
 import { useState } from 'react';
 
 type AudioSource = 'link' | 'upload';
@@ -58,11 +58,28 @@ const getGradient = (category: string, id: number): string => {
     return gradients[(hash + id) % gradients.length];
 };
 
+/** Returns true when the URL looks like a direct audio file we can embed */
+function isDirectAudioUrl(url: string): boolean {
+    try {
+        const path = new URL(url).pathname.toLowerCase();
+        return /\.(mp3|m4a|ogg|wav|aac|flac|opus|wma)$/.test(path);
+    } catch {
+        return false;
+    }
+}
+
 // ── Inline Audio Player Modal ─────────────────────────────────────────────────
 function AudioPlayerModal({ item, onClose }: { item: AudioItem; onClose: () => void }) {
     const gradient = getGradient(item.category, item.id);
     const catColor = CAT_COLORS[item.category] ?? 'bg-gray-100 text-gray-700';
-    const streamUrl = item.audio_source === 'upload' && item.has_file ? `/audio/${item.id}/stream` : null;
+
+    // Determine the playable src
+    const uploadSrc  = item.audio_source === 'upload' && item.has_file ? `/audio/${item.id}/stream` : null;
+    const linkSrc    = item.audio_source === 'link' && item.audio_url && isDirectAudioUrl(item.audio_url) ? item.audio_url : null;
+    const audioSrc   = uploadSrc ?? linkSrc;
+
+    // External link (non-embeddable)
+    const externalUrl = item.audio_source === 'link' && item.audio_url && !linkSrc ? item.audio_url : null;
 
     return (
         <div
@@ -95,14 +112,33 @@ function AudioPlayerModal({ item, onClose }: { item: AudioItem; onClose: () => v
 
                 {/* Player / actions */}
                 <div className="p-5 space-y-4">
-                    {/* HTML5 audio player for uploaded files */}
-                    {streamUrl && (
+                    {/* HTML5 audio player — uploaded file or direct-link audio */}
+                    {audioSrc && (
                         <audio
                             controls
                             autoPlay
                             className="w-full rounded-lg"
-                            src={streamUrl}
-                        />
+                            src={audioSrc}
+                            preload="metadata"
+                        >
+                            مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+                        </audio>
+                    )}
+
+                    {/* Non-embeddable external link */}
+                    {externalUrl && (
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                            <ExternalLink className="w-4 h-4 shrink-0" />
+                            <span className="flex-1">این صوت در یک سایت خارجی موجود است.</span>
+                            <a
+                                href={externalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-bold underline underline-offset-2 hover:text-blue-900 transition-colors"
+                            >
+                                باز کردن
+                            </a>
+                        </div>
                     )}
 
                     {/* Description */}
@@ -116,29 +152,16 @@ function AudioPlayerModal({ item, onClose }: { item: AudioItem; onClose: () => v
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${catColor}`}>{item.category}</span>
                     </div>
 
-                    {/* Action buttons */}
-                    <div className="flex gap-2 flex-wrap">
-                        {item.audio_source === 'upload' && item.has_file && (
-                            <a
-                                href={`/audio/${item.id}/download`}
-                                className="flex items-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                            >
-                                <Download className="w-4 h-4" />
-                                دانلود صوت
-                            </a>
-                        )}
-                        {item.audio_source === 'link' && item.audio_url && (
-                            <a
-                                href={item.audio_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                            >
-                                <ExternalLink className="w-4 h-4" />
-                                باز کردن لینک
-                            </a>
-                        )}
-                    </div>
+                    {/* Download button for uploaded files */}
+                    {item.audio_source === 'upload' && item.has_file && (
+                        <a
+                            href={`/audio/${item.id}/download`}
+                            className="inline-flex items-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                        >
+                            <Download className="w-4 h-4" />
+                            دانلود صوت
+                        </a>
+                    )}
                 </div>
             </div>
         </div>

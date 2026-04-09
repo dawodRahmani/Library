@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, X, BookOpen, Video, Headphones, FileText, Newspaper, Scale } from 'lucide-react';
+import { Search, X, BookOpen, Video, Headphones, FileText, Newspaper, Scale, ScrollText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 
 interface SearchResult {
-    type: 'book' | 'video' | 'audio' | 'fatwa' | 'article' | 'magazine';
+    type: 'book' | 'video' | 'audio' | 'fatwa' | 'article' | 'magazine' | 'statement';
     title: string;
     url: string;
     image?: string;
@@ -17,6 +17,7 @@ const TYPE_ICONS: Record<SearchResult['type'], React.ElementType> = {
     fatwa: Scale,
     article: FileText,
     magazine: Newspaper,
+    statement: ScrollText,
 };
 
 const TYPE_COLORS: Record<SearchResult['type'], string> = {
@@ -26,6 +27,7 @@ const TYPE_COLORS: Record<SearchResult['type'], string> = {
     fatwa: 'bg-[#27ae60]',
     article: 'bg-orange-500',
     magazine: 'bg-teal-500',
+    statement: 'bg-amber-500',
 };
 
 export function SearchBar() {

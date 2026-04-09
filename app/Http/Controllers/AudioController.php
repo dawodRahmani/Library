@@ -54,8 +54,8 @@ class AudioController extends Controller
         ]);
     }
 
-    /** Stream uploaded audio file inline */
-    public function stream(Audio $audio): StreamedResponse
+    /** Stream uploaded audio file inline (with Range request support for seeking) */
+    public function stream(Audio $audio): \Illuminate\Http\Response|StreamedResponse
     {
         if ($audio->audio_source !== 'upload' || ! $audio->file_path || ! Storage::disk('public')->exists($audio->file_path)) {
             abort(404);
@@ -63,12 +63,48 @@ class AudioController extends Controller
 
         $path     = Storage::disk('public')->path($audio->file_path);
         $mimeType = mime_content_type($path) ?: 'audio/mpeg';
+        $fileSize = filesize($path);
         $filename = basename($audio->file_path);
 
-        return response()->streamDownload(function () use ($path) {
+        $rangeHeader = request()->header('Range');
+
+        if ($rangeHeader) {
+            // Parse "bytes=start-end"
+            preg_match('/bytes=(\d*)-(\d*)/', $rangeHeader, $matches);
+            $start = $matches[1] !== '' ? (int) $matches[1] : 0;
+            $end   = $matches[2] !== '' ? (int) $matches[2] : $fileSize - 1;
+            $end   = min($end, $fileSize - 1);
+            $length = $end - $start + 1;
+
+            $fp = fopen($path, 'rb');
+            fseek($fp, $start);
+
+            return response()->stream(function () use ($fp, $length) {
+                $chunk = 1024 * 64; // 64 KB
+                $sent  = 0;
+                while (! feof($fp) && $sent < $length) {
+                    $read = min($chunk, $length - $sent);
+                    echo fread($fp, $read);
+                    $sent += $read;
+                    flush();
+                }
+                fclose($fp);
+            }, 206, [
+                'Content-Type'   => $mimeType,
+                'Content-Range'  => "bytes {$start}-{$end}/{$fileSize}",
+                'Content-Length' => $length,
+                'Accept-Ranges'  => 'bytes',
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            ]);
+        }
+
+        // Full response
+        return response()->stream(function () use ($path) {
             readfile($path);
-        }, $filename, [
+        }, 200, [
             'Content-Type'        => $mimeType,
+            'Content-Length'      => $fileSize,
+            'Accept-Ranges'       => 'bytes',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
     }

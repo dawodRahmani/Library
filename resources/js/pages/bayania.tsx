@@ -1,13 +1,12 @@
-import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { TopBar }     from '@/components/home/top-bar';
-import { MainNav }    from '@/components/home/main-nav';
-import { NewsTicker } from '@/components/home/news-ticker';
-import { PageHeader } from '@/components/home/page-header';
+import { TopBar }      from '@/components/home/top-bar';
+import { MainNav }     from '@/components/home/main-nav';
+import { NewsTicker }  from '@/components/home/news-ticker';
+import { PageHeader }  from '@/components/home/page-header';
 import { HomeSidebar } from '@/components/home/home-sidebar';
-import { HomeFooter } from '@/components/home/home-footer';
-import { FileText, ChevronDown, ChevronUp, CalendarDays } from 'lucide-react';
+import { HomeFooter }  from '@/components/home/home-footer';
+import { FileText, CalendarDays, ArrowLeft } from 'lucide-react';
 
 interface StatementItem {
     id:           number;
@@ -28,22 +27,18 @@ function formatDate(date: string | null, locale: string) {
 }
 
 function StatementCard({ item, locale }: { item: StatementItem; locale: string }) {
-    const [expanded, setExpanded] = useState(false);
-    const hasBody = !!item.body?.trim();
-
     return (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-            {/* Header */}
-            <div
-                className={`p-5 ${hasBody ? 'cursor-pointer' : ''}`}
-                onClick={() => hasBody && setExpanded((v) => !v)}
-            >
+        <Link
+            href={`/bayania/${item.id}`}
+            className="block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md hover:border-[#27ae60]/30 transition-all group"
+        >
+            <div className="p-5">
                 <div className="flex items-start gap-4">
                     <div className="shrink-0 w-10 h-10 rounded-lg bg-[#27ae60]/10 flex items-center justify-center mt-0.5">
                         <FileText className="w-5 h-5 text-[#27ae60]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-[15px] text-gray-900 leading-snug mb-2">
+                        <h3 className="font-bold text-[15px] text-gray-900 leading-snug mb-2 group-hover:text-[#27ae60] transition-colors">
                             {item.title}
                         </h3>
                         {item.published_at && (
@@ -53,27 +48,10 @@ function StatementCard({ item, locale }: { item: StatementItem; locale: string }
                             </div>
                         )}
                     </div>
-                    {hasBody && (
-                        <button className="shrink-0 text-gray-400 hover:text-[#27ae60] transition-colors mt-0.5">
-                            {expanded
-                                ? <ChevronUp className="w-5 h-5" />
-                                : <ChevronDown className="w-5 h-5" />
-                            }
-                        </button>
-                    )}
+                    <ArrowLeft className="shrink-0 w-4 h-4 text-gray-300 group-hover:text-[#27ae60] transition-colors mt-1" />
                 </div>
             </div>
-
-            {/* Expanded body */}
-            {expanded && hasBody && (
-                <div className="px-5 pb-5 border-t border-gray-50 pt-4">
-                    <div
-                        className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: item.body }}
-                    />
-                </div>
-            )}
-        </div>
+        </Link>
     );
 }
 

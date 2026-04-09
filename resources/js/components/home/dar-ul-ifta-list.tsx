@@ -1,5 +1,6 @@
 import { BookMarked, Clock, User, ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 /* ── Types ───────────────────────────────────────────────── */
 interface FatwaItem {
@@ -56,7 +57,7 @@ const CAT_COLORS: Record<string, string> = {
 };
 
 /* ── Card ────────────────────────────────────────────────── */
-function FatwaCard({ item }: { item: FatwaItem }) {
+function FatwaCard({ item, onOpen }: { item: FatwaItem; onOpen: () => void }) {
     const gradient = getGradient(item.category, item.id);
     const catClass = CAT_COLORS[item.category] ?? CAT_COLORS.default;
 
@@ -74,7 +75,9 @@ function FatwaCard({ item }: { item: FatwaItem }) {
             {/* Body */}
             <div className="p-4 flex flex-col flex-1">
                 <h3 className="font-bold text-[14px] text-gray-900 leading-snug mb-2 line-clamp-2 group-hover:text-[#27ae60] transition-colors">
-                    <a href="#">{item.title}</a>
+                    <button onClick={onOpen} className="text-start hover:text-[#27ae60] transition-colors">
+                        {item.title}
+                    </button>
                 </h3>
                 <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2 mb-3 flex-1">
                     {item.description}
@@ -91,10 +94,13 @@ function FatwaCard({ item }: { item: FatwaItem }) {
             </div>
 
             {/* CTA */}
-            <a href="#" className="flex items-center justify-between px-4 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors border-t border-gray-100">
+            <button
+                onClick={onOpen}
+                className="flex items-center justify-between px-4 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors border-t border-gray-100 w-full"
+            >
                 <span>مشاهده</span>
                 <ChevronLeft className="w-3.5 h-3.5" />
-            </a>
+            </button>
         </div>
     );
 }
@@ -103,7 +109,6 @@ function FatwaCard({ item }: { item: FatwaItem }) {
 export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
     // Create mapping from slug to category name
     const slugToName = categories.reduce((acc, cat) => {
-
         acc[cat.slug] = cat.name;
         return acc;
     }, {} as Record<string, string>);
@@ -112,9 +117,7 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
     const allCategories = ['همه', ...categories.map(c => c.name)];
 
     const [active, setActive] = useState<string>(() => {
-        // Compute initial active category from URL
         if (typeof window !== 'undefined') {
-
             const params = new URLSearchParams(window.location.search);
             const slug = params.get('category');
             if (slug && slugToName[slug]) {
@@ -124,7 +127,11 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
         return 'همه';
     });
 
+    const [selected, setSelected] = useState<FatwaItem | null>(null);
+
     const filtered = active === 'همه' ? fatwas : fatwas.filter((item) => item.category === active);
+
+    const catClass = selected ? (CAT_COLORS[selected.category] ?? CAT_COLORS.default) : '';
 
     return (
         <div>
@@ -159,7 +166,7 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {filtered.map((item) => (
-                    <FatwaCard key={item.id} item={item} />
+                    <FatwaCard key={item.id} item={item} onOpen={() => setSelected(item)} />
                 ))}
             </div>
 
@@ -169,6 +176,39 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
                     <p>هیچ موردی یافت نشد.</p>
                 </div>
             )}
+
+            {/* Detail modal */}
+            <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
+                <DialogContent className="max-w-lg w-full" dir="rtl">
+                    {selected && (
+                        <>
+                            <DialogHeader className="text-start">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${catClass}`}>
+                                        {selected.category}
+                                    </span>
+                                </div>
+                                <DialogTitle className="text-[16px] font-bold text-gray-900 leading-snug">
+                                    {selected.title}
+                                </DialogTitle>
+                            </DialogHeader>
+
+                            <div className="mt-3 text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                {selected.description || <span className="text-gray-400">متن فتوا موجود نیست.</span>}
+                            </div>
+
+                            <div className="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100 text-[12px] text-gray-400">
+                                <span className="flex items-center gap-1">
+                                    <User className="w-3.5 h-3.5" /> {selected.author}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5" /> {selected.date}
+                                </span>
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

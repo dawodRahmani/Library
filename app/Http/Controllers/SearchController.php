@@ -7,6 +7,7 @@ use App\Models\Audio;
 use App\Models\Book;
 use App\Models\Fatwa;
 use App\Models\Magazine;
+use App\Models\Statement;
 use App\Models\Video;
 use Illuminate\Http\Request;
 
@@ -20,20 +21,34 @@ class SearchController extends Controller
             return response()->json([]);
         }
 
-        $lang = $request->query('lang', 'da');
-        $like = "%{$q}%";
-        $limit = 5;
+        $lang    = $request->query('lang', 'da');
+        $like    = "%{$q}%";
+        $limit   = 5;
         $results = [];
 
-        // json_extract returns the actual Unicode string, bypassing the \uXXXX
-        // escape sequences that SQLite stores, so LIKE works on Arabic/Dari text.
-        $titleMatch = fn ($query) => $query
-            ->whereRaw("json_extract(title, '$.da') LIKE ?", [$like])
-            ->orWhereRaw("json_extract(title, '$.en') LIKE ?", [$like]);
+        // Search all three language keys in a JSON column.
+        // json_extract() returns real Unicode so LIKE works on Arabic/Dari text.
+        $matchJson = fn (string $column) => fn ($query) => $query
+            ->whereRaw("json_extract({$column}, '$.da') LIKE ?", [$like])
+            ->orWhereRaw("json_extract({$column}, '$.en') LIKE ?", [$like])
+            ->orWhereRaw("json_extract({$column}, '$.ar') LIKE ?", [$like]);
 
-        // Books
+        // Match title OR description (both are JSON columns).
+        $titleOrDesc = fn ($query, string $descCol = 'description') => $query->where(function ($q) use ($matchJson, $descCol) {
+            $q->where($matchJson('title'))
+              ->orWhere($matchJson($descCol));
+        });
+
+        // Also search plain-text author column where it exists.
+        $titleDescOrAuthor = fn ($query, string $descCol = 'description') => $query->where(function ($q) use ($matchJson, $like, $descCol) {
+            $q->where($matchJson('title'))
+              ->orWhere($matchJson($descCol))
+              ->orWhere('author', 'LIKE', $like);
+        });
+
+        // ── Books ────────────────────────────────────────────────────────────
         Book::where('is_active', true)
-            ->where($titleMatch)
+            ->where(fn ($q) => $titleDescOrAuthor($q))
             ->limit($limit)
             ->get(['id', 'title', 'cover_image'])
             ->each(function ($book) use (&$results, $lang) {
@@ -43,9 +58,9 @@ class SearchController extends Controller
                 }
             });
 
-        // Videos
+        // ── Videos ───────────────────────────────────────────────────────────
         Video::where('is_active', true)
-            ->where($titleMatch)
+            ->where(fn ($q) => $titleDescOrAuthor($q))
             ->limit($limit)
             ->get(['id', 'title', 'thumbnail'])
             ->each(function ($video) use (&$results, $lang) {
@@ -55,9 +70,9 @@ class SearchController extends Controller
                 }
             });
 
-        // Audios
+        // ── Audios ───────────────────────────────────────────────────────────
         Audio::where('is_active', true)
-            ->where($titleMatch)
+            ->where(fn ($q) => $titleDescOrAuthor($q))
             ->limit($limit)
             ->get(['id', 'title'])
             ->each(function ($audio) use (&$results, $lang) {
@@ -67,9 +82,9 @@ class SearchController extends Controller
                 }
             });
 
-        // Fatwas
+        // ── Fatwas ───────────────────────────────────────────────────────────
         Fatwa::where('is_active', true)
-            ->where($titleMatch)
+            ->where(fn ($q) => $titleOrDesc($q))
             ->limit($limit)
             ->get(['id', 'title'])
             ->each(function ($fatwa) use (&$results, $lang) {
@@ -79,9 +94,14 @@ class SearchController extends Controller
                 }
             });
 
-        // Articles
+        // ── Articles ─────────────────────────────────────────────────────────
+        // Articles have title + excerpt + author (no separate description column).
         Article::where('is_active', true)
-            ->where($titleMatch)
+            ->where(function ($q) use ($matchJson, $like) {
+                $q->where($matchJson('title'))
+                  ->orWhere($matchJson('excerpt'))
+                  ->orWhere('author', 'LIKE', $like);
+            })
             ->limit($limit)
             ->get(['id', 'title', 'slug', 'cover_image'])
             ->each(function ($article) use (&$results, $lang) {
@@ -91,15 +111,30 @@ class SearchController extends Controller
                 }
             });
 
-        // Magazines
+        // ── Magazines ────────────────────────────────────────────────────────
         Magazine::where('is_active', true)
-            ->where($titleMatch)
+            ->where(fn ($q) => $titleOrDesc($q))
             ->limit($limit)
             ->get(['id', 'title', 'cover_image'])
             ->each(function ($magazine) use (&$results, $lang) {
                 $title = $magazine->title[$lang] ?? $magazine->title['da'] ?? '';
                 if ($title) {
                     $results[] = ['type' => 'magazine', 'title' => $title, 'url' => '/majalla', 'image' => $magazine->cover_image];
+                }
+            });
+
+        // ── Statements (بیانیه‌ها) ────────────────────────────────────────────
+        Statement::where('is_active', true)
+            ->where(function ($q) use ($matchJson) {
+                $q->where($matchJson('title'))
+                  ->orWhere($matchJson('body'));
+            })
+            ->limit($limit)
+            ->get(['id', 'title'])
+            ->each(function ($statement) use (&$results, $lang) {
+                $title = $statement->title[$lang] ?? $statement->title['da'] ?? '';
+                if ($title) {
+                    $results[] = ['type' => 'statement', 'title' => $title, 'url' => '/bayania'];
                 }
             });
 

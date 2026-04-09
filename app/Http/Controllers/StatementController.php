@@ -31,6 +31,25 @@ class StatementController extends Controller
         ]);
     }
 
+    /** Public single statement page */
+    public function show(Statement $statement): Response
+    {
+        if (! $statement->is_active) {
+            abort(404);
+        }
+
+        $locale = app()->getLocale();
+
+        return Inertia::render('bayania-show', [
+            'statement' => [
+                'id'           => $statement->id,
+                'title'        => $statement->title[$locale] ?? $statement->title['da'] ?? '',
+                'body'         => $statement->body ? ($statement->body[$locale] ?? $statement->body['da'] ?? '') : '',
+                'published_at' => $statement->published_at?->format('Y-m-d'),
+            ],
+        ]);
+    }
+
     /** Admin create form */
     public function create(): Response
     {
