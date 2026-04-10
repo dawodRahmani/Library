@@ -15,19 +15,22 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Detect locale from session, cookie, Accept-Language header, default to 'da'
-        $locale = $request->session()->get('locale')
-                  ?? $request->cookie('locale')
-                  ?? $request->getPreferredLanguage(['da', 'en', 'ar', 'tg'])
+        $allowed = ['da', 'en', 'ar', 'tg'];
+
+        // Cookie (explicit user choice) takes priority over session
+        $cookie  = $request->cookie('locale');
+        $session = $request->session()->get('locale');
+
+        $locale = (in_array($cookie, $allowed) ? $cookie : null)
+                  ?? (in_array($session, $allowed) ? $session : null)
+                  ?? $request->getPreferredLanguage($allowed)
                   ?? 'da';
 
         // Set application locale
         app()->setLocale($locale);
 
-        // Store locale in session for subsequent requests
-        if (!$request->session()->has('locale')) {
-            $request->session()->put('locale', $locale);
-        }
+        // Always sync the session so it matches the current locale
+        $request->session()->put('locale', $locale);
 
         // Share locale with Inertia views (already done via HandleInertiaRequests)
         // The locale will be available as $request->getLocale()

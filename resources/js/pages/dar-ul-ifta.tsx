@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { TopBar }          from '@/components/home/top-bar';
 import { MainNav }         from '@/components/home/main-nav';
 import { NewsTicker }      from '@/components/home/news-ticker';
@@ -6,6 +7,11 @@ import { PageHeader }      from '@/components/home/page-header';
 import { DarUlIftaList }   from '@/components/home/dar-ul-ifta-list';
 import { HomeSidebar }     from '@/components/home/home-sidebar';
 import { HomeFooter }      from '@/components/home/home-footer';
+
+type Locale = 'da' | 'en' | 'ar' | 'tg';
+function getLocale(lang: string): Locale {
+    return (['da', 'en', 'ar', 'tg'] as const).includes(lang as Locale) ? lang as Locale : 'da';
+}
 
 interface FatwaItem {
     id: number;
@@ -28,19 +34,27 @@ interface PageProps {
 }
 
 export default function DarUlIfta({ fatwas, categories }: PageProps) {
+    const { i18n } = useTranslation();
+    const locale = getLocale(i18n.language);
+
+    const L = {
+        pageTitle: { da: 'دارالإفتاء', en: 'Dar ul-Ifta', ar: 'دار الإفتاء', tg: 'Дорул-ифто' }[locale],
+        home:      { da: 'خانه',        en: 'Home',        ar: 'الرئيسية',     tg: 'Хона' }[locale],
+    };
+
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="دارالافتاء — کتابخانه رسالت" />
+            <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
 
             <TopBar />
             <MainNav />
             <NewsTicker />
 
             <PageHeader
-                title="دارالافتاء"
+                title={L.pageTitle}
                 breadcrumbs={[
-                    { label: 'خانه', href: '/' },
-                    { label: 'دارالافتاء' },
+                    { label: L.home, href: '/' },
+                    { label: L.pageTitle },
                 ]}
             />
 

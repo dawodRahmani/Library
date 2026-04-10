@@ -1,11 +1,11 @@
 import { usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 
-interface TickerItem { da: string; en: string }
+interface TickerItem { da: string; en: string; ar?: string; tg?: string }
 interface SharedProps { siteSettings?: { ticker_items?: TickerItem[] }; [key: string]: unknown }
 
 const FALLBACK: TickerItem[] = [
-    { da: 'به کتابخانه رسالت خوش آمدید', en: 'Welcome to Resalat Library' },
+    { da: 'به کتابخانه رسالت خوش آمدید', en: 'Welcome to Resalat Library', ar: 'مرحباً بكم في مكتبة الرسالة', tg: 'Ба Китобхонаи Рисолат хуш омадед' },
 ];
 
 export function NewsTicker() {
@@ -17,7 +17,12 @@ export function NewsTicker() {
         ? siteSettings.ticker_items
         : FALLBACK;
 
-    const texts = items.map((t) => (locale === 'en' ? t.en || t.da : t.da || t.en)).filter(Boolean);
+    const texts = items.map((t) => {
+        if (locale === 'en') return t.en || t.da;
+        if (locale === 'ar') return t.ar || t.da;
+        if (locale === 'tg') return t.tg || t.da;
+        return t.da || t.en;
+    }).filter(Boolean);
 
     return (
         <div className="bg-[#1a252f] border-y border-white/10 overflow-hidden">

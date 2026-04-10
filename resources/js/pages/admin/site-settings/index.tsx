@@ -17,8 +17,8 @@ import type { BreadcrumbItem } from '@/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface SocialLink  { platform: string; url: string; count: string }
-interface TickerItem  { da: string; en: string; ar?: string }
-interface ML          { da: string; en: string; ar?: string }
+interface TickerItem  { da: string; en: string; ar?: string; tg?: string }
+interface ML          { da: string; en: string; ar?: string; tg?: string }
 interface AboutStat   { icon: string; value: string; label: ML }
 interface AboutValue  { icon: string; title: ML; body: ML }
 interface AboutMember { name: string; role: ML; bio: ML; gradient: string }
@@ -148,7 +148,7 @@ export default function SiteSettingsIndex({ settings }: Props) {
 
     // Ticker
     const [tickerItems, setTickerItems] = useState<TickerItem[]>(
-        settings.ticker_items ?? [{ da: '', en: '', ar: '' }]
+        settings.ticker_items ?? [{ da: '', en: '', ar: '', tg: '' }]
     );
 
     // Footer
@@ -156,6 +156,7 @@ export default function SiteSettingsIndex({ settings }: Props) {
         da: settings.footer_about?.da ?? '',
         en: settings.footer_about?.en ?? '',
         ar: settings.footer_about?.ar ?? '',
+        tg: settings.footer_about?.tg ?? '',
     });
 
     // About
@@ -208,9 +209,9 @@ export default function SiteSettingsIndex({ settings }: Props) {
     }
 
     // ── Ticker helpers ────────────────────────────────────────────────────────
-    function addTicker()  { setTickerItems([...tickerItems, { da: '', en: '', ar: '' }]); }
+    function addTicker()  { setTickerItems([...tickerItems, { da: '', en: '', ar: '', tg: '' }]); }
     function removeTicker(i: number) { setTickerItems(tickerItems.filter((_, idx) => idx !== i)); }
-    function updateTicker(i: number, field: 'da' | 'en' | 'ar', val: string) {
+    function updateTicker(i: number, field: 'da' | 'en' | 'ar' | 'tg', val: string) {
         setTickerItems(tickerItems.map((t, idx) => idx === i ? { ...t, [field]: val } : t));
     }
 
@@ -597,6 +598,10 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                         <Label className="text-xs">العربية</Label>
                                         <Input value={item.ar ?? ''} onChange={(e) => updateTicker(i, 'ar', e.target.value)} placeholder="النص بالعربية..." dir="rtl" />
                                     </div>
+                                    <div>
+                                        <Label className="text-xs">Тоҷикӣ</Label>
+                                        <Input value={item.tg ?? ''} onChange={(e) => updateTicker(i, 'tg', e.target.value)} placeholder="Матн бо забони тоҷикӣ..." dir="ltr" />
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -623,6 +628,10 @@ export default function SiteSettingsIndex({ settings }: Props) {
                             <div>
                                 <Label>العربية</Label>
                                 <Textarea value={footerAbout.ar ?? ''} onChange={(e) => setFooterAbout({ ...footerAbout, ar: e.target.value })} rows={5} placeholder="الوصف بالعربية..." dir="rtl" />
+                            </div>
+                            <div>
+                                <Label>Тоҷикӣ</Label>
+                                <Textarea value={footerAbout.tg ?? ''} onChange={(e) => setFooterAbout({ ...footerAbout, tg: e.target.value })} rows={5} placeholder="Тавсиф бо забони тоҷикӣ..." dir="ltr" />
                             </div>
                         </div>
                     </Section>
