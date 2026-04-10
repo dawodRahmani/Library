@@ -1,6 +1,12 @@
 import { BookMarked, Clock, User, ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+type Locale = 'da' | 'en' | 'ar' | 'tg';
+function getLocale(lang: string): Locale {
+    return (['da', 'en', 'ar', 'tg'] as const).includes(lang as Locale) ? lang as Locale : 'da';
+}
 
 /* ── Types ───────────────────────────────────────────────── */
 interface FatwaItem {
@@ -57,7 +63,7 @@ const CAT_COLORS: Record<string, string> = {
 };
 
 /* ── Card ────────────────────────────────────────────────── */
-function FatwaCard({ item, onOpen }: { item: FatwaItem; onOpen: () => void }) {
+function FatwaCard({ item, onOpen, locale }: { item: FatwaItem; onOpen: () => void; locale: Locale }) {
     const gradient = getGradient(item.category, item.id);
     const catClass = CAT_COLORS[item.category] ?? CAT_COLORS.default;
 
@@ -98,7 +104,7 @@ function FatwaCard({ item, onOpen }: { item: FatwaItem; onOpen: () => void }) {
                 onClick={onOpen}
                 className="flex items-center justify-between px-4 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors border-t border-gray-100 w-full"
             >
-                <span>مشاهده</span>
+                <span>{{ da: 'مشاهده', en: 'View', ar: 'عرض', tg: 'Мушоҳида' }[locale]}</span>
                 <ChevronLeft className="w-3.5 h-3.5" />
             </button>
         </div>
@@ -107,29 +113,29 @@ function FatwaCard({ item, onOpen }: { item: FatwaItem; onOpen: () => void }) {
 
 /* ── Main export ─────────────────────────────────────────── */
 export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
-    // Create mapping from slug to category name
-    const slugToName = categories.reduce((acc, cat) => {
-        acc[cat.slug] = cat.name;
-        return acc;
-    }, {} as Record<string, string>);
+    const { i18n } = useTranslation();
+    const locale = getLocale(i18n.language);
 
-    // All categories for filter (include "همه")
-    const allCategories = ['همه', ...categories.map(c => c.name)];
+    const allLabel      = { da: 'همه', en: 'All', ar: 'الكل', tg: 'Ҳама' }[locale];
+    const statsLabel    = { da: 'فتوا و بیانیه', en: 'fatwas & statements', ar: 'فتاوى وبيانات', tg: 'фатвоҳо ва изҳорот' }[locale];
+    const inCats        = { da: 'در', en: 'in', ar: 'في', tg: 'дар' }[locale];
+    const catsLabel     = { da: 'دسته‌بندی', en: 'categories', ar: 'فئة', tg: 'категория' }[locale];
+    const noItems       = { da: 'هیچ موردی یافت نشد.', en: 'No items found.', ar: 'لم يُعثر على شيء.', tg: 'Чизе ёфт нашуд.' }[locale];
+    const noContent     = { da: 'متن فتوا موجود نیست.', en: 'No content available.', ar: 'لا يتوفر محتوى.', tg: 'Матн дастрас нест.' }[locale];
 
-    const [active, setActive] = useState<string>(() => {
+    const allCategories = [{ slug: 'all', name: allLabel }, ...categories];
+
+    const [activeSlug, setActiveSlug] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
-            const slug = params.get('category');
-            if (slug && slugToName[slug]) {
-                return slugToName[slug];
-            }
+            return params.get('category') ?? 'all';
         }
-        return 'همه';
+        return 'all';
     });
 
     const [selected, setSelected] = useState<FatwaItem | null>(null);
 
-    const filtered = active === 'همه' ? fatwas : fatwas.filter((item) => item.category === active);
+    const filtered = activeSlug === 'all' ? fatwas : fatwas.filter((item) => item.categorySlug === activeSlug);
 
     const catClass = selected ? (CAT_COLORS[selected.category] ?? CAT_COLORS.default) : '';
 
@@ -141,8 +147,8 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
                     <BookMarked className="w-5 h-5 text-[#27ae60]" />
                 </div>
                 <div>
-                    <p className="text-[13px] font-bold text-gray-800">{fatwas.length} فتوا و بیانیه</p>
-                    <p className="text-[11px] text-gray-400">در {categories.length} دسته‌بندی</p>
+                    <p className="text-[13px] font-bold text-gray-800">{fatwas.length} {statsLabel}</p>
+                    <p className="text-[11px] text-gray-400">{inCats} {categories.length} {catsLabel}</p>
                 </div>
             </div>
 
@@ -150,15 +156,15 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
             <div className="flex flex-wrap gap-2 mb-6">
                 {allCategories.map((cat) => (
                     <button
-                        key={cat}
-                        onClick={() => setActive(cat)}
+                        key={cat.slug}
+                        onClick={() => setActiveSlug(cat.slug)}
                         className={`text-[12px] px-3 py-1.5 rounded-full border font-medium transition-colors ${
-                            cat === active
+                            cat.slug === activeSlug
                                 ? 'bg-[#27ae60] border-[#27ae60] text-white'
                                 : 'border-gray-200 text-gray-600 hover:border-[#27ae60] hover:text-[#27ae60]'
                         }`}
                     >
-                        {cat}
+                        {cat.name}
                     </button>
                 ))}
             </div>
@@ -166,14 +172,14 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {filtered.map((item) => (
-                    <FatwaCard key={item.id} item={item} onOpen={() => setSelected(item)} />
+                    <FatwaCard key={item.id} item={item} onOpen={() => setSelected(item)} locale={locale} />
                 ))}
             </div>
 
             {filtered.length === 0 && (
                 <div className="text-center py-16 text-gray-400">
                     <BookMarked className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                    <p>هیچ موردی یافت نشد.</p>
+                    <p>{noItems}</p>
                 </div>
             )}
 
@@ -194,7 +200,7 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
                             </DialogHeader>
 
                             <div className="mt-3 text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">
-                                {selected.description || <span className="text-gray-400">متن فتوا موجود نیست.</span>}
+                                {selected.description || <span className="text-gray-400">{noContent}</span>}
                             </div>
 
                             <div className="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100 text-[12px] text-gray-400">

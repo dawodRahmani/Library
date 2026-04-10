@@ -1,5 +1,11 @@
 import { Headphones, Play, Clock, User, Mic, Download, Link as LinkIcon, Upload, ExternalLink, X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+type Locale = 'da' | 'en' | 'ar' | 'tg';
+function getLocale(lang: string): Locale {
+    return (['da', 'en', 'ar', 'tg'] as const).includes(lang as Locale) ? lang as Locale : 'da';
+}
 
 type AudioSource = 'link' | 'upload';
 
@@ -69,7 +75,7 @@ function isDirectAudioUrl(url: string): boolean {
 }
 
 // ── Inline Audio Player Modal ─────────────────────────────────────────────────
-function AudioPlayerModal({ item, onClose }: { item: AudioItem; onClose: () => void }) {
+function AudioPlayerModal({ item, onClose, locale }: { item: AudioItem; onClose: () => void; locale: Locale }) {
     const gradient = getGradient(item.category, item.id);
     const catColor = CAT_COLORS[item.category] ?? 'bg-gray-100 text-gray-700';
 
@@ -129,14 +135,14 @@ function AudioPlayerModal({ item, onClose }: { item: AudioItem; onClose: () => v
                     {externalUrl && (
                         <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
                             <ExternalLink className="w-4 h-4 shrink-0" />
-                            <span className="flex-1">این صوت در یک سایت خارجی موجود است.</span>
+                            <span className="flex-1">{{ da: 'این صوت در یک سایت خارجی موجود است.', en: 'This audio is hosted on an external site.', ar: 'هذا الصوت موجود على موقع خارجي.', tg: 'Ин садо дар сомонаи хориҷӣ мавҷуд аст.' }[locale]}</span>
                             <a
                                 href={externalUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="font-bold underline underline-offset-2 hover:text-blue-900 transition-colors"
                             >
-                                باز کردن
+                                {{ da: 'باز کردن', en: 'Open', ar: 'فتح', tg: 'Кушодан' }[locale]}
                             </a>
                         </div>
                     )}
@@ -159,7 +165,7 @@ function AudioPlayerModal({ item, onClose }: { item: AudioItem; onClose: () => v
                             className="inline-flex items-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                         >
                             <Download className="w-4 h-4" />
-                            دانلود صوت
+                            {{ da: 'دانلود صوت', en: 'Download Audio', ar: 'تحميل الصوت', tg: 'Зеркашии овоз' }[locale]}
                         </a>
                     )}
                 </div>
@@ -175,7 +181,7 @@ function SourceDot({ source }: { source: AudioSource }) {
 }
 
 // ── Audio Card ────────────────────────────────────────────────────────────────
-function AudioCard({ item, onPlay }: { item: AudioItem; onPlay: (a: AudioItem) => void }) {
+function AudioCard({ item, onPlay, locale }: { item: AudioItem; onPlay: (a: AudioItem) => void; locale: Locale }) {
     const gradient = getGradient(item.category, item.id);
     const catColor = CAT_COLORS[item.category] ?? 'bg-gray-100 text-gray-700';
 
@@ -228,7 +234,7 @@ function AudioCard({ item, onPlay }: { item: AudioItem; onPlay: (a: AudioItem) =
             >
                 <span className="flex items-center gap-1.5">
                     {item.audio_source === 'upload' ? <Headphones className="w-3.5 h-3.5" /> : <ExternalLink className="w-3.5 h-3.5" />}
-                    گوش دادن
+                    {{ da: 'گوش دادن', en: 'Listen', ar: 'استمع', tg: 'Гӯш кардан' }[locale]}
                 </span>
                 <Play className="w-3.5 h-3.5" />
             </button>
@@ -238,24 +244,26 @@ function AudioCard({ item, onPlay }: { item: AudioItem; onPlay: (a: AudioItem) =
 
 // ── List ──────────────────────────────────────────────────────────────────────
 export function AudioList({ audios, categories }: AudioListProps) {
-    const categorySlugToName = categories.reduce((acc, cat) => {
-        acc[cat.slug] = cat.name;
-        return acc;
-    }, {} as Record<string, string>);
+    const { i18n } = useTranslation();
+    const locale = getLocale(i18n.language);
 
-    const [active, setActive] = useState<string>(() => {
+    const allLabel    = { da: 'همه', en: 'All', ar: 'الكل', tg: 'Ҳама' }[locale];
+    const audioFiles  = { da: 'فایل صوتی', en: 'audio files', ar: 'ملف صوتي', tg: 'файли садоӣ' }[locale];
+    const inCats      = { da: 'در', en: 'in', ar: 'في', tg: 'дар' }[locale];
+    const catsLabel   = { da: 'دسته‌بندی', en: 'categories', ar: 'فئة', tg: 'категория' }[locale];
+
+    const [activeSlug, setActiveSlug] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
-            const slug = params.get('category');
-            if (slug && categorySlugToName[slug]) return categorySlugToName[slug];
+            return params.get('category') ?? 'all';
         }
-        return 'همه';
+        return 'all';
     });
 
     const [playing, setPlaying] = useState<AudioItem | null>(null);
 
-    const allCategories = ['همه', ...categories.map((c) => c.name)];
-    const filtered = active === 'همه' ? audios : audios.filter((a) => a.category === active);
+    const allCategories = [{ slug: 'all', name: allLabel }, ...categories];
+    const filtered = activeSlug === 'all' ? audios : audios.filter((a) => a.categorySlug === activeSlug);
 
     return (
         <div>
@@ -265,8 +273,8 @@ export function AudioList({ audios, categories }: AudioListProps) {
                     <Headphones className="w-5 h-5 text-[#27ae60]" />
                 </div>
                 <div>
-                    <p className="text-[13px] font-bold text-gray-800">{audios.length} فایل صوتی</p>
-                    <p className="text-[11px] text-gray-400">در {categories.length} دسته‌بندی</p>
+                    <p className="text-[13px] font-bold text-gray-800">{audios.length} {audioFiles}</p>
+                    <p className="text-[11px] text-gray-400">{inCats} {categories.length} {catsLabel}</p>
                 </div>
             </div>
 
@@ -274,15 +282,15 @@ export function AudioList({ audios, categories }: AudioListProps) {
             <div className="flex flex-wrap gap-2 mb-6">
                 {allCategories.map((cat) => (
                     <button
-                        key={cat}
-                        onClick={() => setActive(cat)}
+                        key={cat.slug}
+                        onClick={() => setActiveSlug(cat.slug)}
                         className={`text-[12px] px-3 py-1.5 rounded-full border font-medium transition-colors ${
-                            cat === active
+                            cat.slug === activeSlug
                                 ? 'bg-[#27ae60] border-[#27ae60] text-white'
                                 : 'border-gray-200 text-gray-600 hover:border-[#27ae60] hover:text-[#27ae60]'
                         }`}
                     >
-                        {cat}
+                        {cat.name}
                     </button>
                 ))}
             </div>
@@ -290,12 +298,12 @@ export function AudioList({ audios, categories }: AudioListProps) {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {filtered.map((item) => (
-                    <AudioCard key={item.id} item={item} onPlay={setPlaying} />
+                    <AudioCard key={item.id} item={item} onPlay={setPlaying} locale={locale} />
                 ))}
             </div>
 
             {/* Player Modal */}
-            {playing && <AudioPlayerModal item={playing} onClose={() => setPlaying(null)} />}
+            {playing && <AudioPlayerModal item={playing} onClose={() => setPlaying(null)} locale={locale} />}
         </div>
     );
 }

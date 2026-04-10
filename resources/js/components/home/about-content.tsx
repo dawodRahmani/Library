@@ -94,7 +94,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export function AboutContent() {
     const { i18n, t } = useTranslation();
-    const locale = ['da', 'en', 'ar'].includes(i18n.language) ? i18n.language : 'da';
+    const locale = ['da', 'en', 'ar', 'tg'].includes(i18n.language) ? i18n.language : 'da';
 
     const settings = usePage<SharedProps>().props.siteSettings ?? {};
 

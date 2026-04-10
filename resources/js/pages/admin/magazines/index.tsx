@@ -16,7 +16,7 @@ import type { BreadcrumbItem } from '@/types';
 interface MagazineItem {
     id: number;
     number: number;
-    title: { da: string; en?: string; ar?: string };
+    title: { da: string; en?: string; ar?: string; tg?: string };
     theme: string | null;
     year: string;
     article_count: number;
@@ -38,7 +38,7 @@ function formatBytes(b: number): string {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'مجله', href: '/admin/magazines' }];
 
 const emptyForm = {
-    number: '', title: { da: '', en: '', ar: '' }, theme: '', year: '', article_count: 0,
+    number: '', title: { da: '', en: '', ar: '', tg: '' }, theme: '', year: '', article_count: 0,
     description: { da: '', en: '', ar: '' }, featured: false, is_active: true,
 };
 
@@ -66,7 +66,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
         setEditing(m);
         setForm({
             number: String(m.number),
-            title: { da: m.title?.da ?? '', en: m.title?.en ?? '', ar: m.title?.ar ?? '' },
+            title: { da: m.title?.da ?? '', en: m.title?.en ?? '', ar: m.title?.ar ?? '', tg: m.title?.tg ?? '' },
             theme: m.theme ?? '',
             year: m.year,
             article_count: m.article_count,
@@ -87,6 +87,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
         fd.append('title[da]', form.title.da);
         fd.append('title[en]', form.title.en ?? '');
         fd.append('title[ar]', form.title.ar ?? '');
+        fd.append('title[tg]', form.title.tg ?? '');
         fd.append('theme', form.theme);
         fd.append('year', form.year);
         fd.append('article_count', String(form.article_count));
@@ -185,6 +186,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
                         <div><Label>عنوان (دری) *</Label><Input value={form.title.da} onChange={(e) => setForm({ ...form, title: { ...form.title, da: e.target.value } })} placeholder="دری" /><InputError message={errors['title.da']} /></div>
                         <div><Label>عنوان (English)</Label><Input value={form.title.en ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, en: e.target.value } })} placeholder="English" dir="ltr" /></div>
                         <div><Label>عنوان (العربية)</Label><Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" /></div>
+                        <div><Label>عنوان (Тоҷикӣ)</Label><Input value={form.title.tg ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, tg: e.target.value } })} placeholder="Тоҷикӣ" dir="ltr" /></div>
                         <div><Label>موضوع</Label><Input value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} /></div>
                         <div><Label>تعداد مقالات</Label><Input type="number" value={form.article_count} onChange={(e) => setForm({ ...form, article_count: Number(e.target.value) })} /></div>
                         <div><Label>توضیحات (دری)</Label><Textarea value={form.description?.da ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={3} /></div>

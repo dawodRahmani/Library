@@ -1,11 +1,18 @@
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TopBar }     from '@/components/home/top-bar';
 import { MainNav }    from '@/components/home/main-nav';
 import { NewsTicker } from '@/components/home/news-ticker';
 import { PageHeader } from '@/components/home/page-header';
 import { HomeFooter } from '@/components/home/home-footer';
 import { BookOpen, Search, Star, X, Hash, User, CalendarDays, Layers, Filter, Download, BookText, BookMarked } from 'lucide-react';
+
+type Locale = 'da' | 'en' | 'ar' | 'tg';
+
+function getLocale(lang: string): Locale {
+    return (['da', 'en', 'ar', 'tg'] as const).includes(lang as Locale) ? lang as Locale : 'da';
+}
 
 interface Book {
     id: number;
@@ -47,7 +54,20 @@ function StarRating({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md
     );
 }
 
-function BookDetailModal({ book, onClose }: { book: Book; onClose: () => void }) {
+function BookDetailModal({ book, onClose, locale }: { book: Book; onClose: () => void; locale: Locale }) {
+    const L = {
+        author:      { da: 'نویسنده',      en: 'Author',     ar: 'المؤلف',           tg: 'Муаллиф' }[locale],
+        isbn:        { da: 'شابک',          en: 'ISBN',        ar: 'ISBN',             tg: 'ISBN' }[locale],
+        year:        { da: 'سال انتشار',    en: 'Year',        ar: 'سنة النشر',        tg: 'Соли нашр' }[locale],
+        pages:       { da: 'تعداد صفحات',  en: 'Pages',       ar: 'عدد الصفحات',      tg: 'Теъдоди саҳифаҳо' }[locale],
+        publisher:   { da: 'ناشر',          en: 'Publisher',   ar: 'الناشر',           tg: 'Нашриётчӣ' }[locale],
+        category:    { da: 'دسته‌بندی',     en: 'Category',    ar: 'الفئة',            tg: 'Категория' }[locale],
+        pagesUnit:   { da: 'صفحه',          en: 'pages',       ar: 'صفحة',             tg: 'саҳифа' }[locale],
+        readOnline:  { da: 'مطالعه آنلاین', en: 'Read Online', ar: 'قراءة عبر الإنترنت', tg: 'Хондани онлайн' }[locale],
+        download:    { da: 'دانلود',        en: 'Download',    ar: 'تحميل',            tg: 'Зеркашӣ' }[locale],
+        noFile:      { da: 'فایل دیجیتال موجود نیست', en: 'No digital file available', ar: 'لا يتوفر ملف رقمي', tg: 'Файли рақамӣ дастнорас' }[locale],
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
             <div
@@ -77,12 +97,12 @@ function BookDetailModal({ book, onClose }: { book: Book; onClose: () => void })
 
                     <div className="grid grid-cols-2 gap-3">
                         {[
-                            { icon: User,         label: 'نویسنده',      value: book.author },
-                            { icon: Hash,         label: 'شابک',         value: book.isbn },
-                            { icon: CalendarDays, label: 'سال انتشار',   value: String(book.year) },
-                            { icon: Layers,       label: 'تعداد صفحات', value: book.pages ? `${book.pages} صفحه` : '—' },
-                            { icon: BookOpen,     label: 'ناشر',         value: book.publisher || '—' },
-                            { icon: Filter,       label: 'دسته‌بندی',    value: book.category },
+                            { icon: User,         label: L.author,    value: book.author },
+                            { icon: Hash,         label: L.isbn,      value: book.isbn },
+                            { icon: CalendarDays, label: L.year,      value: String(book.year) },
+                            { icon: Layers,       label: L.pages,     value: book.pages ? `${book.pages} ${L.pagesUnit}` : '—' },
+                            { icon: BookOpen,     label: L.publisher, value: book.publisher || '—' },
+                            { icon: Filter,       label: L.category,  value: book.category },
                         ].map(({ icon: IIcon, label, value }) => value && value !== '—' ? (
                             <div key={label} className="flex items-start gap-2 bg-gray-50 rounded-lg p-3">
                                 <IIcon className="w-4 h-4 text-[#27ae60] mt-0.5 shrink-0" />
@@ -101,18 +121,18 @@ function BookDetailModal({ book, onClose }: { book: Book; onClose: () => void })
                                 className="flex-1 flex items-center justify-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white rounded-xl py-2.5 text-sm font-medium transition-colors"
                             >
                                 <BookText className="w-4 h-4" />
-                                مطالعه آنلاین
+                                {L.readOnline}
                             </button>
                             <button
                                 onClick={() => { window.location.href = `/library/books/${book.id}/download`; }}
                                 className="flex-1 flex items-center justify-center gap-2 border border-[#27ae60] text-[#27ae60] hover:bg-emerald-50 rounded-xl py-2.5 text-sm font-medium transition-colors"
                             >
                                 <Download className="w-4 h-4" />
-                                دانلود {book.file_type?.toUpperCase()}
+                                {L.download} {book.file_type?.toUpperCase()}
                             </button>
                         </div>
                     ) : (
-                        <p className="text-center text-sm text-gray-400 py-2">فایل دیجیتال موجود نیست</p>
+                        <p className="text-center text-sm text-gray-400 py-2">{L.noFile}</p>
                     )}
                 </div>
             </div>
@@ -121,31 +141,50 @@ function BookDetailModal({ book, onClose }: { book: Book; onClose: () => void })
 }
 
 export default function LibraryIndex({ books, categories }: PageProps) {
+    const { i18n } = useTranslation();
+    const locale = getLocale(i18n.language);
+
+    const L = {
+        all:              { da: 'همه',                                            en: 'All',                                     ar: 'الكل',                             tg: 'Ҳама' }[locale],
+        searchPlaceholder:{ da: 'جستجو بر اساس عنوان، نویسنده یا شابک...',       en: 'Search by title, author or ISBN...',      ar: 'ابحث بالعنوان أو المؤلف أو ISBN...',tg: 'Ҷустуҷӯ аз рӯи унвон, муаллиф ё ISBN...' }[locale],
+        titleCol:         { da: 'عنوان کتاب',                                     en: 'Book Title',                              ar: 'عنوان الكتاب',                     tg: 'Унвони китоб' }[locale],
+        authorCol:        { da: 'نویسنده',                                        en: 'Author',                                  ar: 'المؤلف',                           tg: 'Муаллиф' }[locale],
+        categoryCol:      { da: 'دسته‌بندی',                                      en: 'Category',                                ar: 'الفئة',                            tg: 'Категория' }[locale],
+        yearCol:          { da: 'سال',                                            en: 'Year',                                    ar: 'السنة',                            tg: 'Сол' }[locale],
+        ratingCol:        { da: 'امتیاز',                                         en: 'Rating',                                  ar: 'التقييم',                          tg: 'Баҳо' }[locale],
+        accessCol:        { da: 'دسترسی',                                         en: 'Access',                                  ar: 'الوصول',                           tg: 'Дастрасӣ' }[locale],
+        noBooks:          { da: 'هیچ کتابی یافت نشد',                            en: 'No books found',                          ar: 'لم يُعثر على كتب',                  tg: 'Китобе ёфт нашуд' }[locale],
+        read:             { da: 'مطالعه',                                         en: 'Read',                                    ar: 'قراءة',                            tg: 'Хондан' }[locale],
+        download:         { da: 'دانلود',                                         en: 'Download',                                ar: 'تحميل',                            tg: 'Зеркашӣ' }[locale],
+        totalTitles:      { da: 'کل عناوین',                                      en: 'Total Titles',                            ar: 'مجموع العناوين',                   tg: 'Ҳамаи унвонҳо' }[locale],
+        downloadable:     { da: 'قابل دانلود',                                    en: 'Downloadable',                            ar: 'قابل للتحميل',                     tg: 'Зеркашишаванда' }[locale],
+        pageTitle:        { da: 'کتابخانه',                                       en: 'Library',                                 ar: 'المكتبة',                          tg: 'Китобхона' }[locale],
+        home:             { da: 'خانه',                                           en: 'Home',                                    ar: 'الرئيسية',                         tg: 'Хона' }[locale],
+        showing: (n: number, t: number) =>
+            locale === 'en' ? `Showing ${n} of ${t} titles`
+            : locale === 'ar' ? `عرض ${n} من ${t} عنوان`
+            : locale === 'tg' ? `Намоиши ${n} аз ${t} унвон`
+            : `نمایش ${n} از ${t} عنوان`,
+    };
+
     const [search, setSearch] = useState('');
-    const [category, setCategory] = useState(() => {
+    const [categorySlug, setCategorySlug] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
-            const slug = params.get('category');
-            if (slug) {
-                const mapping = categories.reduce((acc, cat) => {
-                    acc[cat.slug] = cat.name;
-                    return acc;
-                }, {} as Record<string, string>);
-                if (mapping[slug]) return mapping[slug];
-            }
+            return params.get('category') ?? 'all';
         }
-        return 'همه';
+        return 'all';
     });
     const [selected, setSelected] = useState<Book | null>(null);
 
-    const allCategories = [{ slug: 'all', name: 'همه' }, ...categories];
+    const allCategories = [{ slug: 'all', name: L.all }, ...categories];
 
     const filtered = books.filter((book) => {
         const matchSearch =
             book.title.includes(search) ||
             book.author.includes(search) ||
             (book.isbn ?? '').includes(search);
-        const matchCategory = category === 'همه' || book.category === category;
+        const matchCategory = categorySlug === 'all' || book.categorySlug === categorySlug;
         return matchSearch && matchCategory;
     });
 
@@ -153,16 +192,16 @@ export default function LibraryIndex({ books, categories }: PageProps) {
 
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="کتابخانه — کتابخانه رسالت" />
+            <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
             <TopBar />
             <MainNav />
             <NewsTicker />
 
             <PageHeader
-                title="کتابخانه"
+                title={L.pageTitle}
                 breadcrumbs={[
-                    { label: 'خانه', href: '/' },
-                    { label: 'کتابخانه' },
+                    { label: L.home, href: '/' },
+                    { label: L.pageTitle },
                 ]}
             />
 
@@ -171,8 +210,8 @@ export default function LibraryIndex({ books, categories }: PageProps) {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-2 gap-4 max-w-sm">
                     {[
-                        { label: 'کل عناوین',    value: books.length, icon: BookOpen,   bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
-                        { label: 'قابل دانلود',  value: withFile,     icon: BookMarked, bg: 'bg-blue-50',    text: 'text-blue-600',    border: 'border-blue-200' },
+                        { label: L.totalTitles,  value: books.length, icon: BookOpen,   bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
+                        { label: L.downloadable, value: withFile,     icon: BookMarked, bg: 'bg-blue-50',    text: 'text-blue-600',    border: 'border-blue-200' },
                     ].map(({ label, value, icon: Icon, bg, text, border }) => (
                         <div key={label} className={`rounded-xl border ${border} bg-white p-4 flex items-center gap-3`}>
                             <div className={`w-10 h-10 rounded-lg ${bg} ${text} flex items-center justify-center shrink-0`}>
@@ -192,18 +231,18 @@ export default function LibraryIndex({ books, categories }: PageProps) {
                         <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="جستجو بر اساس عنوان، نویسنده یا شابک..."
+                            placeholder={L.searchPlaceholder}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full border border-gray-200 rounded-lg ps-9 pe-4 py-2 text-sm focus:outline-none focus:border-[#27ae60] transition-colors"
                         />
                     </div>
                     <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
+                        value={categorySlug}
+                        onChange={(e) => setCategorySlug(e.target.value)}
                         className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#27ae60] transition-colors sm:w-44"
                     >
-                        {allCategories.map((c) => <option key={c.slug} value={c.name}>{c.name}</option>)}
+                        {allCategories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
                     </select>
                 </div>
 
@@ -214,12 +253,12 @@ export default function LibraryIndex({ books, categories }: PageProps) {
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50">
                                     <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 w-8">#</th>
-                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3">عنوان کتاب</th>
-                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden md:table-cell">نویسنده</th>
-                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden lg:table-cell">دسته‌بندی</th>
-                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden lg:table-cell">سال</th>
-                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden xl:table-cell">امتیاز</th>
-                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3">دسترسی</th>
+                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3">{L.titleCol}</th>
+                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden md:table-cell">{L.authorCol}</th>
+                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden lg:table-cell">{L.categoryCol}</th>
+                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden lg:table-cell">{L.yearCol}</th>
+                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3 hidden xl:table-cell">{L.ratingCol}</th>
+                                    <th className="text-start text-xs font-semibold text-gray-500 px-4 py-3">{L.accessCol}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -227,7 +266,7 @@ export default function LibraryIndex({ books, categories }: PageProps) {
                                     <tr>
                                         <td colSpan={7} className="text-center py-16 text-gray-400">
                                             <BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                                            <p className="text-sm">هیچ کتابی یافت نشد</p>
+                                            <p className="text-sm">{L.noBooks}</p>
                                         </td>
                                     </tr>
                                 ) : filtered.map((book, idx) => (
@@ -268,14 +307,14 @@ export default function LibraryIndex({ books, categories }: PageProps) {
                                                         className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium bg-[#27ae60] text-white hover:bg-[#219a52] transition-colors"
                                                     >
                                                         <BookText className="w-3 h-3" />
-                                                        مطالعه
+                                                        {L.read}
                                                     </button>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); window.location.href = `/library/books/${book.id}/download`; }}
                                                         className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium border border-[#27ae60] text-[#27ae60] hover:bg-emerald-50 transition-colors"
                                                     >
                                                         <Download className="w-3 h-3" />
-                                                        دانلود
+                                                        {L.download}
                                                     </button>
                                                 </div>
                                             ) : (
@@ -291,8 +330,7 @@ export default function LibraryIndex({ books, categories }: PageProps) {
                     {filtered.length > 0 && (
                         <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between bg-gray-50/50">
                             <p className="text-xs text-gray-400">
-                                نمایش <span className="font-medium text-gray-700">{filtered.length}</span> از{' '}
-                                <span className="font-medium text-gray-700">{books.length}</span> عنوان
+                                {L.showing(filtered.length, books.length)}
                             </p>
                         </div>
                     )}
@@ -301,7 +339,7 @@ export default function LibraryIndex({ books, categories }: PageProps) {
 
             <HomeFooter />
 
-            {selected && <BookDetailModal book={selected} onClose={() => setSelected(null)} />}
+            {selected && <BookDetailModal book={selected} onClose={() => setSelected(null)} locale={locale} />}
         </div>
     );
 }

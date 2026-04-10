@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { TopBar }        from '@/components/home/top-bar';
 import { MainNav }       from '@/components/home/main-nav';
 import { NewsTicker }    from '@/components/home/news-ticker';
@@ -32,36 +33,45 @@ interface PageProps {
     categories: Category[];
 }
 
-export default function Articles({ articles, categories }: PageProps) {
-    const [activeCategory, setActiveCategory] = useState('همه');
+type Locale = 'da' | 'en' | 'ar' | 'tg';
+function getLocale(lang: string): Locale {
+    return (['da', 'en', 'ar', 'tg'] as const).includes(lang as Locale) ? lang as Locale : 'da';
+}
 
-    // Handle URL category parameter
+export default function Articles({ articles, categories }: PageProps) {
+    const { i18n } = useTranslation();
+    const locale = getLocale(i18n.language);
+
+    const L = {
+        pageTitle: { da: 'مقاله‌ها', en: 'Articles', ar: 'المقالات', tg: 'Мақолаҳо' }[locale],
+        home:      { da: 'خانه',     en: 'Home',     ar: 'الرئيسية', tg: 'Хона' }[locale],
+    };
+
+    const [activeCategory, setActiveCategory] = useState('all');
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const slug = params.get('category');
-            if (slug) {
-                const category = categories.find(c => c.slug === slug);
-                if (category) {
-                    setActiveCategory(category.name);
-                }
+            if (slug && categories.some(c => c.slug === slug)) {
+                setActiveCategory(slug);
             }
         }
     }, [categories]);
 
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="مقاله‌ها — کتابخانه رسالت" />
+            <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
 
             <TopBar />
             <MainNav />
             <NewsTicker />
 
             <PageHeader
-                title="مقاله‌ها"
+                title={L.pageTitle}
                 breadcrumbs={[
-                    { label: 'خانه', href: '/' },
-                    { label: 'مقاله‌ها' },
+                    { label: L.home, href: '/' },
+                    { label: L.pageTitle },
                 ]}
             />
 

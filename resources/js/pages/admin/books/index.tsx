@@ -19,7 +19,7 @@ type Category = CategoryItem;
 
 interface Book {
     id: number;
-    title: { da: string; en?: string; ar?: string };
+    title: { da: string; en?: string; ar?: string; tg?: string };
     author: string;
     category_id: number;
     category: string;
@@ -46,7 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const emptyForm = {
-    title: { da: '', en: '', ar: '' },
+    title: { da: '', en: '', ar: '', tg: '' },
     author: '',
     category_id: '',
     year: '',
@@ -96,7 +96,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
     function openEdit(book: Book) {
         setEditing(book);
         setForm({
-            title: { da: book.title?.da ?? '', en: book.title?.en ?? '', ar: book.title?.ar ?? '' },
+            title: { da: book.title?.da ?? '', en: book.title?.en ?? '', ar: book.title?.ar ?? '', tg: book.title?.tg ?? '' },
             author: book.author,
             category_id: String(book.category_id),
             year: book.year ? String(book.year) : '',
@@ -287,6 +287,10 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                         <div>
                             <Label>عنوان (العربية)</Label>
                             <Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" />
+                        </div>
+                        <div>
+                            <Label>عنوان (Тоҷикӣ)</Label>
+                            <Input value={form.title.tg ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, tg: e.target.value } })} placeholder="Тоҷикӣ" dir="ltr" />
                         </div>
                         <div>
                             <Label>نویسنده *</Label>

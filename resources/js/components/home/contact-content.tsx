@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Mail, Phone, MapPin, Clock, Send, Facebook, Twitter, Youtube, Linkedin, Rss } from 'lucide-react';
@@ -37,7 +38,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export function ContactContent() {
     const { i18n } = useTranslation();
-    const locale   = ['da', 'en', 'ar'].includes(i18n.language) ? i18n.language : 'da';
+    const locale   = ['da', 'en', 'ar', 'tg'].includes(i18n.language) ? i18n.language : 'da';
 
     const settings    = usePage<SharedProps>().props.siteSettings ?? {};
     const flashSuccess = (usePage().props.flash as Record<string, string> | undefined)?.success;
@@ -76,10 +77,67 @@ export function ContactContent() {
         message: '',
     });
 
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    const isEn = locale === 'en';
+
+    type FieldKey = 'name' | 'email' | 'subject' | 'message';
+
+    function validate(field: FieldKey, value: string): string {
+        const trimmed = value.trim();
+        if (field === 'name') {
+            if (!trimmed) return isEn ? 'Name is required.' : 'نام الزامی است.';
+            if (trimmed.length < 2) return isEn ? 'Name must be at least 2 characters.' : 'نام باید حداقل ۲ کاراکتر باشد.';
+            if (trimmed.length > 80) return isEn ? 'Name is too long.' : 'نام بیش از حد طولانی است.';
+            if (/[<>{}\[\]\\|]/.test(trimmed)) return isEn ? 'Name contains invalid characters.' : 'نام شامل کاراکترهای غیرمجاز است.';
+        }
+        if (field === 'email') {
+            if (!trimmed) return isEn ? 'Email is required.' : 'ایمیل الزامی است.';
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) return isEn ? 'Enter a valid email address.' : 'آدرس ایمیل معتبر وارد کنید.';
+        }
+        if (field === 'subject') {
+            if (!trimmed) return isEn ? 'Subject is required.' : 'موضوع الزامی است.';
+            if (trimmed.length < 3) return isEn ? 'Subject must be at least 3 characters.' : 'موضوع باید حداقل ۳ کاراکتر باشد.';
+            if (trimmed.length > 150) return isEn ? 'Subject is too long.' : 'موضوع بیش از حد طولانی است.';
+        }
+        if (field === 'message') {
+            if (!trimmed) return isEn ? 'Message is required.' : 'پیام الزامی است.';
+            if (trimmed.length < 10) return isEn ? 'Message must be at least 10 characters.' : 'پیام باید حداقل ۱۰ کاراکتر باشد.';
+            if (trimmed.length > 2000) return isEn ? 'Message is too long (max 2000 characters).' : 'پیام بیش از حد طولانی است (حداکثر ۲۰۰۰ کاراکتر).';
+            if (/(https?:\/\/|www\.)/i.test(trimmed)) return isEn ? 'Links are not allowed in messages.' : 'لینک در پیام مجاز نیست.';
+            const uniqueChars = new Set(trimmed.replace(/\s/g, '')).size;
+            if (uniqueChars < 4) return isEn ? 'Message appears to be spam.' : 'پیام شما به اسپم شباهت دارد.';
+        }
+        return '';
+    }
+
+    function clientErrors() {
+        const fields: FieldKey[] = ['name', 'email', 'subject', 'message'];
+        const errs: Partial<Record<FieldKey, string>> = {};
+        for (const f of fields) {
+            const msg = validate(f, data[f]);
+            if (msg) errs[f] = msg;
+        }
+        return errs;
+    }
+
+    const clientErrs = clientErrors();
+    const hasClientErrors = Object.keys(clientErrs).length > 0;
+
+    function touch(field: FieldKey) {
+        setTouched((prev) => ({ ...prev, [field]: true }));
+    }
+
+    function fieldError(field: FieldKey): string {
+        return (touched[field] ? clientErrs[field] : '') || errors[field] || '';
+    }
+
     const submitted = wasSuccessful || !!flashSuccess;
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        setTouched({ name: true, email: true, subject: true, message: true });
+        if (hasClientErrors) return;
         post('/contact', { onSuccess: () => reset() });
     }
 
@@ -134,59 +192,71 @@ export function ContactContent() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                    {locale === 'en' ? 'Full Name' : 'نام و نام خانوادگی'}
+                                    {isEn ? 'Full Name' : 'نام و نام خانوادگی'} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    placeholder={locale === 'en' ? 'Your name' : 'نام شما'}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#27ae60] transition-colors"
+                                    onChange={(e) => { setData('name', e.target.value); touch('name'); }}
+                                    onBlur={() => touch('name')}
+                                    placeholder={isEn ? 'Your name' : 'نام شما'}
+                                    className={`w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none transition-colors ${fieldError('name') ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#27ae60]'}`}
                                 />
-                                {errors.name && <p className="text-red-500 text-[11px] mt-1">{errors.name}</p>}
+                                {fieldError('name') && <p className="text-red-500 text-[11px] mt-1">{fieldError('name')}</p>}
                             </div>
                             <div>
                                 <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                    {locale === 'en' ? 'Email' : 'ایمیل'}
+                                    {isEn ? 'Email' : 'ایمیل'} <span className="text-red-500">*</span>
                                 </label>
                                 <input
-                                    type="email"
+                                    type="text"
                                     value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    onChange={(e) => { setData('email', e.target.value); touch('email'); }}
+                                    onBlur={() => touch('email')}
                                     placeholder="email@example.com"
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#27ae60] transition-colors"
+                                    className={`w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none transition-colors ${fieldError('email') ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#27ae60]'}`}
                                     dir="ltr"
                                 />
-                                {errors.email && <p className="text-red-500 text-[11px] mt-1">{errors.email}</p>}
+                                {fieldError('email') && <p className="text-red-500 text-[11px] mt-1">{fieldError('email')}</p>}
                             </div>
                         </div>
 
                         <div>
                             <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                {locale === 'en' ? 'Subject' : 'موضوع'}
+                                {isEn ? 'Subject' : 'موضوع'} <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 value={data.subject}
-                                onChange={(e) => setData('subject', e.target.value)}
-                                placeholder={locale === 'en' ? 'Message subject' : 'موضوع پیام'}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#27ae60] transition-colors"
+                                onChange={(e) => { setData('subject', e.target.value); touch('subject'); }}
+                                onBlur={() => touch('subject')}
+                                placeholder={isEn ? 'Message subject' : 'موضوع پیام'}
+                                className={`w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none transition-colors ${fieldError('subject') ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#27ae60]'}`}
                             />
-                            {errors.subject && <p className="text-red-500 text-[11px] mt-1">{errors.subject}</p>}
+                            {fieldError('subject') && <p className="text-red-500 text-[11px] mt-1">{fieldError('subject')}</p>}
                         </div>
 
                         <div>
                             <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                {locale === 'en' ? 'Message' : 'پیام'}
+                                {isEn ? 'Message' : 'پیام'} <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 rows={5}
                                 value={data.message}
-                                onChange={(e) => setData('message', e.target.value)}
-                                placeholder={locale === 'en' ? 'Write your message...' : 'پیام خود را بنویسید...'}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-[13px] focus:outline-none focus:border-[#27ae60] transition-colors resize-none"
+                                onChange={(e) => { setData('message', e.target.value); touch('message'); }}
+                                onBlur={() => touch('message')}
+                                placeholder={isEn ? 'Write your message...' : 'پیام خود را بنویسید...'}
+                                className={`w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none transition-colors resize-none ${fieldError('message') ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#27ae60]'}`}
                             />
-                            {errors.message && <p className="text-red-500 text-[11px] mt-1">{errors.message}</p>}
+                            <div className="flex items-start justify-between mt-1">
+                                {fieldError('message')
+                                    ? <p className="text-red-500 text-[11px]">{fieldError('message')}</p>
+                                    : <span />
+                                }
+                                <span className={`text-[11px] ${data.message.length > 1800 ? 'text-red-400' : 'text-gray-400'}`}>
+                                    {data.message.length}/2000
+                                </span>
+                            </div>
                         </div>
 
                         <button
@@ -196,8 +266,8 @@ export function ContactContent() {
                         >
                             <Send className="w-4 h-4" />
                             {processing
-                                ? (locale === 'en' ? 'Sending...' : 'در حال ارسال...')
-                                : (locale === 'en' ? 'Send Message' : 'ارسال پیام')
+                                ? (isEn ? 'Sending...' : 'در حال ارسال...')
+                                : (isEn ? 'Send Message' : 'ارسال پیام')
                             }
                         </button>
                     </form>

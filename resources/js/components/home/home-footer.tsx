@@ -4,8 +4,8 @@ import { Facebook, Twitter, Youtube, Linkedin, Rss } from 'lucide-react';
 
 interface SocialLink { platform: string; url: string; count: string }
 interface SiteSettings {
-    site_name?:    { da: string; en: string; ar?: string };
-    footer_about?: { da: string; en: string; ar?: string };
+    site_name?:    { da: string; en: string; ar?: string; tg?: string };
+    footer_about?: { da: string; en: string; ar?: string; tg?: string };
     social_links?: SocialLink[];
 }
 interface SharedProps { siteSettings?: SiteSettings; [key: string]: unknown }
@@ -39,7 +39,7 @@ function FooterWidget({ title, children }: { title: string; children: React.Reac
 export function HomeFooter() {
     const { t, i18n } = useTranslation();
     const { siteSettings } = usePage<SharedProps>().props;
-    const locale = (['da', 'en', 'ar'] as const).includes(i18n.language as 'da' | 'en' | 'ar') ? i18n.language as 'da' | 'en' | 'ar' : 'da' as const;
+    const locale = (['da', 'en', 'ar', 'tg'] as const).includes(i18n.language as 'da' | 'en' | 'ar' | 'tg') ? i18n.language as 'da' | 'en' | 'ar' | 'tg' : 'da' as const;
 
     const siteName   = siteSettings?.site_name?.[locale]   || siteSettings?.site_name?.da    || t('app.name');
     const aboutText  = siteSettings?.footer_about?.[locale] || siteSettings?.footer_about?.da || t('footer.description');

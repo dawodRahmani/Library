@@ -169,6 +169,7 @@ class ArticleController extends Controller
             'title.da'     => ['required', 'string', 'max:255'],
             'title.en'     => ['nullable', 'string', 'max:255'],
             'title.ar'     => ['nullable', 'string', 'max:255'],
+            'title.tg'     => ['nullable', 'string', 'max:255'],
             'excerpt'      => ['nullable', 'array'],
             'excerpt.en'   => ['nullable', 'string'],
             'excerpt.ar'   => ['nullable', 'string'],

@@ -20,7 +20,7 @@ type AudioSource = 'link' | 'upload';
 
 interface AudioItem {
     id: number;
-    title: { da: string; en?: string; ar?: string };
+    title: { da: string; en?: string; ar?: string; tg?: string };
     description: { da: string; en?: string; ar?: string } | null;
     author: string;
     category_id: number;
@@ -53,7 +53,7 @@ function formatBytes(b: number): string {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'صوتی‌ها', href: '/admin/audios' }];
 
 const emptyForm = {
-    title: { da: '', en: '', ar: '' }, description: { da: '', en: '', ar: '' }, author: '', category_id: '',
+    title: { da: '', en: '', ar: '', tg: '' }, description: { da: '', en: '', ar: '' }, author: '', category_id: '',
     duration: '', episodes: '', audio_source: 'link' as AudioSource, audio_url: '', is_active: true,
 };
 
@@ -81,7 +81,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
     function openEdit(a: AudioItem) {
         setEditing(a);
         setForm({
-            title: { da: a.title?.da ?? '', en: a.title?.en ?? '', ar: a.title?.ar ?? '' },
+            title: { da: a.title?.da ?? '', en: a.title?.en ?? '', ar: a.title?.ar ?? '', tg: a.title?.tg ?? '' },
             description: { da: a.description?.da ?? '', en: a.description?.en ?? '', ar: a.description?.ar ?? '' },
             author: a.author,
             category_id: String(a.category_id),
@@ -106,6 +106,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
             fd.append('title[da]', form.title.da);
             fd.append('title[en]', form.title.en ?? '');
             fd.append('title[ar]', form.title.ar ?? '');
+            fd.append('title[tg]', form.title.tg ?? '');
             fd.append('description[da]', form.description?.da ?? '');
             fd.append('description[en]', form.description?.en ?? '');
             fd.append('description[ar]', form.description?.ar ?? '');
@@ -242,6 +243,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
                         <div><Label>عنوان (دری) *</Label><Input value={form.title.da} onChange={(e) => setForm({ ...form, title: { ...form.title, da: e.target.value } })} placeholder="دری" /><InputError message={errors['title.da']} /></div>
                         <div><Label>عنوان (English)</Label><Input value={form.title.en ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, en: e.target.value } })} placeholder="English" dir="ltr" /></div>
                         <div><Label>عنوان (العربية)</Label><Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" /></div>
+                        <div><Label>عنوان (Тоҷикӣ)</Label><Input value={form.title.tg ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, tg: e.target.value } })} placeholder="Тоҷикӣ" dir="ltr" /></div>
                         <div><Label>نویسنده *</Label><Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /><InputError message={errors.author} /></div>
 
                         <div>

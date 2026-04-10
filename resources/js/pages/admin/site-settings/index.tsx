@@ -653,11 +653,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     );
 }
 
-function ThreeLang({ label, da, en, ar, onDa, onEn, onAr }: { label: string; da: string; en: string; ar: string; onDa: (v: string) => void; onEn: (v: string) => void; onAr: (v: string) => void }) {
+function ThreeLang({ label, da, en, ar, tg, onDa, onEn, onAr, onTg }: { label: string; da: string; en: string; ar: string; tg?: string; onDa: (v: string) => void; onEn: (v: string) => void; onAr: (v: string) => void; onTg?: (v: string) => void }) {
     return (
         <div className="space-y-2">
             <Label>{label}</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
                     <p className="text-xs text-muted-foreground mb-1">دری</p>
                     <Input value={da} onChange={(e) => onDa(e.target.value)} placeholder="..." dir="rtl" />
@@ -669,6 +669,10 @@ function ThreeLang({ label, da, en, ar, onDa, onEn, onAr }: { label: string; da:
                 <div>
                     <p className="text-xs text-muted-foreground mb-1">العربية</p>
                     <Input value={ar} onChange={(e) => onAr(e.target.value)} placeholder="..." dir="rtl" />
+                </div>
+                <div>
+                    <p className="text-xs text-muted-foreground mb-1">Тоҷикӣ</p>
+                    <Input value={tg ?? ''} onChange={(e) => onTg?.(e.target.value)} placeholder="..." dir="ltr" />
                 </div>
             </div>
         </div>

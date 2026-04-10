@@ -160,6 +160,7 @@ class VideoController extends Controller
             'title.da'     => ['required', 'string', 'max:255'],
             'title.en'     => ['nullable', 'string', 'max:255'],
             'title.ar'     => ['nullable', 'string', 'max:255'],
+            'title.tg'     => ['nullable', 'string', 'max:255'],
             'instructor'   => ['required', 'string', 'max:255'],
             'category_id'  => ['required', 'exists:categories,id'],
             'duration'     => ['nullable', 'string', 'max:20'],

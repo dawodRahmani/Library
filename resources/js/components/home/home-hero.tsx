@@ -59,7 +59,7 @@ function HeroCard({
 
 export function HomeHero({ heroItems }: Props) {
     const { i18n } = useTranslation();
-    const locale = ['da', 'en', 'ar'].includes(i18n.language) ? i18n.language : 'da';
+    const locale = ['da', 'en', 'ar', 'tg'].includes(i18n.language) ? i18n.language : 'da';
 
     const [main, ...sides] = heroItems;
     const sideCards = sides.slice(0, 4);

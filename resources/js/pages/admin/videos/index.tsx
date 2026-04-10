@@ -20,7 +20,7 @@ type VideoSource = 'link' | 'youtube' | 'upload';
 
 interface VideoItem {
     id: number;
-    title: { da: string; en?: string; ar?: string };
+    title: { da: string; en?: string; ar?: string; tg?: string };
     instructor: string;
     category_id: number;
     category: string;
@@ -43,7 +43,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const emptyForm = {
-    title: { da: '', en: '', ar: '' },
+    title: { da: '', en: '', ar: '', tg: '' },
     instructor: '',
     category_id: '',
     duration: '',
@@ -99,7 +99,7 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
     function openEdit(v: VideoItem) {
         setEditing(v);
         setForm({
-            title: { da: v.title?.da ?? '', en: v.title?.en ?? '', ar: v.title?.ar ?? '' },
+            title: { da: v.title?.da ?? '', en: v.title?.en ?? '', ar: v.title?.ar ?? '', tg: v.title?.tg ?? '' },
             instructor: v.instructor,
             category_id: String(v.category_id),
             duration: v.duration ?? '',
@@ -265,6 +265,10 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
                         <div>
                             <Label>عنوان (العربية)</Label>
                             <Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" />
+                        </div>
+                        <div>
+                            <Label>عنوان (Тоҷикӣ)</Label>
+                            <Input value={form.title.tg ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, tg: e.target.value } })} placeholder="Тоҷикӣ" dir="ltr" />
                         </div>
                         <div>
                             <Label>استاد *</Label>

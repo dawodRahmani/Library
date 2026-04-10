@@ -28,7 +28,7 @@ function formatDate(date: string | null, locale: string) {
 
 export default function BayaniaShow({ statement }: Props) {
     const { i18n, t } = useTranslation();
-    const locale = ['da', 'en', 'ar'].includes(i18n.language) ? i18n.language : 'da';
+    const locale = ['da', 'en', 'ar', 'tg'].includes(i18n.language) ? i18n.language : 'da';
 
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">

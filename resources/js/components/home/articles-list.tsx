@@ -1,5 +1,11 @@
 import { Clock, User, Tag, X, Calendar } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+type Locale = 'da' | 'en' | 'ar' | 'tg';
+function getLocale(lang: string): Locale {
+    return (['da', 'en', 'ar', 'tg'] as const).includes(lang as Locale) ? lang as Locale : 'da';
+}
 
 export interface Article {
     id: number;
@@ -49,7 +55,7 @@ const getGradient = (category: string, id: number): string => {
 };
 
 // ── Article Reader Modal ──────────────────────────────────────────────────────
-function ArticleModal({ article, onClose }: { article: Article; onClose: () => void }) {
+function ArticleModal({ article, onClose, locale }: { article: Article; onClose: () => void; locale: Locale }) {
     const catClass = CATEGORY_COLORS[article.category] ?? CATEGORY_COLORS.default;
     const gradient = getGradient(article.category, article.id);
 
@@ -128,7 +134,7 @@ function ArticleModal({ article, onClose }: { article: Article; onClose: () => v
                             dangerouslySetInnerHTML={{ __html: article.content }}
                         />
                     ) : (
-                        <p className="text-gray-400 italic text-sm">محتوایی برای این مقاله ثبت نشده است.</p>
+                        <p className="text-gray-400 italic text-sm">{{ da: 'محتوایی برای این مقاله ثبت نشده است.', en: 'No content for this article.', ar: 'لا يتوفر محتوى لهذه المقالة.', tg: 'Мӯҳтаво барои ин мақола ёфт нашуд.' }[locale]}</p>
                     )}
                 </div>
             </div>
@@ -195,9 +201,22 @@ interface ArticlesListProps {
     onCategoryChange?: (cat: string) => void;
 }
 
-export function ArticlesList({ articles, activeCategory = 'همه', onCategoryChange }: ArticlesListProps) {
-    const allCategories = ['همه', ...Array.from(new Set(articles.map((a) => a.category)))];
-    const filtered      = activeCategory === 'همه' ? articles : articles.filter((a) => a.category === activeCategory);
+export function ArticlesList({ articles, activeCategory = 'all', onCategoryChange }: ArticlesListProps) {
+    const { i18n } = useTranslation();
+    const locale = getLocale(i18n.language);
+
+    const allLabel  = { da: 'همه', en: 'All', ar: 'الكل', tg: 'Ҳама' }[locale];
+    const noItems   = { da: 'هیچ مقاله‌ای یافت نشد.', en: 'No articles found.', ar: 'لم يُعثر على مقالات.', tg: 'Мақолае ёфт нашуд.' }[locale];
+    const noContent = { da: 'محتوایی برای این مقاله ثبت نشده است.', en: 'No content for this article.', ar: 'لا يتوفر محتوى لهذه المقالة.', tg: 'Мӯҳтаво барои ин мақола ёфт нашуд.' }[locale];
+
+    // Build unique category list as {slug, name} pairs
+    const categoryMap = new Map<string, string>();
+    articles.forEach((a) => { if (a.categorySlug) categoryMap.set(a.categorySlug, a.category); });
+    const allCategories = [{ slug: 'all', name: allLabel }, ...Array.from(categoryMap.entries()).map(([slug, name]) => ({ slug, name }))];
+
+    const filtered = activeCategory === 'all'
+        ? articles
+        : articles.filter((a) => a.categorySlug === activeCategory);
     const [reading, setReading] = useState<Article | null>(null);
 
     return (
@@ -206,15 +225,15 @@ export function ArticlesList({ articles, activeCategory = 'همه', onCategoryCh
             <div className="flex flex-wrap gap-2 mb-6">
                 {allCategories.map((cat) => (
                     <button
-                        key={cat}
-                        onClick={() => onCategoryChange?.(cat)}
+                        key={cat.slug}
+                        onClick={() => onCategoryChange?.(cat.slug)}
                         className={`text-[12px] px-3 py-1.5 rounded-full border font-medium transition-colors ${
-                            cat === activeCategory
+                            cat.slug === activeCategory
                                 ? 'bg-[#27ae60] border-[#27ae60] text-white'
                                 : 'border-gray-200 text-gray-600 hover:border-[#27ae60] hover:text-[#27ae60]'
                         }`}
                     >
-                        {cat}
+                        {cat.name}
                     </button>
                 ))}
             </div>
@@ -229,12 +248,12 @@ export function ArticlesList({ articles, activeCategory = 'همه', onCategoryCh
             {filtered.length === 0 && (
                 <div className="text-center py-16 text-gray-400">
                     <Tag className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                    <p>هیچ مقاله‌ای یافت نشد.</p>
+                    <p>{noItems}</p>
                 </div>
             )}
 
             {/* Article reader modal */}
-            {reading && <ArticleModal article={reading} onClose={() => setReading(null)} />}
+            {reading && <ArticleModal article={reading} onClose={() => setReading(null)} locale={locale} />}
         </div>
     );
 }

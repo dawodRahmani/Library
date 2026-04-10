@@ -18,7 +18,7 @@ class SetLocale
         // Detect locale from session, cookie, Accept-Language header, default to 'da'
         $locale = $request->session()->get('locale')
                   ?? $request->cookie('locale')
-                  ?? $request->getPreferredLanguage(['da', 'en', 'ar'])
+                  ?? $request->getPreferredLanguage(['da', 'en', 'ar', 'tg'])
                   ?? 'da';
 
         // Set application locale

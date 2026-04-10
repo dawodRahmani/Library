@@ -14,13 +14,13 @@ import type { BreadcrumbItem } from '@/types';
 
 interface Category {
     id: number;
-    name: { da: string; en?: string; ar?: string };
+    name: { da: string; en?: string; ar?: string; tg?: string };
     slug: string;
 }
 
 interface ArticleData {
     id: number;
-    title: { da: string; en?: string; ar?: string };
+    title: { da: string; en?: string; ar?: string; tg?: string };
     excerpt: { da: string; en?: string; ar?: string } | null;
     content: { da: string; en?: string; ar?: string } | null;
     author: string;
@@ -45,7 +45,7 @@ export default function ArticleEditor({ article, categories }: Props) {
     ];
 
     const [form, setForm] = useState({
-        title:       { da: article?.title?.da ?? '', en: article?.title?.en ?? '', ar: article?.title?.ar ?? '' },
+        title:       { da: article?.title?.da ?? '', en: article?.title?.en ?? '', ar: article?.title?.ar ?? '', tg: article?.title?.tg ?? '' },
         excerpt:     { da: article?.excerpt?.da ?? '', en: article?.excerpt?.en ?? '', ar: article?.excerpt?.ar ?? '' },
         content:     { da: article?.content?.da ?? '', en: article?.content?.en ?? '', ar: article?.content?.ar ?? '' },
         author:      article?.author ?? '',
@@ -73,6 +73,7 @@ export default function ArticleEditor({ article, categories }: Props) {
         fd.append('title[da]', form.title.da);
         fd.append('title[en]', form.title.en ?? '');
         fd.append('title[ar]', form.title.ar ?? '');
+        fd.append('title[tg]', form.title.tg ?? '');
         fd.append('excerpt[da]', form.excerpt.da);
         fd.append('excerpt[en]', form.excerpt.en ?? '');
         fd.append('excerpt[ar]', form.excerpt.ar ?? '');
@@ -146,6 +147,13 @@ export default function ArticleEditor({ article, categories }: Props) {
                                     placeholder="العنوان بالعربية"
                                     className="h-10"
                                     dir="rtl"
+                                />
+                                <Input
+                                    value={form.title.tg ?? ''}
+                                    onChange={(e) => setForm({ ...form, title: { ...form.title, tg: e.target.value } })}
+                                    placeholder="Унвони тоҷикӣ"
+                                    className="h-10"
+                                    dir="ltr"
                                 />
                             </div>
 

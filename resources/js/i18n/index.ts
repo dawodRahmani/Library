@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import da from './locales/da/translation.json';
 import en from './locales/en/translation.json';
 import ar from './locales/ar/translation.json';
+import tg from './locales/tg/translation.json';
 
 const savedLanguage = typeof window !== 'undefined'
     ? (() => {
@@ -21,6 +22,7 @@ i18n.use(initReactI18next).init({
         da: { translation: da },
         en: { translation: en },
         ar: { translation: ar },
+        tg: { translation: tg },
     },
     lng: savedLanguage,
     fallbackLng: 'da',

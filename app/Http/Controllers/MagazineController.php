@@ -135,6 +135,7 @@ class MagazineController extends Controller
             'title.da'       => ['required', 'string', 'max:255'],
             'title.en'       => ['nullable', 'string', 'max:255'],
             'title.ar'       => ['nullable', 'string', 'max:255'],
+            'title.tg'       => ['nullable', 'string', 'max:255'],
             'theme'          => ['nullable', 'string', 'max:255'],
             'year'           => ['required', 'string', 'max:10'],
             'article_count'  => ['integer', 'min:0'],

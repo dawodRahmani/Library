@@ -43,11 +43,8 @@ function DropdownItem({ item }: { item: NavItem }) {
     }
 
     return (
-        <li ref={ref} className="relative" onMouseLeave={() => setOpen(false)}>
-            <div
-                className="flex items-center"
-                onMouseEnter={() => setOpen(true)}
-            >
+        <li ref={ref} className="relative">
+            <div className="flex items-center">
                 <a
                     href={item.href ?? '#'}
                     className="px-3 py-1 text-white/90 hover:text-white text-[14px] transition-colors"
