@@ -28,7 +28,7 @@ interface Book {
     copies: number;
     available: number;
     rating: number;
-    description: { da: string; en?: string; ar?: string } | null;
+    description: { da: string; en?: string; ar?: string; tg?: string } | null;
     pages: number | null;
     publisher: string | null;
     cover_image: string | null;
@@ -54,7 +54,7 @@ const emptyForm = {
     copies: 1,
     available: 1,
     rating: 0,
-    description: { da: '', en: '', ar: '' },
+    description: { da: '', en: '', ar: '', tg: '' },
     pages: '',
     publisher: '',
     file_url: '',
@@ -104,7 +104,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
             copies: book.copies,
             available: book.available,
             rating: book.rating,
-            description: { da: book.description?.da ?? '', en: book.description?.en ?? '', ar: book.description?.ar ?? '' },
+            description: { da: book.description?.da ?? '', en: book.description?.en ?? '', ar: book.description?.ar ?? '', tg: book.description?.tg ?? '' },
             pages: book.pages ? String(book.pages) : '',
             publisher: book.publisher ?? '',
             file_url: book.file_url ?? '',
@@ -366,6 +366,15 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                                 value={form.description.ar ?? ''}
                                 onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })}
                                 rows={3}
+                            />
+                        </div>
+                        <div>
+                            <Label>توضیحات (Тоҷикӣ)</Label>
+                            <Textarea
+                                value={form.description.tg ?? ''}
+                                onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })}
+                                rows={3}
+                                dir="ltr"
                             />
                         </div>
 

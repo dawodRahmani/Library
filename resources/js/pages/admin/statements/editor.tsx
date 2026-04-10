@@ -11,8 +11,8 @@ import type { BreadcrumbItem } from '@/types';
 
 interface StatementData {
     id:           number;
-    title:        { da: string; en?: string };
-    body:         { da: string; en?: string } | null;
+    title:        { da: string; en?: string; ar?: string; tg?: string };
+    body:         { da: string; en?: string; ar?: string; tg?: string } | null;
     published_at: string | null;
     is_active:    boolean;
 }
@@ -29,14 +29,14 @@ export default function StatementEditor({ statement }: Props) {
     ];
 
     const [form, setForm] = useState({
-        title:        { da: statement?.title?.da ?? '', en: statement?.title?.en ?? '' },
-        body:         { da: statement?.body?.da  ?? '', en: statement?.body?.en  ?? '' },
+        title:        { da: statement?.title?.da ?? '', en: statement?.title?.en ?? '', ar: statement?.title?.ar ?? '', tg: statement?.title?.tg ?? '' },
+        body:         { da: statement?.body?.da  ?? '', en: statement?.body?.en  ?? '', ar: statement?.body?.ar ?? '', tg: statement?.body?.tg ?? '' },
         published_at: statement?.published_at ?? new Date().toISOString().split('T')[0],
         is_active:    statement?.is_active ?? true,
     });
     const [errors, setErrors]         = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
-    const [langTab, setLangTab]       = useState<'da' | 'en'>('da');
+    const [langTab, setLangTab]       = useState<'da' | 'en' | 'ar' | 'tg'>('da');
 
     function save() {
         setProcessing(true);
@@ -83,7 +83,7 @@ export default function StatementEditor({ statement }: Props) {
 
                         {/* Language tabs */}
                         <div className="flex gap-1 border-b border-gray-200">
-                            {(['da', 'en'] as const).map((lang) => (
+                            {(['da', 'en', 'ar', 'tg'] as const).map((lang) => (
                                 <button
                                     key={lang}
                                     type="button"
@@ -94,7 +94,7 @@ export default function StatementEditor({ statement }: Props) {
                                             : 'border-transparent text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    {lang === 'da' ? 'دری' : 'English'}
+                                    {lang === 'da' ? 'دری' : lang === 'en' ? 'English' : lang === 'ar' ? 'العربية' : 'Тоҷикӣ'}
                                 </button>
                             ))}
                         </div>
@@ -102,13 +102,13 @@ export default function StatementEditor({ statement }: Props) {
                         {/* Title */}
                         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-2">
                             <Label className="text-sm font-semibold">
-                                {langTab === 'da' ? 'عنوان بیانیه' : 'Statement Title'}
+                                {langTab === 'da' ? 'عنوان بیانیه' : langTab === 'ar' ? 'عنوان البيانية' : langTab === 'tg' ? 'Унвони изҳорот' : 'Statement Title'}
                             </Label>
                             <Input
                                 value={form.title[langTab]}
                                 onChange={(e) => setForm({ ...form, title: { ...form.title, [langTab]: e.target.value } })}
-                                placeholder={langTab === 'da' ? 'عنوان بیانیه را بنویسید...' : 'Write the statement title...'}
-                                dir={langTab === 'da' ? 'rtl' : 'ltr'}
+                                placeholder={langTab === 'da' ? 'عنوان بیانیه را بنویسید...' : langTab === 'ar' ? 'اكتب عنوان البيانية...' : langTab === 'tg' ? 'Унвони изҳоротро нависед...' : 'Write the statement title...'}
+                                dir={langTab === 'en' || langTab === 'tg' ? 'ltr' : 'rtl'}
                                 className="text-[15px] h-11"
                             />
                             <InputError message={errors['title.da']} />
@@ -117,14 +117,14 @@ export default function StatementEditor({ statement }: Props) {
                         {/* Body — Rich Editor */}
                         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-2">
                             <Label className="text-sm font-semibold">
-                                {langTab === 'da' ? 'متن بیانیه' : 'Statement Body'}
+                                {langTab === 'da' ? 'متن بیانیه' : langTab === 'ar' ? 'نص البيانية' : langTab === 'tg' ? 'Матни изҳорот' : 'Statement Body'}
                             </Label>
                             <RichEditor
                                 key={langTab}
-                                value={form.body[langTab]}
+                                value={form.body[langTab] ?? ''}
                                 onChange={(html) => setForm({ ...form, body: { ...form.body, [langTab]: html } })}
-                                placeholder={langTab === 'da' ? 'متن بیانیه را اینجا بنویسید...' : 'Write the statement body here...'}
-                                dir={langTab === 'da' ? 'rtl' : 'ltr'}
+                                placeholder={langTab === 'da' ? 'متن بیانیه را اینجا بنویسید...' : langTab === 'ar' ? 'اكتب نص البيانية هنا...' : langTab === 'tg' ? 'Матни изҳоротро инҷо нависед...' : 'Write the statement body here...'}
+                                dir={langTab === 'en' || langTab === 'tg' ? 'ltr' : 'rtl'}
                             />
                         </div>
                     </div>
@@ -180,7 +180,7 @@ export default function StatementEditor({ statement }: Props) {
                             <p className="text-xs font-semibold text-blue-700">راهنما</p>
                             <ul className="text-xs text-blue-600 space-y-1 list-disc list-inside">
                                 <li>ابتدا نسخه دری را کامل کنید</li>
-                                <li>برای نسخه انگلیسی تب English را انتخاب کنید</li>
+                                <li>برای نسخه‌های دیگر تب مربوطه را انتخاب کنید</li>
                                 <li>از ابزارهای نوار بالای ویرایشگر برای قالب‌بندی استفاده کنید</li>
                             </ul>
                         </div>

@@ -142,6 +142,7 @@ class MagazineController extends Controller
             'description'    => ['nullable', 'array'],
             'description.en' => ['nullable', 'string'],
             'description.ar' => ['nullable', 'string'],
+            'description.tg' => ['nullable', 'string'],
             'featured'      => ['boolean'],
             'articles'      => ['nullable', 'array'],
             'is_active'     => ['boolean'],

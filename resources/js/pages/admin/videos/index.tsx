@@ -28,7 +28,7 @@ interface VideoItem {
     views: number;
     year: number | null;
     status: string;
-    description: { da: string; en?: string; ar?: string } | null;
+    description: { da: string; en?: string; ar?: string; tg?: string } | null;
     video_source: VideoSource;
     video_url: string | null;
     file_path: string | null;
@@ -50,7 +50,7 @@ const emptyForm = {
     views: 0,
     year: '',
     status: 'available',
-    description: { da: '', en: '', ar: '' },
+    description: { da: '', en: '', ar: '', tg: '' },
     video_source: 'link' as VideoSource,
     video_url: '',
     is_active: true,
@@ -106,7 +106,7 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
             views: v.views,
             year: v.year ? String(v.year) : '',
             status: v.status,
-            description: { da: v.description?.da ?? '', en: v.description?.en ?? '', ar: v.description?.ar ?? '' },
+            description: { da: v.description?.da ?? '', en: v.description?.en ?? '', ar: v.description?.ar ?? '', tg: v.description?.tg ?? '' },
             video_source: v.video_source ?? 'link',
             video_url: v.video_url ?? '',
             is_active: v.is_active,
@@ -430,6 +430,10 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
                         <div>
                             <Label>توضیحات (العربية)</Label>
                             <Textarea value={form.description.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={3} />
+                        </div>
+                        <div>
+                            <Label>توضیحات (Тоҷикӣ)</Label>
+                            <Textarea value={form.description.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={3} dir="ltr" />
                         </div>
                     </div>
 

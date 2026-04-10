@@ -21,8 +21,8 @@ interface Category {
 interface ArticleData {
     id: number;
     title: { da: string; en?: string; ar?: string; tg?: string };
-    excerpt: { da: string; en?: string; ar?: string } | null;
-    content: { da: string; en?: string; ar?: string } | null;
+    excerpt: { da: string; en?: string; ar?: string; tg?: string } | null;
+    content: { da: string; en?: string; ar?: string; tg?: string } | null;
     author: string;
     category_id: number;
     read_time: string | null;
@@ -46,8 +46,8 @@ export default function ArticleEditor({ article, categories }: Props) {
 
     const [form, setForm] = useState({
         title:       { da: article?.title?.da ?? '', en: article?.title?.en ?? '', ar: article?.title?.ar ?? '', tg: article?.title?.tg ?? '' },
-        excerpt:     { da: article?.excerpt?.da ?? '', en: article?.excerpt?.en ?? '', ar: article?.excerpt?.ar ?? '' },
-        content:     { da: article?.content?.da ?? '', en: article?.content?.en ?? '', ar: article?.content?.ar ?? '' },
+        excerpt:     { da: article?.excerpt?.da ?? '', en: article?.excerpt?.en ?? '', ar: article?.excerpt?.ar ?? '', tg: article?.excerpt?.tg ?? '' },
+        content:     { da: article?.content?.da ?? '', en: article?.content?.en ?? '', ar: article?.content?.ar ?? '', tg: article?.content?.tg ?? '' },
         author:      article?.author ?? '',
         category_id: article?.category_id ? String(article.category_id) : '',
         read_time:   article?.read_time ?? '',
@@ -77,9 +77,11 @@ export default function ArticleEditor({ article, categories }: Props) {
         fd.append('excerpt[da]', form.excerpt.da);
         fd.append('excerpt[en]', form.excerpt.en ?? '');
         fd.append('excerpt[ar]', form.excerpt.ar ?? '');
+        fd.append('excerpt[tg]', form.excerpt.tg ?? '');
         fd.append('content[da]', form.content.da);
         fd.append('content[en]', form.content.en ?? '');
         fd.append('content[ar]', form.content.ar ?? '');
+        fd.append('content[tg]', form.content.tg ?? '');
         fd.append('author', form.author);
         fd.append('category_id', form.category_id);
         fd.append('read_time', form.read_time);
@@ -182,6 +184,13 @@ export default function ArticleEditor({ article, categories }: Props) {
                                     rows={3}
                                     dir="rtl"
                                 />
+                                <Textarea
+                                    value={form.excerpt.tg ?? ''}
+                                    onChange={(e) => setForm({ ...form, excerpt: { ...form.excerpt, tg: e.target.value } })}
+                                    placeholder="Мухтасари тоҷикӣ"
+                                    rows={3}
+                                    dir="ltr"
+                                />
                             </div>
 
                             {/* Content – Rich Editor (Dari) */}
@@ -215,6 +224,17 @@ export default function ArticleEditor({ article, categories }: Props) {
                                     onChange={(html) => setForm({ ...form, content: { ...form.content, ar: html } })}
                                     uploadUrl="/admin/articles/upload-image"
                                     dir="rtl"
+                                />
+                            </div>
+
+                            {/* Content – Tajiki */}
+                            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-2">
+                                <Label className="text-sm font-semibold">Мақолаи пурра (Тоҷикӣ)</Label>
+                                <RichEditor
+                                    value={form.content.tg ?? ''}
+                                    onChange={(html) => setForm({ ...form, content: { ...form.content, tg: html } })}
+                                    uploadUrl="/admin/articles/upload-image"
+                                    dir="ltr"
                                 />
                             </div>
                         </div>

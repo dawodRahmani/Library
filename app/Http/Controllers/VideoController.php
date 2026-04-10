@@ -170,6 +170,7 @@ class VideoController extends Controller
             'description'     => ['nullable', 'array'],
             'description.en'  => ['nullable', 'string'],
             'description.ar'  => ['nullable', 'string'],
+            'description.tg'  => ['nullable', 'string'],
             'video_source' => ['required', 'string', 'in:link,youtube,upload'],
             'video_url'    => ['nullable', 'string', 'max:1000'],
             'is_active'    => ['boolean'],

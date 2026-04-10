@@ -17,12 +17,12 @@ import type { CategoryItem } from '@/components/admin/category-panel';
 
 type Category = CategoryItem;
 interface FatwaItem {
-    id: number; title: { da: string; en?: string; ar?: string; tg?: string }; description: { da: string; en?: string; ar?: string } | null; author: string;
+    id: number; title: { da: string; en?: string; ar?: string; tg?: string }; description: { da: string; en?: string; ar?: string; tg?: string } | null; author: string;
     category_id: number; category: string; is_active: boolean; created_at: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'دارالإفتاء', href: '/admin/fatwas' }];
-const emptyForm = { title: { da: '', en: '', ar: '', tg: '' }, description: { da: '', en: '', ar: '' }, author: '', category_id: '', is_active: true };
+const emptyForm = { title: { da: '', en: '', ar: '', tg: '' }, description: { da: '', en: '', ar: '', tg: '' }, author: '', category_id: '', is_active: true };
 
 export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[]; categories: Category[] }) {
     const [tab, setTab] = useState<'fatwas' | 'categories'>('fatwas');
@@ -38,7 +38,7 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
     function openCreate() { setEditing(null); setForm(emptyForm); setErrors({}); setOpen(true); }
     function openEdit(f: FatwaItem) {
         setEditing(f);
-        setForm({ title: { da: f.title?.da ?? '', en: f.title?.en ?? '', ar: f.title?.ar ?? '', tg: f.title?.tg ?? '' }, description: { da: f.description?.da ?? '', en: f.description?.en ?? '', ar: f.description?.ar ?? '' }, author: f.author, category_id: String(f.category_id), is_active: f.is_active });
+        setForm({ title: { da: f.title?.da ?? '', en: f.title?.en ?? '', ar: f.title?.ar ?? '', tg: f.title?.tg ?? '' }, description: { da: f.description?.da ?? '', en: f.description?.en ?? '', ar: f.description?.ar ?? '', tg: f.description?.tg ?? '' }, author: f.author, category_id: String(f.category_id), is_active: f.is_active });
         setErrors({}); setOpen(true);
     }
 
@@ -107,6 +107,7 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                         <div><Label>توضیحات (دری)</Label><Textarea value={form.description.da} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={4} /></div>
                         <div><Label>توضیحات (English)</Label><Textarea value={form.description.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={4} dir="ltr" /></div>
                         <div><Label>توضیحات (العربية)</Label><Textarea value={form.description.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={4} /></div>
+                        <div><Label>توضیحات (Тоҷикӣ)</Label><Textarea value={form.description.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={4} dir="ltr" /></div>
                     </div>
                     <DialogFooter><DialogClose asChild><Button variant="outline">انصراف</Button></DialogClose><Button onClick={submit} disabled={processing}>{processing ? 'در حال ذخیره...' : editing ? 'بروزرسانی' : 'ذخیره'}</Button></DialogFooter>
                 </DialogContent>

@@ -20,7 +20,7 @@ interface MagazineItem {
     theme: string | null;
     year: string;
     article_count: number;
-    description: { da: string; en?: string; ar?: string } | null;
+    description: { da: string; en?: string; ar?: string; tg?: string } | null;
     featured: boolean;
     articles: string[] | null;
     cover_image: string | null;
@@ -39,7 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashbo
 
 const emptyForm = {
     number: '', title: { da: '', en: '', ar: '', tg: '' }, theme: '', year: '', article_count: 0,
-    description: { da: '', en: '', ar: '' }, featured: false, is_active: true,
+    description: { da: '', en: '', ar: '', tg: '' }, featured: false, is_active: true,
 };
 
 export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[] }) {
@@ -70,7 +70,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
             theme: m.theme ?? '',
             year: m.year,
             article_count: m.article_count,
-            description: { da: m.description?.da ?? '', en: m.description?.en ?? '', ar: m.description?.ar ?? '' },
+            description: { da: m.description?.da ?? '', en: m.description?.en ?? '', ar: m.description?.ar ?? '', tg: m.description?.tg ?? '' },
             featured: m.featured,
             is_active: m.is_active,
         });
@@ -94,6 +94,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
         fd.append('description[da]', form.description?.da ?? '');
         fd.append('description[en]', form.description?.en ?? '');
         fd.append('description[ar]', form.description?.ar ?? '');
+        fd.append('description[tg]', form.description?.tg ?? '');
         fd.append('featured', form.featured ? '1' : '0');
         fd.append('is_active', form.is_active ? '1' : '0');
         if (selectedFile) fd.append('file', selectedFile);
@@ -192,6 +193,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
                         <div><Label>توضیحات (دری)</Label><Textarea value={form.description?.da ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={3} /></div>
                         <div><Label>توضیحات (English)</Label><Textarea value={form.description?.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={3} dir="ltr" /></div>
                         <div><Label>توضیحات (العربية)</Label><Textarea value={form.description?.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={3} /></div>
+                        <div><Label>توضیحات (Тоҷикӣ)</Label><Textarea value={form.description?.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={3} dir="ltr" /></div>
 
                         {/* PDF Upload */}
                         <div>

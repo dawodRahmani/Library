@@ -21,7 +21,7 @@ type AudioSource = 'link' | 'upload';
 interface AudioItem {
     id: number;
     title: { da: string; en?: string; ar?: string; tg?: string };
-    description: { da: string; en?: string; ar?: string } | null;
+    description: { da: string; en?: string; ar?: string; tg?: string } | null;
     author: string;
     category_id: number;
     category: string;
@@ -53,7 +53,7 @@ function formatBytes(b: number): string {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'صوتی‌ها', href: '/admin/audios' }];
 
 const emptyForm = {
-    title: { da: '', en: '', ar: '', tg: '' }, description: { da: '', en: '', ar: '' }, author: '', category_id: '',
+    title: { da: '', en: '', ar: '', tg: '' }, description: { da: '', en: '', ar: '', tg: '' }, author: '', category_id: '',
     duration: '', episodes: '', audio_source: 'link' as AudioSource, audio_url: '', is_active: true,
 };
 
@@ -82,7 +82,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
         setEditing(a);
         setForm({
             title: { da: a.title?.da ?? '', en: a.title?.en ?? '', ar: a.title?.ar ?? '', tg: a.title?.tg ?? '' },
-            description: { da: a.description?.da ?? '', en: a.description?.en ?? '', ar: a.description?.ar ?? '' },
+            description: { da: a.description?.da ?? '', en: a.description?.en ?? '', ar: a.description?.ar ?? '', tg: a.description?.tg ?? '' },
             author: a.author,
             category_id: String(a.category_id),
             duration: a.duration ?? '',
@@ -304,6 +304,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
                         <div><Label>توضیحات (دری)</Label><Textarea value={form.description?.da ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={3} /></div>
                         <div><Label>توضیحات (English)</Label><Textarea value={form.description?.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={3} dir="ltr" /></div>
                         <div><Label>توضیحات (العربية)</Label><Textarea value={form.description?.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={3} /></div>
+                        <div><Label>توضیحات (Тоҷикӣ)</Label><Textarea value={form.description?.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={3} dir="ltr" /></div>
                     </div>
                     <DialogFooter>
                         <DialogClose asChild><Button variant="outline">انصراف</Button></DialogClose>

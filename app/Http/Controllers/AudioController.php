@@ -195,6 +195,7 @@ class AudioController extends Controller
             'description'  => ['nullable', 'array'],
             'description.en' => ['nullable', 'string'],
             'description.ar' => ['nullable', 'string'],
+            'description.tg' => ['nullable', 'string'],
             'author'       => ['required', 'string', 'max:255'],
             'category_id'  => ['required', 'exists:categories,id'],
             'duration'     => ['nullable', 'string', 'max:20'],
