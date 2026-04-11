@@ -44,10 +44,11 @@ class HandleInertiaRequests extends Middleware
         ])->values()->all();
 
         return [
-            'books'  => $map(Category::where('type', 'book')->orderBy('sort_order')->get()),
-            'videos' => $map(Category::where('type', 'video')->orderBy('sort_order')->get()),
-            'audios' => $map(Category::where('type', 'audio')->orderBy('sort_order')->get()),
-            'fatwas' => $map(Category::where('type', 'fatwa')->orderBy('sort_order')->get()),
+            'books'    => $map(Category::where('type', 'book')->orderBy('sort_order')->get()),
+            'videos'   => $map(Category::where('type', 'video')->orderBy('sort_order')->get()),
+            'audios'   => $map(Category::where('type', 'audio')->orderBy('sort_order')->get()),
+            'fatwas'   => $map(Category::where('type', 'fatwa')->orderBy('sort_order')->get()),
+            'articles' => $map(Category::where('type', 'article')->orderBy('sort_order')->get()),
         ];
     }
 

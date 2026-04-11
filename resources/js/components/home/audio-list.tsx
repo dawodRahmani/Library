@@ -22,6 +22,7 @@ interface AudioItem {
     audio_url: string | null;
     has_file: boolean;
     file_size: number | null;
+    thumbnail: string | null;
     date: string;
 }
 
@@ -188,7 +189,14 @@ function AudioCard({ item, onPlay, locale }: { item: AudioItem; onPlay: (a: Audi
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Thumbnail */}
-            <div className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}>
+            <div className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden`}>
+                {item.thumbnail && (
+                    <img
+                        src={item.thumbnail.startsWith('http') ? item.thumbnail : `/storage/${item.thumbnail}`}
+                        alt={item.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                )}
                 <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />
                 <div className="relative z-10 flex flex-col items-center gap-2">
                     <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/30 group-hover:scale-110 transition-transform">
@@ -203,7 +211,6 @@ function AudioCard({ item, onPlay, locale }: { item: AudioItem; onPlay: (a: Audi
                         <Mic className="w-3 h-3" /> {item.episodes} قسمت
                     </span>
                 )}
-                {/* Source indicator */}
                 <span className="absolute top-3 start-3 w-5 h-5 rounded-full bg-white/90 flex items-center justify-center">
                     <SourceDot source={item.audio_source ?? 'link'} />
                 </span>

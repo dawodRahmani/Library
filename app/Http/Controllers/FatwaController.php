@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Fatwa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,6 +28,7 @@ class FatwaController extends Controller
             'title'        => $f->title[app()->getLocale()] ?? $f->title['da'] ?? '',
             'description'  => $f->description[app()->getLocale()] ?? $f->description['da'] ?? '',
             'author'       => $f->author,
+            'thumbnail'    => $f->thumbnail,
             'category'     => $f->category->name[app()->getLocale()] ?? $f->category->name['da'] ?? '',
             'categorySlug' => $f->category->slug,
             'date'         => $f->created_at->format('Y-m-d'),
@@ -54,6 +56,7 @@ class FatwaController extends Controller
                 'title'       => $f->title,
                 'description' => $f->description,
                 'author'      => $f->author,
+                'thumbnail'   => $f->thumbnail,
                 'category_id' => $f->category_id,
                 'category'    => $f->category->name[app()->getLocale()] ?? $f->category->name['da'] ?? '',
                 'is_active'   => $f->is_active,
@@ -73,27 +76,19 @@ class FatwaController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'title'          => ['required', 'array'],
-            'title.da'       => ['required', 'string', 'max:255'],
-            'title.en'       => ['nullable', 'string', 'max:255'],
-            'title.ar'       => ['nullable', 'string', 'max:255'],
-            'title.tg'       => ['nullable', 'string', 'max:255'],
-            'description'    => ['nullable', 'array'],
-            'description.en' => ['nullable', 'string'],
-            'description.ar' => ['nullable', 'string'],
-            'description.tg' => ['nullable', 'string'],
-            'author'         => ['required', 'string', 'max:255'],
-            'category_id'    => ['required', 'exists:categories,id'],
-            'is_active'      => ['boolean'],
-        ]);
-
+        $data = $this->validateAndProcess($request);
         Fatwa::create($data);
-
         return back();
     }
 
     public function update(Request $request, Fatwa $fatwa): RedirectResponse
+    {
+        $data = $this->validateAndProcess($request, $fatwa);
+        $fatwa->update($data);
+        return back();
+    }
+
+    private function validateAndProcess(Request $request, ?Fatwa $existing = null): array
     {
         $data = $request->validate([
             'title'          => ['required', 'array'],
@@ -108,11 +103,19 @@ class FatwaController extends Controller
             'author'         => ['required', 'string', 'max:255'],
             'category_id'    => ['required', 'exists:categories,id'],
             'is_active'      => ['boolean'],
+            'thumbnail'      => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
-        $fatwa->update($data);
+        if ($request->hasFile('thumbnail')) {
+            if ($existing?->thumbnail) {
+                Storage::disk('public')->delete($existing->thumbnail);
+            }
+            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails/fatwas', 'public');
+        } else {
+            unset($data['thumbnail']);
+        }
 
-        return back();
+        return $data;
     }
 
     public function destroy(Fatwa $fatwa): RedirectResponse

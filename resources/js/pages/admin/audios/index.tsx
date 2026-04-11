@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search, Tags, Headphones, Link as LinkIcon, Upload, Download, X, Music } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Tags, Headphones, Link as LinkIcon, Upload, Download, X, Music, ImagePlus } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 import { CategoryPanel } from '@/components/admin/category-panel';
 import type { CategoryItem } from '@/components/admin/category-panel';
@@ -31,6 +31,7 @@ interface AudioItem {
     audio_url: string | null;
     file_path: string | null;
     file_size: number | null;
+    thumbnail: string | null;
     is_active: boolean;
     created_at: string;
 }
@@ -64,9 +65,11 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
     const [editing, setEditing]   = useState<AudioItem | null>(null);
     const [form, setForm]         = useState(emptyForm);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
     const [errors, setErrors]     = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const thumbRef = useRef<HTMLInputElement>(null);
 
     const filtered = audios.filter((a) => (a.title?.da ?? '').includes(search) || a.author.includes(search) || a.category.includes(search));
 
@@ -74,6 +77,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
         setEditing(null);
         setForm(emptyForm);
         setSelectedFile(null);
+        setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
     }
@@ -92,6 +96,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
             is_active: a.is_active,
         });
         setSelectedFile(null);
+        setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
     }
@@ -110,6 +115,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
             fd.append('description[da]', form.description?.da ?? '');
             fd.append('description[en]', form.description?.en ?? '');
             fd.append('description[ar]', form.description?.ar ?? '');
+            fd.append('description[tg]', form.description?.tg ?? '');
             fd.append('author', form.author);
             fd.append('category_id', form.category_id);
             fd.append('duration', form.duration);
@@ -118,6 +124,7 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
             if (!isUpload) fd.append('audio_url', form.audio_url);
             fd.append('is_active', form.is_active ? '1' : '0');
             if (isUpload && selectedFile) fd.append('file', selectedFile);
+            if (selectedThumbnail) fd.append('thumbnail', selectedThumbnail);
             return fd;
         };
 
@@ -305,6 +312,30 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
                         <div><Label>توضیحات (English)</Label><Textarea value={form.description?.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={3} dir="ltr" /></div>
                         <div><Label>توضیحات (العربية)</Label><Textarea value={form.description?.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={3} /></div>
                         <div><Label>توضیحات (Тоҷикӣ)</Label><Textarea value={form.description?.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={3} dir="ltr" /></div>
+
+                        {/* Thumbnail */}
+                        <div>
+                            <Label className="mb-2 block">تصویر (Thumbnail)</Label>
+                            {editing?.thumbnail && !selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-gray-200">
+                                    <img src={editing.thumbnail.startsWith('http') ? editing.thumbnail : `/storage/${editing.thumbnail}`} alt="thumbnail" className="w-full h-32 object-cover" />
+                                    <p className="text-xs text-gray-400 px-2 py-1">تصویر فعلی — آپلود جدید جایگزین می‌شود</p>
+                                </div>
+                            )}
+                            {selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-emerald-200 relative">
+                                    <img src={URL.createObjectURL(selectedThumbnail)} alt="preview" className="w-full h-32 object-cover" />
+                                    <button type="button" onClick={() => { setSelectedThumbnail(null); if (thumbRef.current) thumbRef.current.value = ''; }} className="absolute top-1 end-1 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center text-white"><X className="w-3 h-3" /></button>
+                                </div>
+                            )}
+                            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors" onClick={() => thumbRef.current?.click()}>
+                                <ImagePlus className="w-5 h-5 mx-auto mb-1.5 text-gray-400" />
+                                <p className="text-sm text-gray-500">برای آپلود تصویر کلیک کنید</p>
+                                <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP — حداکثر ۵ مگابایت</p>
+                            </div>
+                            <input ref={thumbRef} type="file" className="hidden" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => setSelectedThumbnail(e.target.files?.[0] ?? null)} />
+                            <InputError message={errors.thumbnail} />
+                        </div>
                     </div>
                     <DialogFooter>
                         <DialogClose asChild><Button variant="outline">انصراف</Button></DialogClose>

@@ -244,13 +244,19 @@ function VideoCard({ video, onPlay, locale }: { video: VideoItem; onPlay: (v: Vi
             onClick={() => onPlay(video)}
         >
             <div className={`relative h-36 bg-gradient-to-br ${getGradient(video.id)} flex items-center justify-center overflow-hidden`}>
-                {youtubeId && (
+                {youtubeId ? (
                     <img
                         src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
                         alt={video.title}
                         className="absolute inset-0 w-full h-full object-cover"
                     />
-                )}
+                ) : video.thumbnail ? (
+                    <img
+                        src={video.thumbnail.startsWith('http') ? video.thumbnail : `/storage/${video.thumbnail}`}
+                        alt={video.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                ) : null}
                 <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />
                 <div className="relative z-10 w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Play className="w-5 h-5 text-white ms-0.5" />

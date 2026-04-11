@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search, Tags, PlayCircle, Upload, Link, Youtube, X, FileVideo, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Tags, PlayCircle, Upload, Link, Youtube, X, FileVideo, Download, ImagePlus } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 import { CategoryPanel } from '@/components/admin/category-panel';
 import type { CategoryItem } from '@/components/admin/category-panel';
@@ -29,6 +29,7 @@ interface VideoItem {
     year: number | null;
     status: string;
     description: { da: string; en?: string; ar?: string; tg?: string } | null;
+    thumbnail: string | null;
     video_source: VideoSource;
     video_url: string | null;
     file_path: string | null;
@@ -80,9 +81,11 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
     const [editing, setEditing] = useState<VideoItem | null>(null);
     const [form, setForm] = useState(emptyForm);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const thumbInputRef = useRef<HTMLInputElement>(null);
 
     const filtered = videos.filter(
         (v) => (v.title?.da ?? '').includes(search) || v.instructor.includes(search) || v.category.includes(search),
@@ -92,6 +95,7 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
         setEditing(null);
         setForm(emptyForm);
         setSelectedFile(null);
+        setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
     }
@@ -112,6 +116,7 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
             is_active: v.is_active,
         });
         setSelectedFile(null);
+        setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
     }
@@ -127,9 +132,12 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
         if (form.video_source === 'upload' && selectedFile) {
             payload.file = selectedFile;
         }
+        if (selectedThumbnail) {
+            payload.thumbnail = selectedThumbnail;
+        }
 
         const url = editing ? `/admin/videos/${editing.id}` : '/admin/videos';
-        const needsFormData = form.video_source === 'upload' && !!selectedFile;
+        const needsFormData = (form.video_source === 'upload' && !!selectedFile) || !!selectedThumbnail;
 
         if (editing) {
             router.post(url, { ...payload, _method: 'PUT' }, {
@@ -434,6 +442,55 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
                         <div>
                             <Label>توضیحات (Тоҷикӣ)</Label>
                             <Textarea value={form.description.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={3} dir="ltr" />
+                        </div>
+
+                        {/* Thumbnail */}
+                        <div>
+                            <Label className="mb-2 block">تصویر بندانگشتی (Thumbnail)</Label>
+                            {/* Current thumbnail */}
+                            {editing?.thumbnail && !selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                                    <img
+                                        src={editing.thumbnail.startsWith('http') ? editing.thumbnail : `/storage/${editing.thumbnail}`}
+                                        alt="thumbnail"
+                                        className="w-full h-32 object-cover"
+                                    />
+                                    <p className="text-xs text-gray-400 px-2 py-1">تصویر فعلی — آپلود جدید جایگزین می‌شود</p>
+                                </div>
+                            )}
+                            {/* New thumbnail preview */}
+                            {selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-emerald-200 bg-emerald-50 relative">
+                                    <img
+                                        src={URL.createObjectURL(selectedThumbnail)}
+                                        alt="thumbnail preview"
+                                        className="w-full h-32 object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSelectedThumbnail(null); if (thumbInputRef.current) thumbInputRef.current.value = ''; }}
+                                        className="absolute top-1 end-1 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            )}
+                            <div
+                                className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors"
+                                onClick={() => thumbInputRef.current?.click()}
+                            >
+                                <ImagePlus className="w-5 h-5 mx-auto mb-1.5 text-gray-400" />
+                                <p className="text-sm text-gray-500">برای آپلود تصویر کلیک کنید</p>
+                                <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP — حداکثر ۵ مگابایت</p>
+                            </div>
+                            <input
+                                ref={thumbInputRef}
+                                type="file"
+                                className="hidden"
+                                accept=".jpg,.jpeg,.png,.webp"
+                                onChange={(e) => setSelectedThumbnail(e.target.files?.[0] ?? null)}
+                            />
+                            <InputError message={errors.thumbnail} />
                         </div>
                     </div>
 

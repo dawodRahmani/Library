@@ -63,6 +63,29 @@ class BookController extends Controller
         ]);
     }
 
+    /** Inertia reader page */
+    public function reader(Book $book): Response|\Illuminate\Http\RedirectResponse
+    {
+        $locale = app()->getLocale();
+
+        // No file at all
+        if (! $book->file_url && (! $book->file_path || ! Storage::disk('public')->exists($book->file_path))) {
+            abort(404);
+        }
+
+        return Inertia::render('library/book-reader', [
+            'book' => [
+                'id'           => $book->id,
+                'title'        => $book->title[$locale] ?? $book->title['da'] ?? '',
+                'author'       => $book->author,
+                'file_type'    => $book->file_type,
+                'is_external'  => (bool) $book->file_url,
+                'read_url'     => $book->file_url ?? route('library.books.read', $book),
+                'download_url' => route('library.books.download', $book),
+            ],
+        ]);
+    }
+
     /** Open book for reading in-browser (inline) */
     public function read(Book $book): \Illuminate\Http\RedirectResponse|StreamedResponse
     {
@@ -76,14 +99,17 @@ class BookController extends Controller
         }
 
         $path     = Storage::disk('public')->path($book->file_path);
-        $mimeType = mime_content_type($path) ?: 'application/octet-stream';
+        $mimeType = mime_content_type($path) ?: 'application/pdf';
         $filename = basename($book->file_path);
+        $size     = filesize($path);
 
-        return response()->streamDownload(function () use ($path) {
+        return response()->stream(function () use ($path) {
             readfile($path);
-        }, $filename, [
+        }, 200, [
             'Content-Type'        => $mimeType,
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Length'      => $size,
+            'Cache-Control'       => 'public, max-age=3600',
         ]);
     }
 

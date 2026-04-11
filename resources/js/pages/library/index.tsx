@@ -117,7 +117,7 @@ function BookDetailModal({ book, onClose, locale }: { book: Book; onClose: () =>
                     {book.has_file ? (
                         <div className="flex gap-2 pt-1">
                             <button
-                                onClick={() => window.open(`/library/books/${book.id}/read`, '_blank')}
+                                onClick={() => { window.location.href = `/library/books/${book.id}/reader`; }}
                                 className="flex-1 flex items-center justify-center gap-2 bg-[#27ae60] hover:bg-[#219a52] text-white rounded-xl py-2.5 text-sm font-medium transition-colors"
                             >
                                 <BookText className="w-4 h-4" />

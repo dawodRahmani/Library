@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/library', [BookController::class, 'index'])->name('library.index');
+Route::get('/library/books/{book}/reader', [BookController::class, 'reader'])->name('library.books.reader');
 Route::get('/library/books/{book}/read', [BookController::class, 'read'])->name('library.books.read');
 Route::get('/library/books/{book}/download', [BookController::class, 'download'])->name('library.books.download');
 Route::get('/library/videos', [VideoController::class, 'index'])->name('library.videos');
@@ -32,6 +33,7 @@ Route::get('/dar-ul-ifta', [FatwaController::class, 'index'])->name('dar-ul-ifta
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles');
 Route::get('/articles/{slug}', fn ($slug) => inertia('articles'))->name('articles.show');
 Route::get('/majalla', [MagazineController::class, 'index'])->name('majalla');
+Route::get('/majalla/{magazine}/reader', [MagazineController::class, 'reader'])->name('majalla.reader');
 Route::get('/majalla/{magazine}/read', [MagazineController::class, 'read'])->name('majalla.read');
 Route::get('/majalla/{magazine}/download', [MagazineController::class, 'download'])->name('majalla.download');
 Route::get('/bayania', [StatementController::class, 'index'])->name('bayania');

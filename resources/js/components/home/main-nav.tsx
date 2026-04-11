@@ -75,6 +75,49 @@ function DropdownItem({ item }: { item: NavItem }) {
     );
 }
 
+function MobileNavItem({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+    const [open, setOpen] = useState(false);
+    const hasChildren = item.children && item.children.length > 0;
+
+    return (
+        <div className="border-b border-white/5">
+            <div className="flex items-center">
+                <a
+                    href={item.href ?? '#'}
+                    onClick={onNavigate}
+                    className="flex-1 px-4 py-3 text-white/90 hover:text-white text-[14px] transition-colors"
+                >
+                    {item.label}
+                </a>
+                {hasChildren && (
+                    <button
+                        onClick={() => setOpen((v) => !v)}
+                        className="px-4 py-3 text-white/50 hover:text-white transition-colors"
+                        aria-label="toggle submenu"
+                    >
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                    </button>
+                )}
+            </div>
+            {hasChildren && open && (
+                <div className="bg-white/5 border-t border-white/5">
+                    {item.children!.map((child) => (
+                        <a
+                            key={child.label}
+                            href={child.href}
+                            onClick={onNavigate}
+                            className="flex items-center gap-2 px-7 py-2.5 text-gray-300 hover:text-white hover:bg-white/10 text-[13px] border-b border-white/5 last:border-0 transition-colors"
+                        >
+                            <span className="w-1 h-1 rounded-full bg-[#27ae60] shrink-0" />
+                            {child.label}
+                        </a>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 interface NavCategory {
     slug: string;
     name: string;
@@ -86,6 +129,7 @@ interface SharedProps {
         videos: NavCategory[];
         audios: NavCategory[];
         fatwas: NavCategory[];
+        articles: NavCategory[];
     };
     [key: string]: unknown;
 }
@@ -96,7 +140,7 @@ export function MainNav() {
     const { t } = useTranslation();
     const { navCategories } = usePage<SharedProps>().props;
 
-    const cats = navCategories ?? { books: [], videos: [], audios: [], fatwas: [] };
+    const cats = navCategories ?? { books: [], videos: [], audios: [], fatwas: [], articles: [] };
 
     useEffect(() => {
         const onScroll = () => setSticky(window.scrollY > 60);
@@ -136,6 +180,14 @@ export function MainNav() {
             children: cats.audios.map((c) => ({
                 label: c.name,
                 href: `/audio?category=${c.slug}`,
+            })),
+        },
+        {
+            label: t('nav.articles'),
+            href: '/articles',
+            children: cats.articles.map((c) => ({
+                label: c.name,
+                href: `/articles?category=${c.slug}`,
             })),
         },
         { label: t('nav.statements'), href: '/bayania' },
@@ -178,29 +230,17 @@ export function MainNav() {
 
                 {/* Mobile menu */}
                 {mobileOpen && (
-                    <div className="lg:hidden border-t border-white/10 pb-4">
+                    <div className="lg:hidden border-t border-white/10 pb-4 max-h-[80vh] overflow-y-auto">
                         {/* Mobile search */}
                         <div className="px-3 py-3 border-b border-white/10">
                             <SearchBar />
                         </div>
                         {getNavItems().map((item) => (
-                            <div key={item.label}>
-                                <a
-                                    href={item.href ?? '#'}
-                                    className="block px-3 py-2.5 text-white/90 hover:text-white text-[14px] border-b border-white/5"
-                                >
-                                    {item.label}
-                                </a>
-                                {item.children?.map((child) => (
-                                    <a
-                                        key={child.label}
-                                        href={child.href}
-                                        className="block px-6 py-2 text-gray-400 hover:text-white text-[13px] border-b border-white/5"
-                                    >
-                                        {child.label}
-                                    </a>
-                                ))}
-                            </div>
+                            <MobileNavItem
+                                key={item.label}
+                                item={item}
+                                onNavigate={() => setMobileOpen(false)}
+                            />
                         ))}
                     </div>
                 )}

@@ -175,6 +175,7 @@ class VideoController extends Controller
             'video_url'    => ['nullable', 'string', 'max:1000'],
             'is_active'    => ['boolean'],
             'file'         => ['nullable', 'file', 'max:512000', 'mimes:mp4,webm,mov,avi,mkv'],
+            'thumbnail'    => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
         if ($source === 'upload' && $request->hasFile('file')) {
@@ -194,6 +195,15 @@ class VideoController extends Controller
             // link
             $data['file_path'] = null;
             $data['file_size'] = null;
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            if ($existing?->thumbnail && !str_starts_with($existing->thumbnail, 'http')) {
+                Storage::disk('public')->delete($existing->thumbnail);
+            }
+            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails/videos', 'public');
+        } else {
+            unset($data['thumbnail']);
         }
 
         unset($data['file']);

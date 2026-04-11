@@ -17,6 +17,7 @@ interface FatwaItem {
     date: string;
     category: string;
     categorySlug: string;
+    thumbnail: string | null;
 }
 
 interface Category {
@@ -70,9 +71,18 @@ function FatwaCard({ item, onOpen, locale }: { item: FatwaItem; onOpen: () => vo
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Thumbnail */}
-            <div className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}>
+            <div className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden`}>
+                {item.thumbnail && (
+                    <img
+                        src={item.thumbnail.startsWith('http') ? item.thumbnail : `/storage/${item.thumbnail}`}
+                        alt={item.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                )}
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                <BookMarked className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />
+                {!item.thumbnail && (
+                    <BookMarked className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />
+                )}
                 <span className={`absolute top-3 end-3 text-[11px] font-bold px-2 py-0.5 rounded-full ${catClass}`}>
                     {item.category}
                 </span>

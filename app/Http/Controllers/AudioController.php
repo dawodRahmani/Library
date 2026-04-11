@@ -40,6 +40,7 @@ class AudioController extends Controller
             'audio_url'    => $a->audio_url,
             'has_file'     => (bool) $a->file_path,
             'file_size'    => $a->file_size,
+            'thumbnail'    => $a->thumbnail,
             'date'         => $a->created_at->format('Y-m-d'),
         ]);
 
@@ -204,6 +205,7 @@ class AudioController extends Controller
             'audio_url'    => ['nullable', 'string', 'max:500'],
             'is_active'    => ['boolean'],
             'file'         => ['nullable', 'file', 'max:204800', 'mimes:mp3,m4a,ogg,wav,aac,flac,opus,wma'],
+            'thumbnail'    => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
         if ($source === 'upload' && $request->hasFile('file')) {
@@ -217,6 +219,15 @@ class AudioController extends Controller
         } else {
             $data['file_path'] = $existing?->file_path;
             $data['file_size'] = $existing?->file_size;
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            if ($existing?->thumbnail) {
+                Storage::disk('public')->delete($existing->thumbnail);
+            }
+            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails/audios', 'public');
+        } else {
+            unset($data['thumbnail']);
         }
 
         unset($data['file']);

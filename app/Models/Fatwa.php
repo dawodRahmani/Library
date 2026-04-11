@@ -13,6 +13,7 @@ class Fatwa extends Model
         'author',
         'category_id',
         'is_active',
+        'thumbnail',
     ];
 
     protected function casts(): array

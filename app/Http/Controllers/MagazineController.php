@@ -46,6 +46,26 @@ class MagazineController extends Controller
         ]);
     }
 
+    /** Inertia reader page */
+    public function reader(Magazine $magazine): Response
+    {
+        if (! $magazine->file_path || ! Storage::disk('public')->exists($magazine->file_path)) {
+            abort(404);
+        }
+
+        $locale = app()->getLocale();
+
+        return Inertia::render('majalla/reader', [
+            'magazine' => [
+                'id'           => $magazine->id,
+                'number'       => $magazine->number,
+                'title'        => $magazine->title[$locale] ?? $magazine->title['da'] ?? '',
+                'read_url'     => route('majalla.read', $magazine),
+                'download_url' => route('majalla.download', $magazine),
+            ],
+        ]);
+    }
+
     /** Stream PDF inline */
     public function read(Magazine $magazine): StreamedResponse
     {
@@ -55,12 +75,15 @@ class MagazineController extends Controller
 
         $path     = Storage::disk('public')->path($magazine->file_path);
         $filename = basename($magazine->file_path);
+        $size     = filesize($path);
 
-        return response()->streamDownload(function () use ($path) {
+        return response()->stream(function () use ($path) {
             readfile($path);
-        }, $filename, [
+        }, 200, [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Length'      => $size,
+            'Cache-Control'       => 'public, max-age=3600',
         ]);
     }
 
@@ -147,6 +170,7 @@ class MagazineController extends Controller
             'articles'      => ['nullable', 'array'],
             'is_active'     => ['boolean'],
             'file'          => ['nullable', 'file', 'max:51200', 'mimes:pdf'],
+            'cover_image'   => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
         if ($request->hasFile('file')) {
@@ -159,6 +183,15 @@ class MagazineController extends Controller
         } else {
             $data['file_path'] = $existing?->file_path;
             $data['file_size'] = $existing?->file_size;
+        }
+
+        if ($request->hasFile('cover_image')) {
+            if ($existing?->cover_image) {
+                Storage::disk('public')->delete($existing->cover_image);
+            }
+            $data['cover_image'] = $request->file('cover_image')->store('magazines/covers', 'public');
+        } else {
+            unset($data['cover_image']);
         }
 
         unset($data['file']);

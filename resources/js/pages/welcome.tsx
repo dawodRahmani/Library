@@ -9,11 +9,23 @@ import { HomeFooter }     from '@/components/home/home-footer';
 
 export type { HeroItem };
 
-interface PageProps {
-    heroItems: HeroItem[];
+interface RecentVideo {
+    id: number;
+    title: string;
+    instructor: string;
+    thumbnail: string | null;
+    video_url: string | null;
+    video_source: string;
+    youtube_id: string | null;
+    duration: string | null;
 }
 
-export default function Welcome({ heroItems }: PageProps) {
+interface PageProps {
+    heroItems: HeroItem[];
+    recentVideos: RecentVideo[];
+}
+
+export default function Welcome({ heroItems, recentVideos }: PageProps) {
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="کتابخانه رسالت" />
@@ -24,7 +36,7 @@ export default function Welcome({ heroItems }: PageProps) {
                 <HomeHero heroItems={heroItems} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">
                     <div className="lg:col-span-2">
-                        <HomeMainColumn />
+                        <HomeMainColumn recentVideos={recentVideos} />
                     </div>
                     <div className="lg:col-span-1">
                         <HomeSidebar />

@@ -53,11 +53,28 @@ function FeaturedCard({ issue, locale }: { issue: Issue; locale: Locale }) {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-lg transition-shadow mb-6">
             <div className={`bg-gradient-to-br ${gradient} relative p-8 flex gap-6 items-start`}>
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                {issue.cover_image && (
+                    <img
+                        src={issue.cover_image.startsWith('http') ? issue.cover_image : `/storage/${issue.cover_image}`}
+                        alt={issue.title}
+                        className="absolute inset-0 w-full h-full object-cover opacity-30"
+                    />
+                )}
                 {/* Cover */}
-                <div className="relative z-10 shrink-0 w-28 h-40 rounded-lg bg-white/10 border border-white/20 flex flex-col items-center justify-center gap-1 shadow-xl">
-                    <Newspaper className="w-8 h-8 text-white/80" />
-                    <span className="text-white/90 text-[11px] font-bold">{{ da: 'شماره', en: 'Issue', ar: 'العدد', tg: 'Рақам' }[locale]} {issue.number}</span>
-                    <span className="text-white/60 text-[10px]">{issue.date}</span>
+                <div className="relative z-10 shrink-0 w-28 h-40 rounded-lg overflow-hidden border border-white/20 shadow-xl bg-white/10">
+                    {issue.cover_image ? (
+                        <img
+                            src={issue.cover_image.startsWith('http') ? issue.cover_image : `/storage/${issue.cover_image}`}
+                            alt={issue.title}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+                            <Newspaper className="w-8 h-8 text-white/80" />
+                            <span className="text-white/90 text-[11px] font-bold">{{ da: 'شماره', en: 'Issue', ar: 'العدد', tg: 'Рақам' }[locale]} {issue.number}</span>
+                            <span className="text-white/60 text-[10px]">{issue.date}</span>
+                        </div>
+                    )}
                 </div>
                 {/* Text */}
                 <div className="relative z-10 flex-1 min-w-0">
@@ -92,9 +109,7 @@ function FeaturedCard({ issue, locale }: { issue: Issue; locale: Locale }) {
                     {issue.has_file ? (
                         <div className="flex items-center gap-2">
                             <a
-                                href={`/majalla/${issue.id}/read`}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                                href={`/majalla/${issue.id}/reader`}
                                 className="flex items-center gap-1.5 text-[13px] text-[#27ae60] font-bold hover:underline"
                             >
                                 <Eye className="w-4 h-4" /> {{ da: 'مطالعه آنلاین', en: 'Read Online', ar: 'قراءة عبر الإنترنت', tg: 'Хондани онлайн' }[locale]}
@@ -122,12 +137,23 @@ function IssueCard({ issue, locale }: { issue: Issue; locale: Locale }) {
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Cover thumbnail */}
-            <div className={`h-40 bg-gradient-to-br ${gradient} relative flex flex-col items-center justify-center gap-2`}>
+            <div className={`h-40 bg-gradient-to-br ${gradient} relative flex flex-col items-center justify-center gap-2 overflow-hidden`}>
+                {issue.cover_image ? (
+                    <img
+                        src={issue.cover_image.startsWith('http') ? issue.cover_image : `/storage/${issue.cover_image}`}
+                        alt={issue.title}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                ) : null}
                 <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />
-                <div className="relative z-10 w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Newspaper className="w-5 h-5 text-white" />
-                </div>
-                <span className="relative z-10 text-white/90 text-[12px] font-bold">{{ da: 'شماره', en: 'Issue', ar: 'العدد', tg: 'Рақам' }[locale]} {issue.number}</span>
+                {!issue.cover_image && (
+                    <>
+                        <div className="relative z-10 w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Newspaper className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="relative z-10 text-white/90 text-[12px] font-bold">{{ da: 'شماره', en: 'Issue', ar: 'العدد', tg: 'Рақам' }[locale]} {issue.number}</span>
+                    </>
+                )}
                 <span className="absolute top-3 end-3 bg-black/40 text-white text-[10px] px-2 py-0.5 rounded">
                     {issue.date}
                 </span>
@@ -161,9 +187,7 @@ function IssueCard({ issue, locale }: { issue: Issue; locale: Locale }) {
             {issue.has_file ? (
                 <div className="flex border-t border-gray-100">
                     <a
-                        href={`/majalla/${issue.id}/read`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/majalla/${issue.id}/reader`}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors"
                     >
                         <Eye className="w-3.5 h-3.5" /> {{ da: 'مطالعه', en: 'Read', ar: 'قراءة', tg: 'Хондан' }[locale]}

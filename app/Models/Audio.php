@@ -20,6 +20,7 @@ class Audio extends Model
         'audio_source',
         'file_path',
         'file_size',
+        'thumbnail',
         'is_active',
     ];
 

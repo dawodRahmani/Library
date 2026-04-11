@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search, Upload, FileText, X, Download, BookOpen, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileText, X, Download, BookOpen, Eye, ImagePlus } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 
 interface MagazineItem {
@@ -48,9 +48,11 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
     const [editing, setEditing]         = useState<MagazineItem | null>(null);
     const [form, setForm]               = useState(emptyForm);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedCover, setSelectedCover] = useState<File | null>(null);
     const [errors, setErrors]           = useState<Record<string, string>>({});
     const [processing, setProcessing]   = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const coverRef = useRef<HTMLInputElement>(null);
 
     const filtered = magazines.filter((m) => (m.title?.da ?? '').includes(search) || m.year.includes(search));
 
@@ -58,6 +60,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
         setEditing(null);
         setForm(emptyForm);
         setSelectedFile(null);
+        setSelectedCover(null);
         setErrors({});
         setOpen(true);
     }
@@ -75,6 +78,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
             is_active: m.is_active,
         });
         setSelectedFile(null);
+        setSelectedCover(null);
         setErrors({});
         setOpen(true);
     }
@@ -98,11 +102,12 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
         fd.append('featured', form.featured ? '1' : '0');
         fd.append('is_active', form.is_active ? '1' : '0');
         if (selectedFile) fd.append('file', selectedFile);
+        if (selectedCover) fd.append('cover_image', selectedCover);
 
         const url = editing ? `/admin/magazines/${editing.id}` : '/admin/magazines';
         router.post(url, fd, {
             forceFormData: true,
-            onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); },
+            onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); setSelectedCover(null); },
             onError: (e) => setErrors(e),
             onFinish: () => setProcessing(false),
         });
@@ -194,6 +199,30 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
                         <div><Label>توضیحات (English)</Label><Textarea value={form.description?.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={3} dir="ltr" /></div>
                         <div><Label>توضیحات (العربية)</Label><Textarea value={form.description?.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={3} /></div>
                         <div><Label>توضیحات (Тоҷикӣ)</Label><Textarea value={form.description?.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={3} dir="ltr" /></div>
+
+                        {/* Cover Image */}
+                        <div>
+                            <Label className="mb-2 block">تصویر جلد</Label>
+                            {editing?.cover_image && !selectedCover && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-gray-200">
+                                    <img src={editing.cover_image.startsWith('http') ? editing.cover_image : `/storage/${editing.cover_image}`} alt="cover" className="w-full h-36 object-cover" />
+                                    <p className="text-xs text-gray-400 px-2 py-1">تصویر فعلی — آپلود جدید جایگزین می‌شود</p>
+                                </div>
+                            )}
+                            {selectedCover && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-emerald-200 relative">
+                                    <img src={URL.createObjectURL(selectedCover)} alt="preview" className="w-full h-36 object-cover" />
+                                    <button type="button" onClick={() => { setSelectedCover(null); if (coverRef.current) coverRef.current.value = ''; }} className="absolute top-1 end-1 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center text-white"><X className="w-3 h-3" /></button>
+                                </div>
+                            )}
+                            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors" onClick={() => coverRef.current?.click()}>
+                                <ImagePlus className="w-5 h-5 mx-auto mb-1.5 text-gray-400" />
+                                <p className="text-sm text-gray-500">برای آپلود تصویر جلد کلیک کنید</p>
+                                <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP — حداکثر ۵ مگابایت</p>
+                            </div>
+                            <input ref={coverRef} type="file" className="hidden" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => setSelectedCover(e.target.files?.[0] ?? null)} />
+                            <InputError message={errors.cover_image} />
+                        </div>
 
                         {/* PDF Upload */}
                         <div>

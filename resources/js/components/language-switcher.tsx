@@ -1,23 +1,31 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/react';
+import { ChevronDown, Globe } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 const languages = [
     { code: 'da', label: 'دری', dir: 'rtl' },
-    { code: 'en', label: 'EN', dir: 'ltr' },
-    { code: 'ar', label: 'ع', dir: 'rtl' },
-    { code: 'tg', label: 'ТЈ', dir: 'ltr' },
+    { code: 'en', label: 'English', dir: 'ltr' },
+    { code: 'ar', label: 'العربية', dir: 'rtl' },
+    { code: 'tg', label: 'Тоҷикӣ', dir: 'ltr' },
 ];
 
 export function LanguageSwitcher() {
     const { i18n } = useTranslation();
+
+    const current = languages.find((l) => l.code === i18n.language) ?? languages[0];
 
     const switchLanguage = (langCode: string) => {
         const lang = languages.find((l) => l.code === langCode);
         if (lang) {
             i18n.changeLanguage(langCode);
             localStorage.setItem('language', langCode);
-            // Set cookie for backend locale detection
             document.cookie = `locale=${langCode}; path=/; max-age=${365 * 24 * 60 * 60}; SameSite=Lax`;
             document.documentElement.dir = lang.dir;
             document.documentElement.lang = langCode;
@@ -26,22 +34,33 @@ export function LanguageSwitcher() {
     };
 
     return (
-        <div className="flex gap-1 rounded-lg border border-border/50 bg-background/80 backdrop-blur-sm p-1">
-            {languages.map((lang) => (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
                 <Button
-                    key={lang.code}
-                    variant={i18n.language === lang.code ? 'default' : 'ghost'}
+                    variant="ghost"
                     size="sm"
-                    onClick={() => switchLanguage(lang.code)}
-                    className={`text-xs px-3 h-7 ${
-                        i18n.language === lang.code
-                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
-                            : 'hover:bg-muted'
-                    }`}
+                    className="flex items-center gap-1.5 h-8 px-3 text-xs border border-border/50 bg-background/80 backdrop-blur-sm hover:bg-muted"
                 >
-                    {lang.label}
+                    <Globe className="h-3.5 w-3.5 opacity-70" />
+                    <span>{current.label}</span>
+                    <ChevronDown className="h-3 w-3 opacity-60" />
                 </Button>
-            ))}
-        </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[130px]">
+                {languages.map((lang) => (
+                    <DropdownMenuItem
+                        key={lang.code}
+                        onClick={() => switchLanguage(lang.code)}
+                        className={`cursor-pointer text-sm ${
+                            i18n.language === lang.code
+                                ? 'bg-emerald-50 text-emerald-700 font-medium dark:bg-emerald-950/40 dark:text-emerald-400'
+                                : ''
+                        }`}
+                    >
+                        {lang.label}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

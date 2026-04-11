@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search, Tags, MessageSquare } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Tags, MessageSquare, ImagePlus, X } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 import { CategoryPanel } from '@/components/admin/category-panel';
 import type { CategoryItem } from '@/components/admin/category-panel';
@@ -18,7 +18,7 @@ import type { CategoryItem } from '@/components/admin/category-panel';
 type Category = CategoryItem;
 interface FatwaItem {
     id: number; title: { da: string; en?: string; ar?: string; tg?: string }; description: { da: string; en?: string; ar?: string; tg?: string } | null; author: string;
-    category_id: number; category: string; is_active: boolean; created_at: string;
+    category_id: number; category: string; thumbnail: string | null; is_active: boolean; created_at: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'دارالإفتاء', href: '/admin/fatwas' }];
@@ -30,23 +30,38 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<FatwaItem | null>(null);
     const [form, setForm] = useState(emptyForm);
+    const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
+    const thumbRef = useRef<HTMLInputElement>(null);
 
     const filtered = fatwas.filter((f) => (f.title?.da ?? '').includes(search) || f.author.includes(search) || f.category.includes(search));
 
-    function openCreate() { setEditing(null); setForm(emptyForm); setErrors({}); setOpen(true); }
+    function openCreate() { setEditing(null); setForm(emptyForm); setSelectedThumbnail(null); setErrors({}); setOpen(true); }
     function openEdit(f: FatwaItem) {
         setEditing(f);
         setForm({ title: { da: f.title?.da ?? '', en: f.title?.en ?? '', ar: f.title?.ar ?? '', tg: f.title?.tg ?? '' }, description: { da: f.description?.da ?? '', en: f.description?.en ?? '', ar: f.description?.ar ?? '', tg: f.description?.tg ?? '' }, author: f.author, category_id: String(f.category_id), is_active: f.is_active });
-        setErrors({}); setOpen(true);
+        setSelectedThumbnail(null); setErrors({}); setOpen(true);
     }
 
     function submit() {
         setProcessing(true);
-        const payload = { ...form, category_id: Number(form.category_id) };
+        const fd = new FormData();
+        if (editing) fd.append('_method', 'PUT');
+        fd.append('title[da]', form.title.da);
+        fd.append('title[en]', form.title.en ?? '');
+        fd.append('title[ar]', form.title.ar ?? '');
+        fd.append('title[tg]', form.title.tg ?? '');
+        fd.append('description[da]', form.description?.da ?? '');
+        fd.append('description[en]', form.description?.en ?? '');
+        fd.append('description[ar]', form.description?.ar ?? '');
+        fd.append('description[tg]', form.description?.tg ?? '');
+        fd.append('author', form.author);
+        fd.append('category_id', form.category_id);
+        fd.append('is_active', form.is_active ? '1' : '0');
+        if (selectedThumbnail) fd.append('thumbnail', selectedThumbnail);
         const url = editing ? `/admin/fatwas/${editing.id}` : '/admin/fatwas';
-        router[editing ? 'put' : 'post'](url, payload, { onSuccess: () => { setOpen(false); setErrors({}); }, onError: (e) => setErrors(e), onFinish: () => setProcessing(false) });
+        router.post(url, fd, { forceFormData: true, onSuccess: () => { setOpen(false); setErrors({}); setSelectedThumbnail(null); }, onError: (e) => setErrors(e), onFinish: () => setProcessing(false) });
     }
 
     function destroy(f: FatwaItem) { if (confirm('آیا مطمئن هستید؟')) router.delete(`/admin/fatwas/${f.id}`); }
@@ -108,6 +123,29 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                         <div><Label>توضیحات (English)</Label><Textarea value={form.description.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={4} dir="ltr" /></div>
                         <div><Label>توضیحات (العربية)</Label><Textarea value={form.description.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={4} /></div>
                         <div><Label>توضیحات (Тоҷикӣ)</Label><Textarea value={form.description.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={4} dir="ltr" /></div>
+                        {/* Thumbnail */}
+                        <div>
+                            <Label className="mb-2 block">تصویر (Thumbnail)</Label>
+                            {editing?.thumbnail && !selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-gray-200">
+                                    <img src={editing.thumbnail.startsWith('http') ? editing.thumbnail : `/storage/${editing.thumbnail}`} alt="thumbnail" className="w-full h-32 object-cover" />
+                                    <p className="text-xs text-gray-400 px-2 py-1">تصویر فعلی — آپلود جدید جایگزین می‌شود</p>
+                                </div>
+                            )}
+                            {selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-emerald-200 relative">
+                                    <img src={URL.createObjectURL(selectedThumbnail)} alt="preview" className="w-full h-32 object-cover" />
+                                    <button type="button" onClick={() => { setSelectedThumbnail(null); if (thumbRef.current) thumbRef.current.value = ''; }} className="absolute top-1 end-1 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center text-white"><X className="w-3 h-3" /></button>
+                                </div>
+                            )}
+                            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors" onClick={() => thumbRef.current?.click()}>
+                                <ImagePlus className="w-5 h-5 mx-auto mb-1.5 text-gray-400" />
+                                <p className="text-sm text-gray-500">برای آپلود تصویر کلیک کنید</p>
+                                <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP — حداکثر ۵ مگابایت</p>
+                            </div>
+                            <input ref={thumbRef} type="file" className="hidden" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => setSelectedThumbnail(e.target.files?.[0] ?? null)} />
+                            <InputError message={errors.thumbnail} />
+                        </div>
                     </div>
                     <DialogFooter><DialogClose asChild><Button variant="outline">انصراف</Button></DialogClose><Button onClick={submit} disabled={processing}>{processing ? 'در حال ذخیره...' : editing ? 'بروزرسانی' : 'ذخیره'}</Button></DialogFooter>
                 </DialogContent>
