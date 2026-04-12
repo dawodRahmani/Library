@@ -57,16 +57,17 @@ export default function CategoriesIndex({ categories }: { categories: CategoryIt
                 <div className="border rounded-lg overflow-hidden">
                     <Table>
                         <TableHeader><TableRow>
-                            <TableHead className="w-10">#</TableHead><TableHead>نام (دری)</TableHead><TableHead>نام (EN)</TableHead><TableHead>نام (AR)</TableHead><TableHead>اسلاگ</TableHead><TableHead>نوع</TableHead><TableHead>ترتیب</TableHead><TableHead className="w-24">عملیات</TableHead>
+                            <TableHead className="w-10">#</TableHead><TableHead>نام (دری)</TableHead><TableHead>نام (EN)</TableHead><TableHead>نام (AR)</TableHead><TableHead>نام (TG)</TableHead><TableHead>اسلاگ</TableHead><TableHead>نوع</TableHead><TableHead>ترتیب</TableHead><TableHead className="w-24">عملیات</TableHead>
                         </TableRow></TableHeader>
                         <TableBody>
-                            {filtered.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">هیچ دسته‌بندی یافت نشد</TableCell></TableRow>}
+                            {filtered.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">هیچ دسته‌بندی یافت نشد</TableCell></TableRow>}
                             {filtered.map((c, i) => (
                                 <TableRow key={c.id}>
                                     <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                                     <TableCell className="font-medium">{c.name?.da}</TableCell>
                                     <TableCell className="text-muted-foreground">{c.name?.en ?? '—'}</TableCell>
                                     <TableCell className="text-muted-foreground">{c.name?.ar ?? '—'}</TableCell>
+                                    <TableCell className="text-muted-foreground">{c.name?.tg ?? '—'}</TableCell>
                                     <TableCell><code className="text-xs">{c.slug}</code></TableCell>
                                     <TableCell><Badge variant="secondary">{TYPE_LABELS[c.type] ?? c.type}</Badge></TableCell>
                                     <TableCell>{c.sort_order}</TableCell>
@@ -78,7 +79,7 @@ export default function CategoriesIndex({ categories }: { categories: CategoryIt
                 </div>
             </div>
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-w-lg">
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle>{editing ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی جدید'}</DialogTitle></DialogHeader>
                     <div className="space-y-4 py-2">
                         <div><Label>نام (دری) *</Label><Input value={form.name.da} onChange={(e) => setForm({ ...form, name: { ...form.name, da: e.target.value } })} placeholder="دری" /><InputError message={errors['name.da']} /></div>

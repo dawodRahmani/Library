@@ -20,12 +20,24 @@ interface RecentVideo {
     duration: string | null;
 }
 
+interface ContentItem {
+    id: number;
+    title: string;
+    author: string;
+    date: string;
+    cover_image?: string | null;
+    thumbnail?: string | null;
+}
+
 interface PageProps {
     heroItems: HeroItem[];
     recentVideos: RecentVideo[];
+    recentArticles: ContentItem[];
+    recentAudios: ContentItem[];
+    recentBooks: ContentItem[];
 }
 
-export default function Welcome({ heroItems, recentVideos }: PageProps) {
+export default function Welcome({ heroItems, recentVideos, recentArticles, recentAudios, recentBooks }: PageProps) {
     return (
         <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="کتابخانه رسالت" />
@@ -36,7 +48,12 @@ export default function Welcome({ heroItems, recentVideos }: PageProps) {
                 <HomeHero heroItems={heroItems} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">
                     <div className="lg:col-span-2">
-                        <HomeMainColumn recentVideos={recentVideos} />
+                        <HomeMainColumn
+                            recentVideos={recentVideos}
+                            recentArticles={recentArticles}
+                            recentAudios={recentAudios}
+                            recentBooks={recentBooks}
+                        />
                     </div>
                     <div className="lg:col-span-1">
                         <HomeSidebar />

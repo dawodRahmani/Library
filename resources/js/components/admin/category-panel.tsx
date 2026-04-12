@@ -10,7 +10,7 @@ import { Plus, Pencil, Trash2, Tags } from 'lucide-react';
 
 export interface CategoryItem {
     id: number;
-    name: { da: string; en?: string; ar?: string };
+    name: { da: string; en?: string; ar?: string; tg?: string };
     slug: string;
     sort_order: number;
 }
@@ -20,7 +20,7 @@ interface Props {
     type: 'book' | 'video' | 'audio' | 'fatwa' | 'article' | 'magazine';
 }
 
-const emptyForm = { name: { da: '', en: '', ar: '' }, slug: '', sort_order: 0 };
+const emptyForm = { name: { da: '', en: '', ar: '', tg: '' }, slug: '', sort_order: 0 };
 
 export function CategoryPanel({ categories, type }: Props) {
     const [open, setOpen] = useState(false);
@@ -38,7 +38,11 @@ export function CategoryPanel({ categories, type }: Props) {
 
     function openEdit(c: CategoryItem) {
         setEditing(c);
-        setForm({ name: { da: c.name?.da ?? '', en: c.name?.en ?? '', ar: c.name?.ar ?? '' }, slug: c.slug, sort_order: c.sort_order });
+        setForm({
+            name: { da: c.name?.da ?? '', en: c.name?.en ?? '', ar: c.name?.ar ?? '', tg: c.name?.tg ?? '' },
+            slug: c.slug,
+            sort_order: c.sort_order,
+        });
         setErrors({});
         setOpen(true);
     }
@@ -96,6 +100,7 @@ export function CategoryPanel({ categories, type }: Props) {
                                 <TableHead>نام (دری)</TableHead>
                                 <TableHead>نام (EN)</TableHead>
                                 <TableHead>نام (AR)</TableHead>
+                                <TableHead>نام (TG)</TableHead>
                                 <TableHead>اسلاگ</TableHead>
                                 <TableHead className="w-20">ترتیب</TableHead>
                                 <TableHead className="w-24">عملیات</TableHead>
@@ -108,6 +113,7 @@ export function CategoryPanel({ categories, type }: Props) {
                                     <TableCell className="font-medium">{c.name?.da}</TableCell>
                                     <TableCell className="text-muted-foreground">{c.name?.en || '—'}</TableCell>
                                     <TableCell className="text-muted-foreground">{c.name?.ar || '—'}</TableCell>
+                                    <TableCell className="text-muted-foreground">{c.name?.tg || '—'}</TableCell>
                                     <TableCell><code className="text-xs bg-muted px-1.5 py-0.5 rounded">{c.slug}</code></TableCell>
                                     <TableCell>{c.sort_order}</TableCell>
                                     <TableCell>
@@ -128,7 +134,7 @@ export function CategoryPanel({ categories, type }: Props) {
             )}
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{editing ? 'ویرایش دسته‌بندی' : 'دسته‌بندی جدید'}</DialogTitle>
                     </DialogHeader>
@@ -157,6 +163,15 @@ export function CategoryPanel({ categories, type }: Props) {
                                 value={form.name.ar ?? ''}
                                 onChange={(e) => setForm({ ...form, name: { ...form.name, ar: e.target.value } })}
                                 placeholder="مثال: العقيدة والمنهج"
+                            />
+                        </div>
+                        <div>
+                            <Label>نام (Тоҷикӣ)</Label>
+                            <Input
+                                value={form.name.tg ?? ''}
+                                onChange={(e) => setForm({ ...form, name: { ...form.name, tg: e.target.value } })}
+                                placeholder="мثال: Ақида ва Манҳаҷ"
+                                dir="ltr"
                             />
                         </div>
                         <div>

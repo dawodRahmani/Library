@@ -96,9 +96,51 @@ class HomeController extends Controller
             ])
             ->toArray();
 
+        $recentArticles = Article::where('is_active', true)
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn ($a) => [
+                'id'          => $a->id,
+                'title'       => $a->title[$locale] ?? $a->title['da'] ?? '',
+                'author'      => $a->author ?? '',
+                'date'        => $a->created_at->format('Y-m-d'),
+                'cover_image' => $a->cover_image,
+            ])
+            ->toArray();
+
+        $recentAudios = Audio::where('is_active', true)
+            ->latest()
+            ->limit(4)
+            ->get()
+            ->map(fn ($a) => [
+                'id'        => $a->id,
+                'title'     => $a->title[$locale] ?? $a->title['da'] ?? '',
+                'author'    => $a->instructor ?? '',
+                'date'      => $a->created_at->format('Y-m-d'),
+                'thumbnail' => $a->thumbnail,
+            ])
+            ->toArray();
+
+        $recentBooks = Book::where('is_active', true)
+            ->latest()
+            ->limit(4)
+            ->get()
+            ->map(fn ($b) => [
+                'id'          => $b->id,
+                'title'       => $b->title[$locale] ?? $b->title['da'] ?? '',
+                'author'      => $b->author ?? '',
+                'date'        => $b->created_at->format('Y-m-d'),
+                'cover_image' => $b->cover_image,
+            ])
+            ->toArray();
+
         return Inertia::render('welcome', [
-            'heroItems'    => $heroItems,
-            'recentVideos' => $recentVideos,
+            'heroItems'      => $heroItems,
+            'recentVideos'   => $recentVideos,
+            'recentArticles' => $recentArticles,
+            'recentAudios'   => $recentAudios,
+            'recentBooks'    => $recentBooks,
         ]);
     }
 }

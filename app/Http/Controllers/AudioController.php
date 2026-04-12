@@ -177,7 +177,10 @@ class AudioController extends Controller
 
     public function destroy(Audio $audio): RedirectResponse
     {
-        $audio->update(['is_active' => false]);
+        if ($audio->thumbnail) {
+            Storage::disk('public')->delete($audio->thumbnail);
+        }
+        $audio->delete();
         return back();
     }
 

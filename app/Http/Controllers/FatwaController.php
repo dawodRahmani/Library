@@ -120,8 +120,10 @@ class FatwaController extends Controller
 
     public function destroy(Fatwa $fatwa): RedirectResponse
     {
-        $fatwa->update(['is_active' => false]);
-
+        if ($fatwa->thumbnail) {
+            Storage::disk('public')->delete($fatwa->thumbnail);
+        }
+        $fatwa->delete();
         return back();
     }
 }

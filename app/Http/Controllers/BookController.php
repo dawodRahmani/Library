@@ -275,8 +275,13 @@ class BookController extends Controller
 
     public function destroy(Book $book): RedirectResponse
     {
-        $book->update(['is_active' => false]);
-
+        if ($book->file_path) {
+            Storage::disk('public')->delete($book->file_path);
+        }
+        if ($book->cover_image) {
+            Storage::disk('public')->delete($book->cover_image);
+        }
+        $book->delete();
         return back();
     }
 

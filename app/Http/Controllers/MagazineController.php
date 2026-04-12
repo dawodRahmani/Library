@@ -144,7 +144,13 @@ class MagazineController extends Controller
 
     public function destroy(Magazine $magazine): RedirectResponse
     {
-        $magazine->update(['is_active' => false]);
+        if ($magazine->file_path) {
+            Storage::disk('public')->delete($magazine->file_path);
+        }
+        if ($magazine->cover_image) {
+            Storage::disk('public')->delete($magazine->cover_image);
+        }
+        $magazine->delete();
         return back();
     }
 

@@ -156,7 +156,10 @@ class ArticleController extends Controller
 
     public function destroy(Article $article): RedirectResponse
     {
-        $article->update(['is_active' => false]);
+        if ($article->cover_image) {
+            Storage::disk('public')->delete($article->cover_image);
+        }
+        $article->delete();
         return back();
     }
 

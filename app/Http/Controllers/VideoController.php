@@ -145,7 +145,13 @@ class VideoController extends Controller
 
     public function destroy(Video $video): RedirectResponse
     {
-        $video->update(['is_active' => false]);
+        if ($video->file_path) {
+            Storage::disk('public')->delete($video->file_path);
+        }
+        if ($video->thumbnail && !str_starts_with($video->thumbnail, 'http')) {
+            Storage::disk('public')->delete($video->thumbnail);
+        }
+        $video->delete();
         return back();
     }
 
