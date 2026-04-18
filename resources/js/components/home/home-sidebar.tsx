@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
-import { Facebook, Twitter, Youtube, Rss, Share2, PlayCircle, Linkedin } from 'lucide-react';
+import { Facebook, Youtube, Share2, PlayCircle } from 'lucide-react';
+import { Telegram, WhatsApp } from '@/components/icons/brand-icons';
 import { SectionHeader } from './section-header';
 
 interface SocialLink { platform: string; url: string; count: string }
@@ -7,14 +8,14 @@ interface SiteSettings { social_links?: SocialLink[] }
 interface SharedProps { siteSettings?: SiteSettings; [key: string]: unknown }
 
 const PLATFORM_ICONS: Record<string, React.ElementType> = {
-    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+    facebook: Facebook, telegram: Telegram, youtube: Youtube, whatsapp: WhatsApp,
 };
 const PLATFORM_COLORS: Record<string, string> = {
-    facebook: 'bg-[#3b5998]', twitter: 'bg-[#1da1f2]',
-    youtube:  'bg-[#ff0000]', linkedin: 'bg-[#0077b5]', rss: 'bg-[#f26522]',
+    facebook: 'bg-[#3b5998]', telegram: 'bg-[#229ed9]',
+    youtube:  'bg-[#ff0000]', whatsapp: 'bg-[#25d366]',
 };
 const PLATFORM_LABELS: Record<string, string> = {
-    facebook: 'Likes', twitter: 'Followers', youtube: 'Subscribers', linkedin: 'Connections', rss: 'Subscribers',
+    facebook: 'Likes', telegram: 'Members', youtube: 'Subscribers', whatsapp: 'Contacts',
 };
 
 /* ── Social Widget ───────────────────────────────────────── */
@@ -31,8 +32,9 @@ function SocialWidget() {
             </div>
             <SectionHeader title="در ارتباط بمانید" showNav={false} />
             <div className="grid grid-cols-2 gap-3 mt-2">
-                {socials.filter((s) => s.count).map((s) => {
-                    const Icon  = PLATFORM_ICONS[s.platform] ?? Rss;
+                {socials.map((s) => {
+                    const Icon  = PLATFORM_ICONS[s.platform];
+                    if (!Icon) return null;
                     const color = PLATFORM_COLORS[s.platform] ?? 'bg-gray-500';
                     const label = PLATFORM_LABELS[s.platform] ?? 'Followers';
                     return (
@@ -44,8 +46,14 @@ function SocialWidget() {
                             className={`${color} text-white rounded-lg p-3 flex flex-col items-center gap-1 hover:opacity-90 transition-opacity`}
                         >
                             <Icon className="w-5 h-5" />
-                            <span className="font-bold text-base leading-none">{s.count}</span>
-                            <span className="text-[11px] opacity-90">{label}</span>
+                            {s.count ? (
+                                <>
+                                    <span className="font-bold text-base leading-none">{s.count}</span>
+                                    <span className="text-[11px] opacity-90">{label}</span>
+                                </>
+                            ) : (
+                                <span className="text-[12px] opacity-90 font-medium">{label}</span>
+                            )}
                         </a>
                     );
                 })}

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AudioController;
 use App\Http\Controllers\BookController;
@@ -38,6 +39,7 @@ Route::get('/majalla/{magazine}/read', [MagazineController::class, 'read'])->nam
 Route::get('/majalla/{magazine}/download', [MagazineController::class, 'download'])->name('majalla.download');
 Route::get('/bayania', [StatementController::class, 'index'])->name('bayania');
 Route::get('/bayania/{statement}', [StatementController::class, 'show'])->name('bayania.show');
+Route::get('/bayania/{statement}/stream', [StatementController::class, 'stream'])->name('bayania.stream');
 Route::get('/fikr', fn () => inertia('fikr'))->name('fikr');
 Route::get('/about', fn () => inertia('about'))->name('about');
 Route::get('/contact', fn () => inertia('contact'))->name('contact');
@@ -124,6 +126,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('admin/site-settings', [SiteSettingController::class, 'bulkUpdate'])->name('admin.site-settings.update');
         Route::post('admin/site-settings/logo', [SiteSettingController::class, 'uploadLogo'])->name('admin.site-settings.logo');
         Route::delete('admin/site-settings/logo', [SiteSettingController::class, 'removeLogo'])->name('admin.site-settings.logo.remove');
+        Route::post('admin/site-settings/contact-qr', [SiteSettingController::class, 'uploadContactQr'])->name('admin.site-settings.contact-qr');
+        Route::delete('admin/site-settings/contact-qr', [SiteSettingController::class, 'removeContactQr'])->name('admin.site-settings.contact-qr.remove');
+    });
+
+    // ── Backup / Export ────────────────────────────────────────
+    Route::middleware('permission:settings.manage')->group(function () {
+        Route::get('admin/backup/database', [BackupController::class, 'downloadDatabase'])->name('admin.backup.database');
+        Route::get('admin/backup/images',   [BackupController::class, 'downloadImages'])->name('admin.backup.images');
+        Route::get('admin/backup/videos',   [BackupController::class, 'downloadVideos'])->name('admin.backup.videos');
     });
 
     // ── Contact Messages ───────────────────────────────────────

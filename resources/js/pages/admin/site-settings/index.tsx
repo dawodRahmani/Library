@@ -7,12 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import InputError from '@/components/input-error';
 import {
-    Globe, Share2, Radio, FileText, ImageIcon, Info,
+    Globe, Share2, Radio, FileText, ImageIcon, Info, QrCode,
     Save, Plus, Trash2, Upload, X,
-    Facebook, Twitter, Youtube, Linkedin, Rss,
+    Facebook, Youtube,
     BookOpen, Headphones, Video, Users, Target, Heart,
     Star, Award, School, Library, Landmark, Lightbulb,
 } from 'lucide-react';
+import { Telegram, WhatsApp } from '@/components/icons/brand-icons';
 import type { BreadcrumbItem } from '@/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -23,6 +24,7 @@ interface AboutStat   { icon: string; value: string; label: ML }
 interface AboutValue  { icon: string; title: ML; body: ML }
 interface AboutMember { name: string; role: ML; bio: ML; gradient: string }
 interface AboutHero   { title: ML; subtitle: ML }
+interface AboutIntro  { title: ML; body: ML }
 
 interface Settings {
     site_name?:        ML;
@@ -36,8 +38,16 @@ interface Settings {
     footer_about?:     ML;
     about_hero?:       AboutHero;
     about_stats?:      AboutStat[];
+    about_stats_hidden?: boolean;
+    about_intro?:      AboutIntro;
+    about_intro_hidden?: boolean;
     about_values?:     AboutValue[];
+    about_values_hidden?: boolean;
     about_team?:       AboutMember[];
+    contact_qr_image?:  string | null;
+    contact_qr_link?:   string;
+    contact_qr_title?:  ML;
+    contact_qr_hidden?: boolean;
 }
 
 interface SharedProps { logoUrl?: string | null; [key: string]: unknown }
@@ -50,10 +60,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const PLATFORM_ICONS: Record<string, React.ElementType> = {
-    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+    facebook: Facebook, telegram: Telegram, youtube: Youtube, whatsapp: WhatsApp,
 };
 const PLATFORM_LABELS: Record<string, string> = {
-    facebook: 'فیسبوک', twitter: 'توییتر', youtube: 'یوتیوب', linkedin: 'لینکدین', rss: 'RSS',
+    facebook: 'فیسبوک', telegram: 'تلگرام', youtube: 'یوتیوب', whatsapp: 'واتساپ',
 };
 
 const ICON_OPTIONS = [
@@ -82,12 +92,13 @@ const GRADIENT_OPTIONS = [
     { value: 'from-slate-700 to-gray-600',    label: 'خاکستری'},
 ];
 
-type Tab = 'general' | 'social' | 'ticker' | 'footer' | 'about';
+type Tab = 'general' | 'social' | 'ticker' | 'footer' | 'about' | 'contact';
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'general', label: 'عمومی',             icon: Globe    },
     { id: 'about',   label: 'درباره ما',          icon: Info     },
     { id: 'social',  label: 'شبکه‌های اجتماعی',  icon: Share2   },
+    { id: 'contact', label: 'تماس با ما',          icon: QrCode   },
     { id: 'ticker',  label: 'خبرتیکر',            icon: Radio    },
     { id: 'footer',  label: 'فوتر',               icon: FileText },
 ];
@@ -111,6 +122,10 @@ const DEF_ABOUT_VALUES: AboutValue[] = [
     { icon: 'Globe',  title: { da: 'چشم‌انداز ما', en: 'Our Vision',  ar: 'رؤيتنا'    }, body: { da: '', en: '', ar: '' } },
 ];
 const DEF_ABOUT_TEAM: AboutMember[] = [];
+const DEF_ABOUT_INTRO: AboutIntro = {
+    title: { da: '', en: '', ar: '', tg: '' },
+    body:  { da: '', en: '', ar: '', tg: '' },
+};
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function SiteSettingsIndex({ settings }: Props) {
@@ -136,15 +151,14 @@ export default function SiteSettingsIndex({ settings }: Props) {
     });
 
     // Social
-    const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
-        settings.social_links ?? [
-            { platform: 'facebook', url: '#', count: '' },
-            { platform: 'twitter',  url: '#', count: '' },
-            { platform: 'youtube',  url: '#', count: '' },
-            { platform: 'linkedin', url: '#', count: '' },
-            { platform: 'rss',      url: '#', count: '' },
-        ]
-    );
+    const [socialLinks, setSocialLinks] = useState<SocialLink[]>(() => {
+        const existing = settings.social_links ?? [];
+        const order = ['facebook', 'telegram', 'youtube', 'whatsapp'] as const;
+        return order.map((p) => {
+            const found = existing.find((s) => s.platform === p);
+            return found ?? { platform: p, url: '#', count: '' };
+        });
+    });
 
     // Ticker
     const [tickerItems, setTickerItems] = useState<TickerItem[]>(
@@ -162,8 +176,20 @@ export default function SiteSettingsIndex({ settings }: Props) {
     // About
     const [aboutHero, setAboutHero] = useState<AboutHero>(settings.about_hero ?? DEF_ABOUT_HERO);
     const [aboutStats, setAboutStats]   = useState<AboutStat[]>(settings.about_stats   ?? DEF_ABOUT_STATS);
+    const [aboutStatsHidden, setAboutStatsHidden] = useState<boolean>(!!settings.about_stats_hidden);
+    const [aboutIntro, setAboutIntro] = useState<AboutIntro>(settings.about_intro ?? DEF_ABOUT_INTRO);
+    const [aboutIntroHidden, setAboutIntroHidden] = useState<boolean>(!!settings.about_intro_hidden);
     const [aboutValues, setAboutValues] = useState<AboutValue[]>(settings.about_values ?? DEF_ABOUT_VALUES);
+    const [aboutValuesHidden, setAboutValuesHidden] = useState<boolean>(!!settings.about_values_hidden);
     const [aboutTeam, setAboutTeam]     = useState<AboutMember[]>(settings.about_team   ?? DEF_ABOUT_TEAM);
+
+    // Contact QR
+    const [contactQrLink, setContactQrLink]     = useState<string>(settings.contact_qr_link ?? '');
+    const [contactQrTitle, setContactQrTitle]   = useState<ML>(settings.contact_qr_title ?? { da: '', en: '', ar: '', tg: '' });
+    const [contactQrHidden, setContactQrHidden] = useState<boolean>(!!settings.contact_qr_hidden);
+    const qrInputRef = useRef<HTMLInputElement>(null);
+    const [qrPreview, setQrPreview]     = useState<string | null>(null);
+    const [qrProcessing, setQrProcessing] = useState(false);
 
     // ── Save ──────────────────────────────────────────────────────────────────
     function save() {
@@ -176,8 +202,15 @@ export default function SiteSettingsIndex({ settings }: Props) {
             footer_about:  footerAbout,
             about_hero:    aboutHero,
             about_stats:   aboutStats,
+            about_stats_hidden: aboutStatsHidden,
+            about_intro:   aboutIntro,
+            about_intro_hidden: aboutIntroHidden,
             about_values:  aboutValues,
+            about_values_hidden: aboutValuesHidden,
             about_team:    aboutTeam,
+            contact_qr_link:   contactQrLink,
+            contact_qr_title:  contactQrTitle,
+            contact_qr_hidden: contactQrHidden,
         };
         router.post('/admin/site-settings', payload, {
             onError:  (e) => setErrors(e),
@@ -206,6 +239,29 @@ export default function SiteSettingsIndex({ settings }: Props) {
     function removeLogo() {
         if (!confirm('آیا مطمئن هستید که می‌خواهید لوگو را حذف کنید؟')) return;
         router.delete('/admin/site-settings/logo');
+    }
+
+    // ── Contact QR image ──────────────────────────────────────────────────────
+    function onQrChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setQrPreview(URL.createObjectURL(file));
+    }
+    function uploadQr() {
+        const file = qrInputRef.current?.files?.[0];
+        if (!file) return;
+        setQrProcessing(true);
+        const form = new FormData();
+        form.append('image', file);
+        router.post('/admin/site-settings/contact-qr', form, {
+            forceFormData: true,
+            onSuccess: () => setQrPreview(null),
+            onFinish:  () => setQrProcessing(false),
+        });
+    }
+    function removeQr() {
+        if (!confirm('آیا مطمئن هستید که می‌خواهید تصویر QR را حذف کنید؟')) return;
+        router.delete('/admin/site-settings/contact-qr');
     }
 
     // ── Ticker helpers ────────────────────────────────────────────────────────
@@ -375,13 +431,14 @@ export default function SiteSettingsIndex({ settings }: Props) {
 
                         {/* Hero */}
                         <Section title="بنر معرفی (Hero)">
-                            <ThreeLang label="عنوان" da={aboutHero.title.da} en={aboutHero.title.en} ar={aboutHero.title.ar ?? ''}
+                            <ThreeLang label="عنوان" da={aboutHero.title.da} en={aboutHero.title.en} ar={aboutHero.title.ar ?? ''} tg={aboutHero.title.tg ?? ''}
                                 onDa={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, da: v } })}
                                 onEn={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, en: v } })}
-                                onAr={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, ar: v } })} />
+                                onAr={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, ar: v } })}
+                                onTg={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, tg: v } })} />
                             <div className="space-y-2">
                                 <Label>توضیحات کوتاه</Label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                                     <div>
                                         <p className="text-xs text-muted-foreground mb-1">دری</p>
                                         <Textarea rows={3} value={aboutHero.subtitle.da} dir="rtl"
@@ -397,6 +454,11 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                         <Textarea rows={3} value={aboutHero.subtitle.ar ?? ''} dir="rtl"
                                             onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, ar: e.target.value } })} />
                                     </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">Тоҷикӣ</p>
+                                        <Textarea rows={3} value={aboutHero.subtitle.tg ?? ''} dir="ltr"
+                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, tg: e.target.value } })} />
+                                    </div>
                                 </div>
                             </div>
                         </Section>
@@ -404,6 +466,18 @@ export default function SiteSettingsIndex({ settings }: Props) {
                         {/* Stats */}
                         <Section title="آمار و ارقام">
                             <p className="text-sm text-muted-foreground -mt-2 mb-3">در بخش «کتابخانه در اعداد» نمایش داده می‌شود.</p>
+                            <label className="flex items-start gap-2 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={aboutStatsHidden}
+                                    onChange={(e) => setAboutStatsHidden(e.target.checked)}
+                                    className="mt-0.5 w-4 h-4 accent-amber-600"
+                                />
+                                <div className="flex-1">
+                                    <span className="text-sm font-medium text-gray-800">مخفی کردن بخش «کتابخانه در اعداد»</span>
+                                    <p className="text-xs text-muted-foreground mt-0.5">با فعال کردن این گزینه، عنوان و تمام آمار از صفحه درباره ما پنهان می‌شود.</p>
+                                </div>
+                            </label>
                             <div className="space-y-3">
                                 {aboutStats.map((s, i) => (
                                     <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3">
@@ -436,9 +510,68 @@ export default function SiteSettingsIndex({ settings }: Props) {
                             </Button>
                         </Section>
 
+                        {/* Intro (custom section before Values) */}
+                        <Section title="بخش معرفی دلخواه (قبل از رسالت)">
+                            <p className="text-sm text-muted-foreground -mt-2 mb-3">یک عنوان و پاراگراف دلخواه که قبل از بخش رسالت در صفحه درباره ما نمایش داده می‌شود.</p>
+                            <label className="flex items-start gap-2 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={aboutIntroHidden}
+                                    onChange={(e) => setAboutIntroHidden(e.target.checked)}
+                                    className="mt-0.5 w-4 h-4 accent-amber-600"
+                                />
+                                <div className="flex-1">
+                                    <span className="text-sm font-medium text-gray-800">مخفی کردن این بخش</span>
+                                    <p className="text-xs text-muted-foreground mt-0.5">با فعال کردن این گزینه، عنوان و متن از صفحه درباره ما پنهان می‌شود.</p>
+                                </div>
+                            </label>
+                            <ThreeLang label="عنوان" da={aboutIntro.title.da} en={aboutIntro.title.en} ar={aboutIntro.title.ar ?? ''} tg={aboutIntro.title.tg ?? ''}
+                                onDa={(v) => setAboutIntro({ ...aboutIntro, title: { ...aboutIntro.title, da: v } })}
+                                onEn={(v) => setAboutIntro({ ...aboutIntro, title: { ...aboutIntro.title, en: v } })}
+                                onAr={(v) => setAboutIntro({ ...aboutIntro, title: { ...aboutIntro.title, ar: v } })}
+                                onTg={(v) => setAboutIntro({ ...aboutIntro, title: { ...aboutIntro.title, tg: v } })} />
+                            <div className="space-y-2">
+                                <Label>متن پاراگراف</Label>
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">دری</p>
+                                        <Textarea rows={4} value={aboutIntro.body.da} dir="rtl"
+                                            onChange={(e) => setAboutIntro({ ...aboutIntro, body: { ...aboutIntro.body, da: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">English</p>
+                                        <Textarea rows={4} value={aboutIntro.body.en} dir="ltr"
+                                            onChange={(e) => setAboutIntro({ ...aboutIntro, body: { ...aboutIntro.body, en: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">العربية</p>
+                                        <Textarea rows={4} value={aboutIntro.body.ar ?? ''} dir="rtl"
+                                            onChange={(e) => setAboutIntro({ ...aboutIntro, body: { ...aboutIntro.body, ar: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1">Тоҷикӣ</p>
+                                        <Textarea rows={4} value={aboutIntro.body.tg ?? ''} dir="ltr"
+                                            onChange={(e) => setAboutIntro({ ...aboutIntro, body: { ...aboutIntro.body, tg: e.target.value } })} />
+                                    </div>
+                                </div>
+                            </div>
+                        </Section>
+
                         {/* Values */}
                         <Section title="رسالت، ارزش‌ها و چشم‌انداز">
                             <p className="text-sm text-muted-foreground -mt-2 mb-3">کارت‌های معرفی در صفحه درباره ما.</p>
+                            <label className="flex items-start gap-2 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={aboutValuesHidden}
+                                    onChange={(e) => setAboutValuesHidden(e.target.checked)}
+                                    className="mt-0.5 w-4 h-4 accent-amber-600"
+                                />
+                                <div className="flex-1">
+                                    <span className="text-sm font-medium text-gray-800">مخفی کردن بخش «رسالت، ارزش‌ها و چشم‌انداز»</span>
+                                    <p className="text-xs text-muted-foreground mt-0.5">با فعال کردن این گزینه، عنوان و تمام کارت‌ها از صفحه درباره ما پنهان می‌شود.</p>
+                                </div>
+                            </label>
                             <div className="space-y-4">
                                 {aboutValues.map((v, i) => (
                                     <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3">
@@ -569,6 +702,91 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                     </div>
                                 );
                             })}
+                        </div>
+                    </Section>
+                )}
+
+                {/* ── Tab: Contact (QR) ─────────────────────────────────────── */}
+                {tab === 'contact' && (
+                    <Section title="کد QR صفحه تماس">
+                        <p className="text-sm text-muted-foreground -mt-2 mb-3">
+                            می‌توانید یک تصویر QR آپلود کنید یا یک لینک وارد کنید تا از روی آن QR ساخته شود. اگر تصویر آپلود شده باشد، به جای لینک نمایش داده می‌شود.
+                        </p>
+
+                        <label className="flex items-start gap-2 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={contactQrHidden}
+                                onChange={(e) => setContactQrHidden(e.target.checked)}
+                                className="mt-0.5 w-4 h-4 accent-amber-600"
+                            />
+                            <div className="flex-1">
+                                <span className="text-sm font-medium text-gray-800">مخفی کردن این بخش در صفحه تماس</span>
+                                <p className="text-xs text-muted-foreground mt-0.5">با فعال کردن این گزینه، بخش QR از صفحه تماس پنهان می‌شود.</p>
+                            </div>
+                        </label>
+
+                        {/* Title */}
+                        <ThreeLang label="عنوان (اختیاری)" da={contactQrTitle.da} en={contactQrTitle.en} ar={contactQrTitle.ar ?? ''} tg={contactQrTitle.tg ?? ''}
+                            onDa={(v) => setContactQrTitle({ ...contactQrTitle, da: v })}
+                            onEn={(v) => setContactQrTitle({ ...contactQrTitle, en: v })}
+                            onAr={(v) => setContactQrTitle({ ...contactQrTitle, ar: v })}
+                            onTg={(v) => setContactQrTitle({ ...contactQrTitle, tg: v })} />
+
+                        {/* Link */}
+                        <div>
+                            <Label>لینک (برای ساخت خودکار QR)</Label>
+                            <Input
+                                value={contactQrLink}
+                                onChange={(e) => setContactQrLink(e.target.value)}
+                                placeholder="https://..."
+                                dir="ltr"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">این لینک در صورتی که تصویر آپلود نشود، به QR تبدیل می‌شود.</p>
+                        </div>
+
+                        {/* Image upload */}
+                        <div className="mt-4">
+                            <Label>تصویر QR (اختیاری)</Label>
+                            <p className="text-xs text-muted-foreground mb-2">در صورت آپلود، این تصویر به جای QR تولیدشده نمایش داده می‌شود. فرمت‌های مجاز: PNG، JPG، WebP (حداکثر ۲ مگابایت).</p>
+                            <div className="flex flex-col sm:flex-row items-start gap-4">
+                                <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                    {qrPreview ? (
+                                        <img src={qrPreview} alt="QR preview" className="w-full h-full object-contain p-2" />
+                                    ) : settings.contact_qr_image ? (
+                                        <img src={`/storage/${settings.contact_qr_image}`} alt="QR" className="w-full h-full object-contain p-2" />
+                                    ) : (
+                                        <div className="text-center text-gray-400">
+                                            <QrCode className="w-8 h-8 mx-auto mb-1" />
+                                            <span className="text-xs">بدون تصویر</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <input ref={qrInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onQrChange} />
+                                    <div className="flex flex-wrap gap-2">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => qrInputRef.current?.click()}>
+                                            <Upload className="w-4 h-4 me-1.5" />انتخاب فایل
+                                        </Button>
+                                        {qrPreview && (
+                                            <Button type="button" size="sm" onClick={uploadQr} disabled={qrProcessing}>
+                                                <Save className="w-4 h-4 me-1.5" />
+                                                {qrProcessing ? 'در حال آپلود...' : 'ذخیره تصویر'}
+                                            </Button>
+                                        )}
+                                        {qrPreview && (
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => { setQrPreview(null); if (qrInputRef.current) qrInputRef.current.value = ''; }}>
+                                                <X className="w-4 h-4 me-1.5" />لغو
+                                            </Button>
+                                        )}
+                                        {settings.contact_qr_image && !qrPreview && (
+                                            <Button type="button" variant="destructive" size="sm" onClick={removeQr}>
+                                                <Trash2 className="w-4 h-4 me-1.5" />حذف تصویر
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </Section>
                 )}

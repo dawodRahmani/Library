@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { usePage } from '@inertiajs/react';
-import { CalendarDays, Facebook, Twitter, Youtube, Rss, Linkedin } from 'lucide-react';
+import { CalendarDays, Facebook, Youtube } from 'lucide-react';
+import { Telegram, WhatsApp } from '@/components/icons/brand-icons';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
 interface SocialLink { platform: string; url: string; count: string }
 interface SharedProps { siteSettings?: { social_links?: SocialLink[] }; [key: string]: unknown }
 
 const PLATFORM_ICONS: Record<string, React.ElementType> = {
-    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+    facebook: Facebook, telegram: Telegram, youtube: Youtube, whatsapp: WhatsApp,
 };
 
 
@@ -54,7 +55,8 @@ export function TopBar() {
                     {socials.length > 0 && (
                         <div className="hidden sm:flex items-center gap-3">
                             {socials.map((s) => {
-                                const Icon = PLATFORM_ICONS[s.platform] ?? Rss;
+                                const Icon = PLATFORM_ICONS[s.platform];
+                                if (!Icon) return null;
                                 return (
                                     <a key={s.platform} href={s.url || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
                                         <Icon className="w-3.5 h-3.5" />

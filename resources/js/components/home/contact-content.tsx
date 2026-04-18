@@ -1,31 +1,19 @@
 import { useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { Mail, Phone, MapPin, Clock, Send, Facebook, Twitter, Youtube, Linkedin, Rss } from 'lucide-react';
+import { Send } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
-interface ML { da: string; en: string }
-interface SocialLink { platform: string; url: string; count?: string }
+interface ML { da?: string; en?: string; ar?: string; tg?: string }
 interface SharedProps {
     siteSettings?: {
-        contact_email?:   string;
-        contact_phone?:   string;
-        contact_address?: ML;
-        contact_hours?:   ML;
-        social_links?:    SocialLink[];
+        contact_qr_image?: string | null;
+        contact_qr_link?:  string;
+        contact_qr_title?: ML;
+        contact_qr_hidden?: boolean;
     };
     [key: string]: unknown;
 }
-
-const SOCIAL_ICONS: Record<string, React.ElementType> = {
-    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
-};
-const SOCIAL_COLORS: Record<string, string> = {
-    facebook: 'bg-[#3b5998]', twitter: 'bg-[#1da1f2]',
-    youtube:  'bg-[#ff0000]', linkedin: 'bg-[#0077b5]', rss: 'bg-[#f26522]',
-};
-const SOCIAL_LABELS: Record<string, string> = {
-    facebook: 'فیسبوک', twitter: 'توییتر', youtube: 'یوتیوب', linkedin: 'لینکدین', rss: 'RSS',
-};
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
     return (
@@ -43,32 +31,12 @@ export function ContactContent() {
     const settings    = usePage<SharedProps>().props.siteSettings ?? {};
     const flashSuccess = (usePage().props.flash as Record<string, string> | undefined)?.success;
 
-    const l = (ml: ML | undefined) => ml ? (ml[locale] || ml.da || ml.en || '') : '';
-
-    const contactItems = [
-        settings.contact_address ? {
-            icon: MapPin,
-            title: locale === 'en' ? 'Address' : 'آدرس',
-            lines: [l(settings.contact_address)],
-        } : null,
-        settings.contact_phone ? {
-            icon: Phone,
-            title: locale === 'en' ? 'Phone' : 'تلفن',
-            lines: [settings.contact_phone],
-        } : null,
-        settings.contact_email ? {
-            icon: Mail,
-            title: locale === 'en' ? 'Email' : 'ایمیل',
-            lines: [settings.contact_email],
-        } : null,
-        settings.contact_hours ? {
-            icon: Clock,
-            title: locale === 'en' ? 'Working Hours' : 'ساعات کاری',
-            lines: [l(settings.contact_hours)],
-        } : null,
-    ].filter(Boolean) as { icon: React.ElementType; title: string; lines: string[] }[];
-
-    const socials = (settings.social_links ?? []).filter(s => s.url && s.url !== '#');
+    const qrHidden  = !!settings.contact_qr_hidden;
+    const qrImage   = settings.contact_qr_image ?? '';
+    const qrLink    = (settings.contact_qr_link ?? '').trim();
+    const qrTitleML = settings.contact_qr_title;
+    const qrTitle   = qrTitleML ? (qrTitleML[locale as keyof ML] || qrTitleML.da || qrTitleML.en || '') : '';
+    const showQr    = !qrHidden && (qrImage || qrLink);
 
     const { data, setData, post, processing, errors, reset, wasSuccessful } = useForm({
         name:    '',
@@ -143,28 +111,6 @@ export function ContactContent() {
 
     return (
         <div className="space-y-8">
-            {/* Contact info cards */}
-            {contactItems.length > 0 && (
-                <div>
-                    <SectionTitle>{locale === 'en' ? 'Contact Information' : 'اطلاعات تماس'}</SectionTitle>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {contactItems.map(({ icon: Icon, title, lines }) => (
-                            <div key={title} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex gap-4 hover:shadow-md transition-shadow">
-                                <div className="shrink-0 w-10 h-10 rounded-lg bg-[#27ae60]/10 flex items-center justify-center mt-0.5">
-                                    <Icon className="w-5 h-5 text-[#27ae60]" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-[13px] text-gray-900 mb-1">{title}</p>
-                                    {lines.filter(Boolean).map((line, i) => (
-                                        <p key={i} className="text-[12px] text-gray-500 leading-relaxed">{line}</p>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
             {/* Contact form */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                 <SectionTitle>{locale === 'en' ? 'Send a Message' : 'ارسال پیام'}</SectionTitle>
@@ -274,28 +220,33 @@ export function ContactContent() {
                 )}
             </div>
 
-            {/* Social links */}
-            {socials.length > 0 && (
+            {/* QR code */}
+            {showQr && (
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                    <SectionTitle>{locale === 'en' ? 'Social Media' : 'شبکه‌های اجتماعی'}</SectionTitle>
-                    <div className="flex flex-wrap gap-3">
-                        {socials.map((s) => {
-                            const Icon  = SOCIAL_ICONS[s.platform]  ?? Send;
-                            const color = SOCIAL_COLORS[s.platform] ?? 'bg-gray-600';
-                            const label = SOCIAL_LABELS[s.platform] ?? s.platform;
-                            return (
-                                <a
-                                    key={s.platform}
-                                    href={s.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`flex items-center gap-2.5 ${color} text-white text-[13px] font-bold px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity`}
-                                >
-                                    <Icon className="w-4 h-4" />
-                                    {label}
-                                </a>
-                            );
-                        })}
+                    {qrTitle && <SectionTitle>{qrTitle}</SectionTitle>}
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="p-3 bg-white border border-gray-200 rounded-xl">
+                            {qrImage ? (
+                                <img
+                                    src={`/storage/${qrImage}`}
+                                    alt={qrTitle || 'QR code'}
+                                    className="w-48 h-48 object-contain"
+                                />
+                            ) : (
+                                <QRCodeSVG value={qrLink} size={192} level="M" />
+                            )}
+                        </div>
+                        {!qrImage && qrLink && (
+                            <a
+                                href={qrLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[12px] text-[#27ae60] hover:underline break-all"
+                                dir="ltr"
+                            >
+                                {qrLink}
+                            </a>
+                        )}
                     </div>
                 </div>
             )}

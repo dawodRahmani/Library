@@ -68,16 +68,21 @@ const DEFAULT_TEAM: TeamMember[] = [
 ];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface ML       { da: string; en: string }
+interface ML       { da: string; en: string; ar?: string; tg?: string }
 interface Stat     { icon: string; value: string; label: ML }
 interface Value    { icon: string; title: ML; body: ML }
 interface TeamMember { name: string; role: ML; bio: ML; gradient: string }
 interface AboutHero  { title: ML; subtitle: ML }
+interface AboutIntro { title: ML; body: ML }
 interface SharedProps {
     siteSettings?: {
         about_hero?:   AboutHero;
         about_stats?:  Stat[];
+        about_stats_hidden?: boolean;
+        about_intro?: AboutIntro;
+        about_intro_hidden?: boolean;
         about_values?: Value[];
+        about_values_hidden?: boolean;
         about_team?:   TeamMember[];
     };
     [key: string]: unknown;
@@ -100,10 +105,14 @@ export function AboutContent() {
 
     const hero    = settings.about_hero   ?? DEFAULT_HERO;
     const stats   = settings.about_stats  ?? DEFAULT_STATS;
+    const statsHidden = !!settings.about_stats_hidden;
+    const intro   = settings.about_intro;
+    const introHidden = !!settings.about_intro_hidden;
     const values  = settings.about_values ?? DEFAULT_VALUES;
+    const valuesHidden = !!settings.about_values_hidden;
     const team    = settings.about_team   ?? DEFAULT_TEAM;
 
-    const l = (ml: ML) => ml[locale] || ml.da || ml.en || '';
+    const l = (ml: ML) => (ml[locale as keyof ML] as string | undefined) || ml.da || ml.en || '';
 
     return (
         <div className="space-y-10">
@@ -120,8 +129,20 @@ export function AboutContent() {
                 </div>
             </div>
 
+            {/* Custom intro (admin-managed, shown after Hero, before Stats) */}
+            {!introHidden && intro && (l(intro.title) || l(intro.body)) && (
+                <div>
+                    {l(intro.title) && <SectionTitle>{l(intro.title)}</SectionTitle>}
+                    {l(intro.body) && (
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                            <p className="text-[14px] text-gray-700 leading-loose whitespace-pre-line">{l(intro.body)}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Stats */}
-            {stats.length > 0 && (
+            {!statsHidden && stats.length > 0 && (
                 <div>
                     <SectionTitle>{t('about.statsTitle', 'کتابخانه در اعداد')}</SectionTitle>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -139,7 +160,7 @@ export function AboutContent() {
             )}
 
             {/* Mission / Values */}
-            {values.length > 0 && (
+            {!valuesHidden && values.length > 0 && (
                 <div>
                     <SectionTitle>{t('about.valuesTitle', 'رسالت، ارزش‌ها و چشم‌انداز')}</SectionTitle>
                     <div className="space-y-4">

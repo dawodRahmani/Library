@@ -183,14 +183,14 @@ export function MainNav() {
             })),
         },
         {
-            label: t('nav.articles'),
-            href: '/articles',
-            children: cats.articles.map((c) => ({
-                label: c.name,
-                href: `/articles?category=${c.slug}`,
-            })),
+            label: t('nav.statements'),
+            href: '/bayania',
+            children: [
+                { label: t('statementsType.text',  'متن'),   href: '/bayania?type=text'  },
+                { label: t('statementsType.audio', 'صوت'),   href: '/bayania?type=audio' },
+                { label: t('statementsType.video', 'ویدیو'), href: '/bayania?type=video' },
+            ],
         },
-        { label: t('nav.statements'), href: '/bayania' },
         { label: t('nav.magazine'), href: '/majalla' },
         { label: t('nav.about'), href: '/about' },
         { label: t('nav.contact'), href: '/contact' },

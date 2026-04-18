@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import {
     BookOpen, FileText, Headphones, Users, PlayCircle,
     BookMarked, Library, MessageSquare, Newspaper, Plus, ArrowLeft,
-    TrendingUp, Clock, Settings,
+    TrendingUp, Clock, Settings, Database, Image as ImageIcon, Video as VideoIcon, Download,
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -238,6 +238,62 @@ export default function Dashboard() {
                                 })}
                             </ul>
                         )}
+                    </div>
+                </div>
+
+                {/* Backup / export */}
+                <div className="rounded-xl border border-gray-200 bg-white p-5">
+                    <h2 className="text-[13px] font-bold text-gray-800 mb-1 flex items-center gap-2">
+                        <span className="w-1 h-4 bg-[#27ae60] rounded-full inline-block" />
+                        پشتیبان‌گیری و خروجی
+                    </h2>
+                    <p className="text-[12px] text-gray-500 mb-4">دانلود فایل پایگاه داده، تمام تصاویر، و تمام ویدیوهای آپلودشده</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <a
+                            href="/admin/backup/database"
+                            className="flex items-center justify-between gap-3 p-4 rounded-xl border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                    <Database className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-gray-800">پایگاه داده</p>
+                                    <p className="text-[11px] text-gray-500">database.sqlite</p>
+                                </div>
+                            </div>
+                            <Download className="w-4 h-4 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                        </a>
+                        <a
+                            href="/admin/backup/images"
+                            className="flex items-center justify-between gap-3 p-4 rounded-xl border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-colors group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                                    <ImageIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-gray-800">تصاویر</p>
+                                    <p className="text-[11px] text-gray-500">همه تصاویر (ZIP)</p>
+                                </div>
+                            </div>
+                            <Download className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                        </a>
+                        <a
+                            href="/admin/backup/videos"
+                            className="flex items-center justify-between gap-3 p-4 rounded-xl border border-gray-200 hover:border-rose-500 hover:bg-rose-50 transition-colors group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
+                                    <VideoIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-gray-800">ویدیوها</p>
+                                    <p className="text-[11px] text-gray-500">همه ویدیوها (ZIP)</p>
+                                </div>
+                            </div>
+                            <Download className="w-4 h-4 text-gray-400 group-hover:text-rose-600 transition-colors" />
+                        </a>
                     </div>
                 </div>
 

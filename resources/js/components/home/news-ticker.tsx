@@ -28,9 +28,6 @@ export function NewsTicker() {
         <div className="bg-[#1a252f] border-y border-white/10 overflow-hidden">
             <div className="max-w-[1240px] mx-auto px-4">
                 <div className="flex items-stretch h-10">
-                    <div className="flex items-center shrink-0 bg-[#27ae60] px-4 text-white text-[13px] font-bold">
-                        {locale === 'en' ? 'News & Announcements' : locale === 'ar' ? 'أخبار وإعلانات' : locale === 'tg' ? 'Хабарҳо ва эълонҳо' : 'اخبار و اعلانات'}
-                    </div>
                     <div className="flex-1 overflow-hidden relative">
                         <div className="ticker-track flex items-center h-full gap-10 text-gray-300 text-[13px]">
                             {[...texts, ...texts].map((text, i) => (

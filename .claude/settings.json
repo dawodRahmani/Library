@@ -30,7 +30,17 @@
       "Bash(sed -i 's/id: number; name: { da: string; en?: string; ar?: string }; slug: string; type: string; sort_order: number;/id: number; name: { da: string; en?: string; ar?: string; tg?: string }; slug: string; type: string; sort_order: number;/' c:/Users/Rahmani/Desktop/Library/Library/resources/js/pages/admin/categories/index.tsx)",
       "Bash(sed -i 's/const emptyForm = { name: { da: '\\\\'''\\\\'', en: '\\\\'''\\\\'', ar: '\\\\'''\\\\'' }, slug: '\\\\'''\\\\'', type: '\\\\''book'\\\\'', sort_order: 0 };/const emptyForm = { name: { da: '\\\\'''\\\\'', en: '\\\\'''\\\\'', ar: '\\\\'''\\\\'', tg: '\\\\'''\\\\'' }, slug: '\\\\'''\\\\'', type: '\\\\''book'\\\\'', sort_order: 0 };/' c:/Users/Rahmani/Desktop/Library/Library/resources/js/pages/admin/categories/index.tsx)",
       "Bash(sed -i 's/setForm\\({ name: { da: c.name?.da ?? '\\\\'''\\\\'', en: c.name?.en ?? '\\\\'''\\\\'', ar: c.name?.ar ?? '\\\\'''\\\\'' }, slug: c.slug, type: c.type, sort_order: c.sort_order }\\);/setForm\\({ name: { da: c.name?.da ?? '\\\\'''\\\\'', en: c.name?.en ?? '\\\\'''\\\\'', ar: c.name?.ar ?? '\\\\'''\\\\'', tg: c.name?.tg ?? '\\\\'''\\\\'' }, slug: c.slug, type: c.type, sort_order: c.sort_order }\\);/' c:/Users/Rahmani/Desktop/Library/Library/resources/js/pages/admin/categories/index.tsx)",
-      "Bash(./vendor/bin/sail artisan:*)"
+      "Bash(./vendor/bin/sail artisan:*)",
+      "Bash(npm install *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:8765/bayania\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:8765/bayania?type=audio\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:8765/bayania?type=video\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:8765/bayania?type=text\")",
+      "Bash(curl -s \"http://127.0.0.1:8765/bayania\")",
+      "Bash(curl -s 'http://127.0.0.1:8765/bayania?type=__TRACKED_VAR__')",
+      "Bash(curl -s -o /dev/null -w \"text=%{http_code}\\\\n\" \"http://127.0.0.1:8765/bayania/1\")",
+      "Bash(curl -s -o /dev/null -w \"audio=%{http_code}\\\\n\" \"http://127.0.0.1:8765/bayania/2\")",
+      "Bash(curl -s -o /dev/null -w \"video=%{http_code}\\\\n\" \"http://127.0.0.1:8765/bayania/3\")"
     ]
   }
 }

@@ -4,13 +4,20 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, X, FileText, Eye, EyeOff } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, FileText, Music, Video, Eye, EyeOff } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
+
+type StatementType = 'text' | 'audio' | 'video';
 
 interface StatementItem {
     id:           number;
+    type:         StatementType;
     title:        { da: string; en?: string };
     body:         { da: string; en?: string } | null;
+    media_source?: 'link' | 'upload' | null;
+    media_url?:   string | null;
+    file_path?:   string | null;
+    thumbnail?:   string | null;
     published_at: string | null;
     is_active:    boolean;
     created_at:   string;
@@ -32,12 +39,22 @@ export default function StatementsIndex({ statements }: Props) {
     );
 
     function toggleActive(s: StatementItem) {
-        router.put(`/admin/statements/${s.id}`, {
-            title:        s.title,
-            body:         s.body,
-            published_at: s.published_at,
-            is_active:    !s.is_active,
-        }, { preserveScroll: true });
+        const fd = new FormData();
+        fd.append('_method', 'put');
+        fd.append('type', s.type ?? 'text');
+        (['da', 'en', 'ar', 'tg'] as const).forEach((l) => {
+            fd.append(`title[${l}]`, (s.title as Record<string, string | undefined>)[l] ?? '');
+            fd.append(`body[${l}]`,  (s.body  as Record<string, string | undefined> | null)?.[l] ?? '');
+        });
+        fd.append('media_source', s.media_source ?? 'link');
+        fd.append('media_url',    s.media_url ?? '');
+        fd.append('published_at', s.published_at ?? '');
+        fd.append('is_active',    !s.is_active ? '1' : '0');
+
+        router.post(`/admin/statements/${s.id}`, fd, {
+            forceFormData: true,
+            preserveScroll: true,
+        });
     }
 
     function destroy(s: StatementItem) {
@@ -98,6 +115,7 @@ export default function StatementsIndex({ statements }: Props) {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50 text-right">
+                                    <th className="px-4 py-3 font-semibold text-gray-600 w-24">نوع</th>
                                     <th className="px-4 py-3 font-semibold text-gray-600">عنوان</th>
                                     <th className="px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">تاریخ انتشار</th>
                                     <th className="px-4 py-3 font-semibold text-gray-600">وضعیت</th>
@@ -105,8 +123,18 @@ export default function StatementsIndex({ statements }: Props) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filtered.map((s) => (
+                                {filtered.map((s) => {
+                                    const typeLabel = s.type === 'audio' ? 'صوت' : s.type === 'video' ? 'ویدیو' : 'متن';
+                                    const TypeIcon  = s.type === 'audio' ? Music : s.type === 'video' ? Video : FileText;
+                                    const typeColor = s.type === 'audio' ? 'bg-blue-50 text-blue-700' : s.type === 'video' ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700';
+                                    return (
                                     <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${typeColor}`}>
+                                                <TypeIcon className="w-3 h-3" />
+                                                {typeLabel}
+                                            </span>
+                                        </td>
                                         <td className="px-4 py-3">
                                             <p className="font-medium text-gray-900 line-clamp-1">{s.title?.da}</p>
                                             {s.title?.en && (
@@ -163,7 +191,8 @@ export default function StatementsIndex({ statements }: Props) {
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     )}

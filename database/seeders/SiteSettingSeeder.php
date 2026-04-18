@@ -20,10 +20,9 @@ class SiteSettingSeeder extends Seeder
             // ── Social links ─────────────────────────────────────────
             ['key' => 'social_links', 'group' => 'social', 'value' => [
                 ['platform' => 'facebook', 'url' => '#', 'count' => '521'],
-                ['platform' => 'twitter',  'url' => '#', 'count' => '3,297'],
+                ['platform' => 'telegram', 'url' => '#', 'count' => '3,297'],
                 ['platform' => 'youtube',  'url' => '#', 'count' => '596K'],
-                ['platform' => 'linkedin', 'url' => '#', 'count' => '1,240'],
-                ['platform' => 'rss',      'url' => '#', 'count' => ''],
+                ['platform' => 'whatsapp', 'url' => '#', 'count' => '1,240'],
             ]],
 
             // ── News ticker ──────────────────────────────────────────

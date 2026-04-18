@@ -6,6 +6,7 @@ use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,9 +43,22 @@ class SiteSettingController extends Controller
             // About page
             'about_hero'       => ['nullable', 'array'],
             'about_stats'      => ['nullable', 'array'],
+            'about_stats_hidden' => ['nullable', 'boolean'],
+            'about_intro'      => ['nullable', 'array'],
+            'about_intro_hidden' => ['nullable', 'boolean'],
             'about_values'     => ['nullable', 'array'],
+            'about_values_hidden' => ['nullable', 'boolean'],
             'about_team'       => ['nullable', 'array'],
+            // Contact QR
+            'contact_qr_link'   => ['nullable', 'string', 'max:1000'],
+            'contact_qr_title'  => ['nullable', 'array'],
+            'contact_qr_hidden' => ['nullable', 'boolean'],
         ]);
+
+        $data['about_stats_hidden']  = (bool) ($data['about_stats_hidden']  ?? false);
+        $data['about_intro_hidden']  = (bool) ($data['about_intro_hidden']  ?? false);
+        $data['about_values_hidden'] = (bool) ($data['about_values_hidden'] ?? false);
+        $data['contact_qr_hidden']   = (bool) ($data['contact_qr_hidden']   ?? false);
 
         $groups = [
             'site_name'       => 'general',
@@ -58,8 +72,15 @@ class SiteSettingController extends Controller
             'footer_about'    => 'footer',
             'about_hero'      => 'about',
             'about_stats'     => 'about',
+            'about_stats_hidden' => 'about',
+            'about_intro'     => 'about',
+            'about_intro_hidden' => 'about',
             'about_values'    => 'about',
+            'about_values_hidden' => 'about',
             'about_team'      => 'about',
+            'contact_qr_link'   => 'contact',
+            'contact_qr_title'  => 'contact',
+            'contact_qr_hidden' => 'contact',
         ];
 
         foreach ($data as $key => $value) {
@@ -98,5 +119,36 @@ class SiteSettingController extends Controller
         }
 
         return back()->with('success', 'لوگو حذف شد.');
+    }
+
+    public function uploadContactQr(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $existing = SiteSetting::get('contact_qr_image');
+        if ($existing && Storage::disk('public')->exists($existing)) {
+            Storage::disk('public')->delete($existing);
+        }
+
+        $path = $request->file('image')->store('contact', 'public');
+        SiteSetting::set('contact_qr_image', $path, 'contact');
+        Cache::forget('site_setting:contact_qr_image');
+
+        return back()->with('success', 'تصویر QR با موفقیت آپلود شد.');
+    }
+
+    public function removeContactQr(): RedirectResponse
+    {
+        $existing = SiteSetting::get('contact_qr_image');
+        if ($existing && Storage::disk('public')->exists($existing)) {
+            Storage::disk('public')->delete($existing);
+        }
+
+        SiteSetting::set('contact_qr_image', null, 'contact');
+        Cache::forget('site_setting:contact_qr_image');
+
+        return back()->with('success', 'تصویر QR حذف شد.');
     }
 }

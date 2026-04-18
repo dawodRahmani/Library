@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { Facebook, Twitter, Youtube, Linkedin, Rss } from 'lucide-react';
+import { Facebook, Youtube } from 'lucide-react';
+import { Telegram, WhatsApp } from '@/components/icons/brand-icons';
 
 interface SocialLink { platform: string; url: string; count: string }
 interface SiteSettings {
@@ -11,14 +12,13 @@ interface SiteSettings {
 interface SharedProps { siteSettings?: SiteSettings; [key: string]: unknown }
 
 const PLATFORM_ICONS: Record<string, React.ElementType> = {
-    facebook: Facebook, twitter: Twitter, youtube: Youtube, linkedin: Linkedin, rss: Rss,
+    facebook: Facebook, telegram: Telegram, youtube: Youtube, whatsapp: WhatsApp,
 };
 const PLATFORM_COLORS: Record<string, string> = {
     facebook: 'hover:bg-[#3b5998]',
-    twitter:  'hover:bg-[#1da1f2]',
+    telegram: 'hover:bg-[#229ed9]',
     youtube:  'hover:bg-[#ff0000]',
-    linkedin: 'hover:bg-[#0077b5]',
-    rss:      'hover:bg-[#f26522]',
+    whatsapp: 'hover:bg-[#25d366]',
 };
 
 function FooterWidget({ title, children }: { title: string; children: React.ReactNode }) {
@@ -87,7 +87,8 @@ export function HomeFooter() {
                             <FooterWidget title={t('footer.followUs') || 'ما را دنبال کنید'}>
                                 <div className="flex flex-wrap gap-2">
                                     {socials.map((s) => {
-                                        const Icon  = PLATFORM_ICONS[s.platform] ?? Rss;
+                                        const Icon  = PLATFORM_ICONS[s.platform];
+                                        if (!Icon) return null;
                                         const color = PLATFORM_COLORS[s.platform] ?? 'hover:bg-gray-600';
                                         return (
                                             <a
@@ -119,7 +120,8 @@ export function HomeFooter() {
                     </p>
                     <div className="flex items-center gap-1.5">
                         {socials.map((s) => {
-                            const Icon  = PLATFORM_ICONS[s.platform] ?? Rss;
+                            const Icon  = PLATFORM_ICONS[s.platform];
+                            if (!Icon) return null;
                             const color = PLATFORM_COLORS[s.platform] ?? 'hover:bg-gray-600';
                             return (
                                 <a

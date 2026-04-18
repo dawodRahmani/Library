@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Statement extends Model
 {
-    protected $fillable = ['title', 'body', 'published_at', 'is_active'];
+    protected $fillable = [
+        'type', 'title', 'body', 'media_source', 'media_url',
+        'file_path', 'file_size', 'thumbnail',
+        'published_at', 'is_active',
+    ];
 
     protected function casts(): array
     {
@@ -15,6 +19,7 @@ class Statement extends Model
             'body'         => 'array',
             'published_at' => 'date',
             'is_active'    => 'boolean',
+            'file_size'    => 'integer',
         ];
     }
 }
