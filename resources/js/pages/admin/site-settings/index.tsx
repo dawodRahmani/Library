@@ -29,14 +29,11 @@ interface AboutIntro  { title: ML; body: ML }
 interface Settings {
     site_name?:        ML;
     site_tagline?:     ML;
-    contact_email?:    string;
-    contact_phone?:    string;
-    contact_address?:  ML;
-    contact_hours?:    ML;
     social_links?:     SocialLink[];
     ticker_items?:     TickerItem[];
     footer_about?:     ML;
     about_hero?:       AboutHero;
+    about_hero_image?: string | null;
     about_stats?:      AboutStat[];
     about_stats_hidden?: boolean;
     about_intro?:      AboutIntro;
@@ -70,7 +67,6 @@ const ICON_OPTIONS = [
     { value: 'BookOpen',   label: 'کتاب',        Icon: BookOpen   },
     { value: 'Headphones', label: 'صوت',          Icon: Headphones },
     { value: 'Video',      label: 'ویدیو',        Icon: Video      },
-    { value: 'FileText',   label: 'مقاله',        Icon: FileText   },
     { value: 'Users',      label: 'کاربران',      Icon: Users      },
     { value: 'Globe',      label: 'جهانی',        Icon: Globe      },
     { value: 'Target',     label: 'هدف',          Icon: Target     },
@@ -112,7 +108,6 @@ const DEF_ABOUT_STATS: AboutStat[] = [
     { icon: 'BookOpen',   value: '۳٬۵۰۰+', label: { da: 'کتاب دیجیتال',   en: 'Digital Books',     ar: 'كتب رقمية'       } },
     { icon: 'Headphones', value: '۱٬۲۰۰+', label: { da: 'فایل صوتی',      en: 'Audio Files',       ar: 'ملفات صوتية'     } },
     { icon: 'Video',      value: '۸۰۰+',   label: { da: 'ویدیو آموزشی',   en: 'Videos',            ar: 'مقاطع فيديو'     } },
-    { icon: 'FileText',   value: '۵۰۰+',   label: { da: 'مقاله علمی',     en: 'Articles',          ar: 'مقالات علمية'    } },
     { icon: 'Users',      value: '۲۵٬۰۰۰+',label: { da: 'کاربر فعال',     en: 'Active Users',      ar: 'مستخدم نشط'      } },
     { icon: 'Globe',      value: '۴۵+',    label: { da: 'کشور پوشش داده', en: 'Countries Covered',  ar: 'دولة مشمولة'     } },
 ];
@@ -144,10 +139,6 @@ export default function SiteSettingsIndex({ settings }: Props) {
     const [general, setGeneral] = useState({
         site_name:       { da: settings.site_name?.da        ?? '', en: settings.site_name?.en        ?? '', ar: settings.site_name?.ar        ?? '' },
         site_tagline:    { da: settings.site_tagline?.da     ?? '', en: settings.site_tagline?.en     ?? '', ar: settings.site_tagline?.ar     ?? '' },
-        contact_email:   settings.contact_email   ?? '',
-        contact_phone:   settings.contact_phone   ?? '',
-        contact_address: { da: settings.contact_address?.da  ?? '', en: settings.contact_address?.en  ?? '', ar: settings.contact_address?.ar  ?? '' },
-        contact_hours:   { da: settings.contact_hours?.da    ?? '', en: settings.contact_hours?.en    ?? '', ar: settings.contact_hours?.ar    ?? '' },
     });
 
     // Social
@@ -190,6 +181,11 @@ export default function SiteSettingsIndex({ settings }: Props) {
     const qrInputRef = useRef<HTMLInputElement>(null);
     const [qrPreview, setQrPreview]     = useState<string | null>(null);
     const [qrProcessing, setQrProcessing] = useState(false);
+
+    // About hero image
+    const aboutHeroInputRef = useRef<HTMLInputElement>(null);
+    const [aboutHeroPreview, setAboutHeroPreview]     = useState<string | null>(null);
+    const [aboutHeroProcessing, setAboutHeroProcessing] = useState(false);
 
     // ── Save ──────────────────────────────────────────────────────────────────
     function save() {
@@ -262,6 +258,29 @@ export default function SiteSettingsIndex({ settings }: Props) {
     function removeQr() {
         if (!confirm('آیا مطمئن هستید که می‌خواهید تصویر QR را حذف کنید؟')) return;
         router.delete('/admin/site-settings/contact-qr');
+    }
+
+    // ── About hero image ──────────────────────────────────────────────────────
+    function onAboutHeroChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setAboutHeroPreview(URL.createObjectURL(file));
+    }
+    function uploadAboutHero() {
+        const file = aboutHeroInputRef.current?.files?.[0];
+        if (!file) return;
+        setAboutHeroProcessing(true);
+        const form = new FormData();
+        form.append('image', file);
+        router.post('/admin/site-settings/about-hero', form, {
+            forceFormData: true,
+            onSuccess: () => setAboutHeroPreview(null),
+            onFinish:  () => setAboutHeroProcessing(false),
+        });
+    }
+    function removeAboutHero() {
+        if (!confirm('آیا مطمئن هستید که می‌خواهید تصویر بنر را حذف کنید؟')) return;
+        router.delete('/admin/site-settings/about-hero');
     }
 
     // ── Ticker helpers ────────────────────────────────────────────────────────
@@ -402,26 +421,6 @@ export default function SiteSettingsIndex({ settings }: Props) {
                                 onAr={(v) => setGeneral({ ...general, site_tagline: { ...general.site_tagline, ar: v } })} />
                         </Section>
 
-                        <Section title="اطلاعات تماس">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <Label>ایمیل</Label>
-                                    <Input value={general.contact_email} onChange={(e) => setGeneral({ ...general, contact_email: e.target.value })} placeholder="info@example.com" dir="ltr" />
-                                </div>
-                                <div>
-                                    <Label>شماره تلفن</Label>
-                                    <Input value={general.contact_phone} onChange={(e) => setGeneral({ ...general, contact_phone: e.target.value })} placeholder="+93 ..." dir="ltr" />
-                                </div>
-                            </div>
-                            <ThreeLang label="آدرس" da={general.contact_address.da} en={general.contact_address.en} ar={general.contact_address.ar ?? ''}
-                                onDa={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, da: v } })}
-                                onEn={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, en: v } })}
-                                onAr={(v) => setGeneral({ ...general, contact_address: { ...general.contact_address, ar: v } })} />
-                            <ThreeLang label="ساعات کاری" da={general.contact_hours.da} en={general.contact_hours.en} ar={general.contact_hours.ar ?? ''}
-                                onDa={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, da: v } })}
-                                onEn={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, en: v } })}
-                                onAr={(v) => setGeneral({ ...general, contact_hours: { ...general.contact_hours, ar: v } })} />
-                        </Section>
                     </div>
                 )}
 
@@ -429,36 +428,45 @@ export default function SiteSettingsIndex({ settings }: Props) {
                 {tab === 'about' && (
                     <div className="space-y-6">
 
-                        {/* Hero */}
+                        {/* Hero image */}
                         <Section title="بنر معرفی (Hero)">
-                            <ThreeLang label="عنوان" da={aboutHero.title.da} en={aboutHero.title.en} ar={aboutHero.title.ar ?? ''} tg={aboutHero.title.tg ?? ''}
-                                onDa={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, da: v } })}
-                                onEn={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, en: v } })}
-                                onAr={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, ar: v } })}
-                                onTg={(v) => setAboutHero({ ...aboutHero, title: { ...aboutHero.title, tg: v } })} />
-                            <div className="space-y-2">
-                                <Label>توضیحات کوتاه</Label>
-                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                                    <div>
-                                        <p className="text-xs text-muted-foreground mb-1">دری</p>
-                                        <Textarea rows={3} value={aboutHero.subtitle.da} dir="rtl"
-                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, da: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground mb-1">English</p>
-                                        <Textarea rows={3} value={aboutHero.subtitle.en} dir="ltr"
-                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, en: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground mb-1">العربية</p>
-                                        <Textarea rows={3} value={aboutHero.subtitle.ar ?? ''} dir="rtl"
-                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, ar: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground mb-1">Тоҷикӣ</p>
-                                        <Textarea rows={3} value={aboutHero.subtitle.tg ?? ''} dir="ltr"
-                                            onChange={(e) => setAboutHero({ ...aboutHero, subtitle: { ...aboutHero.subtitle, tg: e.target.value } })} />
-                                    </div>
+                            <p className="text-sm text-muted-foreground -mt-2 mb-4">
+                                تصویری برای بخش بنر صفحه «درباره ما» آپلود کنید. ابعاد پیشنهادی: ۱۲۴۰×۳۲۰ پیکسل.
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
+                                <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 overflow-hidden aspect-[16/5] flex items-center justify-center">
+                                    {aboutHeroPreview ? (
+                                        <img src={aboutHeroPreview} alt="preview" className="w-full h-full object-cover" />
+                                    ) : settings.about_hero_image ? (
+                                        <img src={`/storage/${settings.about_hero_image}`} alt="hero" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="text-center text-gray-400 p-4">
+                                            <p className="text-sm">تصویری آپلود نشده</p>
+                                            <p className="text-xs mt-1">JPG, PNG, WebP — حداکثر ۵ مگابایت</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <input
+                                        ref={aboutHeroInputRef}
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.webp"
+                                        className="hidden"
+                                        onChange={onAboutHeroChange}
+                                    />
+                                    <Button type="button" variant="outline" size="sm" onClick={() => aboutHeroInputRef.current?.click()}>
+                                        انتخاب تصویر
+                                    </Button>
+                                    {aboutHeroPreview && (
+                                        <Button type="button" size="sm" onClick={uploadAboutHero} disabled={aboutHeroProcessing}>
+                                            {aboutHeroProcessing ? 'در حال آپلود...' : 'آپلود'}
+                                        </Button>
+                                    )}
+                                    {settings.about_hero_image && !aboutHeroPreview && (
+                                        <Button type="button" variant="outline" size="sm" onClick={removeAboutHero}>
+                                            حذف تصویر
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                         </Section>

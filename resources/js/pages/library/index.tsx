@@ -6,6 +6,7 @@ import { MainNav }    from '@/components/home/main-nav';
 import { NewsTicker } from '@/components/home/news-ticker';
 import { PageHeader } from '@/components/home/page-header';
 import { HomeFooter } from '@/components/home/home-footer';
+import { useDir }     from '@/hooks/use-dir';
 import { BookOpen, Search, Star, X, Hash, User, CalendarDays, Layers, Filter, Download, BookText, BookMarked } from 'lucide-react';
 
 type Locale = 'da' | 'en' | 'ar' | 'tg';
@@ -76,9 +77,17 @@ function BookDetailModal({ book, onClose, locale }: { book: Book; onClose: () =>
             >
                 <div className="flex items-start justify-between p-6 border-b border-gray-100">
                     <div className="flex gap-4">
-                        <div className="w-14 h-20 rounded-lg bg-gradient-to-br from-[#27ae60]/20 to-emerald-600/10 border border-emerald-200 flex items-center justify-center shrink-0">
-                            <BookOpen className="w-6 h-6 text-[#27ae60]" />
-                        </div>
+                        {book.cover_image ? (
+                            <img
+                                src={book.cover_image.startsWith('http') ? book.cover_image : `/storage/${book.cover_image}`}
+                                alt={book.title}
+                                className="w-14 h-20 rounded-lg object-cover border border-gray-200 shrink-0"
+                            />
+                        ) : (
+                            <div className="w-14 h-20 rounded-lg bg-gradient-to-br from-[#27ae60]/20 to-emerald-600/10 border border-emerald-200 flex items-center justify-center shrink-0">
+                                <BookOpen className="w-6 h-6 text-[#27ae60]" />
+                            </div>
+                        )}
                         <div>
                             <h2 className="text-lg font-bold text-gray-900 leading-snug">{book.title}</h2>
                             <p className="text-sm text-gray-500 mt-1">{book.author}</p>
@@ -143,6 +152,7 @@ function BookDetailModal({ book, onClose, locale }: { book: Book; onClose: () =>
 export default function LibraryIndex({ books, categories }: PageProps) {
     const { i18n } = useTranslation();
     const locale = getLocale(i18n.language);
+    const dir = useDir();
 
     const L = {
         all:              { da: 'همه',                                            en: 'All',                                     ar: 'الكل',                             tg: 'Ҳама' }[locale],
@@ -191,7 +201,7 @@ export default function LibraryIndex({ books, categories }: PageProps) {
     const withFile = books.filter((b) => b.has_file).length;
 
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
             <TopBar />
             <MainNav />
@@ -280,9 +290,17 @@ export default function LibraryIndex({ books, categories }: PageProps) {
                                                 onClick={() => setSelected(book)}
                                                 className="flex items-center gap-3 text-start w-full"
                                             >
-                                                <div className="w-8 h-10 rounded bg-gradient-to-br from-[#27ae60]/20 to-emerald-600/10 border border-emerald-200 flex items-center justify-center shrink-0">
-                                                    <BookOpen className="w-3.5 h-3.5 text-[#27ae60]" />
-                                                </div>
+                                                {book.cover_image ? (
+                                                    <img
+                                                        src={book.cover_image.startsWith('http') ? book.cover_image : `/storage/${book.cover_image}`}
+                                                        alt={book.title}
+                                                        className="w-8 h-10 rounded object-cover border border-gray-200 shrink-0"
+                                                    />
+                                                ) : (
+                                                    <div className="w-8 h-10 rounded bg-gradient-to-br from-[#27ae60]/20 to-emerald-600/10 border border-emerald-200 flex items-center justify-center shrink-0">
+                                                        <BookOpen className="w-3.5 h-3.5 text-[#27ae60]" />
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <p className="font-medium text-gray-800 hover:text-[#27ae60] transition-colors">{book.title}</p>
                                                     <p className="text-xs text-gray-400 md:hidden">{book.author}</p>

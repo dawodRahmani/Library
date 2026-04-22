@@ -77,7 +77,6 @@
         "videos": "ویدیو‌ها",
         "audios": "صوتی‌ها",
         "fatwas": "دارالإفتاء",
-        "articles": "مقاله‌ها",
         "magazines": "مجله",
         "categories": "دسته‌بندی‌ها",
         "contentManagement": "مدیریت محتوا"
@@ -86,7 +85,6 @@
         "about": "درباره ما",
         "sitemap": "نقشه سایت",
         "recentBooks": "کتاب‌های جدید",
-        "recentArticles": "مقاله‌ها",
         "copyright": "کلیه حقوق این سایت محفوظ است",
         "home": "خانه",
         "faq": "سوالات متداول",
@@ -814,7 +812,6 @@
             "video": "ویدیو",
             "audio": "صوتی",
             "fatwa": "فتوا",
-            "article": "مقاله",
             "magazine": "مجله",
             "statement": "بیانیه"
         }

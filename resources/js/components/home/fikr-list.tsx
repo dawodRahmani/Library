@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { PlayCircle, Headphones, BookOpen, FileText, Clock, User, ChevronLeft, Brain } from 'lucide-react';
+import { PlayCircle, Headphones, BookOpen, Clock, User, ChevronLeft, Brain } from 'lucide-react';
 
-type TabKey = 'videos' | 'audio' | 'books' | 'articles';
+type TabKey = 'videos' | 'audio' | 'books';
 
 interface Item {
     id: number;
@@ -41,27 +41,17 @@ const BOOKS: Item[] = [
     { id: 6, title: 'الفرقان بین اولیاء الرحمن و اولیاء الشیطان', description: 'اثری از ابن تیمیه در تمییز اولیاء خدا از اولیاء شیطان با معیارهای قرآنی.', author: 'ابن تیمیه',         date: '۵ حمل ۱۴۰۴',  meta: '۲۰۰ صفحه', gradient: 'from-rose-900 to-red-800' },
 ];
 
-const ARTICLES: Item[] = [
-    { id: 1, title: 'عقیده سلفی — منهج و روش',              description: 'تعریف منهج سلفی، اصول آن و تفاوت آن با انحرافات عقیدتی در دنیای امروز.',                  author: 'دکتر محمد حسینی', date: '۱۰ حمل ۱۴۰۴', meta: '۱۵ دقیقه', gradient: 'from-emerald-900 to-green-800' },
-    { id: 2, title: 'الحادیت جدید و پاسخ اسلامی',           description: 'نقد الحاد نوین، شبهات رایج آن و پاسخ‌های عقلی و نقلی اسلام به این تحدیات.',             author: 'مفتی احمد رحمانی', date: '۹ حمل ۱۴۰۴',  meta: '۱۸ دقیقه', gradient: 'from-blue-900 to-cyan-800' },
-    { id: 3, title: 'تصوف — نقد و بررسی',                   description: 'بررسی تاریخ تصوف، انحرافات آن از تعالیم اسلامی و تفاوت آن با زهد مشروع.',              author: 'شیخ عبدالله نوری',  date: '۸ حمل ۱۴۰۴',  meta: '۲۰ دقیقه', gradient: 'from-violet-900 to-purple-800' },
-    { id: 4, title: 'عقل و وحی در اسلام',                   description: 'رابطه عقل و وحی در معرفت اسلامی، محدوده عقل و جایگاه نص در حل مسائل عقیدتی.',           author: 'دکتر محمد حسینی', date: '۷ حمل ۱۴۰۴',  meta: '۱۴ دقیقه', gradient: 'from-amber-900 to-stone-800' },
-    { id: 5, title: 'حقوق بشر از دیدگاه اسلام',             description: 'مقایسه حقوق بشر اسلامی با اعلامیه جهانی، نقاط مشترک و تفاوت‌های اساسی.',               author: 'مفتی احمد رحمانی', date: '۶ حمل ۱۴۰۴',  meta: '۱۶ دقیقه', gradient: 'from-teal-900 to-emerald-800' },
-    { id: 6, title: 'هویت اسلامی در دنیای مدرن',            description: 'چگونگی حفظ هویت اسلامی در برابر چالش‌های مدرنیسم، سکولاریسم و فرهنگ غربی.',            author: 'شیخ زهرا نوری',   date: '۵ حمل ۱۴۰۴',  meta: '۱۲ دقیقه', gradient: 'from-rose-900 to-pink-800' },
-];
-
 const TABS: { key: TabKey; label: string; icon: typeof PlayCircle; data: Item[] }[] = [
     { key: 'videos',   label: 'ویدیوها',  icon: PlayCircle, data: VIDEOS   },
     { key: 'audio',    label: 'صوت‌ها',   icon: Headphones, data: AUDIO    },
     { key: 'books',    label: 'کتاب‌ها',  icon: BookOpen,   data: BOOKS    },
-    { key: 'articles', label: 'مقاله‌ها', icon: FileText,   data: ARTICLES },
 ];
 
-const TAB_ICONS = { videos: PlayCircle, audio: Headphones, books: BookOpen, articles: FileText };
+const TAB_ICONS = { videos: PlayCircle, audio: Headphones, books: BookOpen };
 
 function ItemCard({ item, type }: { item: Item; type: TabKey }) {
     const Icon = TAB_ICONS[type];
-    const cta = { videos: 'تماشا', audio: 'گوش دادن', books: 'دانلود', articles: 'خواندن' }[type];
+    const cta = { videos: 'تماشا', audio: 'گوش دادن', books: 'دانلود' }[type];
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
@@ -109,7 +99,7 @@ export function FikrList() {
                 </div>
                 <div>
                     <p className="text-[13px] font-bold text-gray-800">فکر و عقیده</p>
-                    <p className="text-[11px] text-gray-400">ویدیو، صوت، کتاب و مقاله</p>
+                    <p className="text-[11px] text-gray-400">ویدیو، صوت و کتاب</p>
                 </div>
             </div>
 

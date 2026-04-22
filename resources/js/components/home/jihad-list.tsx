@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { PlayCircle, Headphones, BookOpen, FileText, Clock, User, ChevronLeft, Shield } from 'lucide-react';
+import { PlayCircle, Headphones, BookOpen, Clock, User, ChevronLeft, Shield } from 'lucide-react';
 
-type TabKey = 'videos' | 'audio' | 'books' | 'articles';
+type TabKey = 'videos' | 'audio' | 'books';
 
 interface Item {
     id: number;
@@ -41,27 +41,17 @@ const BOOKS: Item[] = [
     { id: 6, title: 'الشهید في سبیل الله',                 description: 'رساله‌ای در فضیلت شهادت، احکام شهید و حقوق آن‌ها بر اساس قرآن و سنت.',                       author: 'شیخ عبدالله نوری',  date: '۴ حمل ۱۴۰۴',  meta: '۱۶۰ صفحه', gradient: 'from-rose-900 to-red-800' },
 ];
 
-const ARTICLES: Item[] = [
-    { id: 1, title: 'مفهوم جهاد در قرآن کریم',             description: 'بررسی آیات قرآنی مربوط به جهاد، انواع و اهداف آن از دیدگاه تفسیر قرآنی.',                  author: 'دکتر محمد حسینی', date: '۹ حمل ۱۴۰۴',  meta: '۱۵ دقیقه', gradient: 'from-emerald-900 to-green-800' },
-    { id: 2, title: 'جهاد اقتصادی در اسلام',               description: 'تبیین مفهوم جهاد اقتصادی، استقلال اقتصادی امت اسلامی و راه‌های دستیابی به آن.',             author: 'مفتی احمد رحمانی', date: '۸ حمل ۱۴۰۴',  meta: '۱۲ دقیقه', gradient: 'from-blue-900 to-cyan-800' },
-    { id: 3, title: 'شهدای معاصر — الهام برای نسل جدید',   description: 'روایت‌هایی از شهدای معاصر مسلمان، ایمان، صبر و تأثیر آن‌ها بر نسل‌های بعدی.',             author: 'شیخ زهرا نوری',   date: '۷ حمل ۱۴۰۴',  meta: '۱۸ دقیقه', gradient: 'from-rose-900 to-pink-800' },
-    { id: 4, title: 'دفاع از حقوق مسلمانان',               description: 'بررسی اهمیت دفاع از حقوق مسلمانان در جهان، روش‌های مشروع و اسلامی برای این دفاع.',          author: 'دکتر محمد حسینی', date: '۶ حمل ۱۴۰۴',  meta: '۱۰ دقیقه', gradient: 'from-violet-900 to-purple-800' },
-    { id: 5, title: 'تاریخ جهاد در افغانستان',             description: 'مروری بر تاریخ جهاد مردم افغانستان در برابر اشغالگران، از نگاه تاریخی و اسلامی.',            author: 'مفتی احمد رحمانی', date: '۵ حمل ۱۴۰۴',  meta: '۲۲ دقیقه', gradient: 'from-amber-900 to-stone-800' },
-    { id: 6, title: 'صبر و استقامت — ویژگی مجاهدان',       description: 'بیان نقش صبر و استقامت در مسیر جهاد، با شواهد از زندگی صحابه و تاریخ اسلام.',               author: 'شیخ عبدالله نوری',  date: '۴ حمل ۱۴۰۴',  meta: '۱۴ دقیقه', gradient: 'from-teal-900 to-emerald-800' },
-];
-
 const TABS: { key: TabKey; label: string; icon: typeof PlayCircle; data: Item[] }[] = [
     { key: 'videos',   label: 'ویدیوها',  icon: PlayCircle, data: VIDEOS   },
     { key: 'audio',    label: 'صوت‌ها',   icon: Headphones, data: AUDIO    },
     { key: 'books',    label: 'کتاب‌ها',  icon: BookOpen,   data: BOOKS    },
-    { key: 'articles', label: 'مقاله‌ها', icon: FileText,   data: ARTICLES },
 ];
 
-const TAB_ICONS = { videos: PlayCircle, audio: Headphones, books: BookOpen, articles: FileText };
+const TAB_ICONS = { videos: PlayCircle, audio: Headphones, books: BookOpen };
 
 function ItemCard({ item, type }: { item: Item; type: TabKey }) {
     const Icon = TAB_ICONS[type];
-    const cta = { videos: 'تماشا', audio: 'گوش دادن', books: 'دانلود', articles: 'خواندن' }[type];
+    const cta = { videos: 'تماشا', audio: 'گوش دادن', books: 'دانلود' }[type];
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">

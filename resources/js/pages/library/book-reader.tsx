@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TopBar }     from '@/components/home/top-bar';
 import { MainNav }    from '@/components/home/main-nav';
 import { HomeFooter } from '@/components/home/home-footer';
+import { useDir }     from '@/hooks/use-dir';
 import { Download, ArrowRight, BookOpen } from 'lucide-react';
 
 type Locale = 'da' | 'en' | 'ar' | 'tg';
@@ -25,6 +26,7 @@ interface Props {
 export default function BookReader({ book }: Props) {
     const { i18n } = useTranslation();
     const locale = getLocale(i18n.language);
+    const dir = useDir();
 
     const L = {
         back:     { da: 'بازگشت به کتابخانه', en: 'Back to Library',   ar: 'العودة إلى المكتبة',     tg: 'Бозгашт ба китобхона' }[locale],
@@ -34,7 +36,7 @@ export default function BookReader({ book }: Props) {
     };
 
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans flex flex-col">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans flex flex-col">
             <Head title={`${book.title} — ${L.reading}`} />
             <TopBar />
             <MainNav />

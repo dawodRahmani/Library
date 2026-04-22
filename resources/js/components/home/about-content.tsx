@@ -16,19 +16,10 @@ function DynIcon({ name, className }: { name: string; className?: string }) {
 }
 
 // ── Default data (shown when DB is empty) ─────────────────────────────────────
-const DEFAULT_HERO = {
-    title:    { da: 'کتابخانه رسالت',  en: 'Resalat Library' },
-    subtitle: {
-        da: 'مرکز دیجیتال علوم اسلامی به زبان دری — در خدمت مسلمانان فارسی‌زبان سراسر جهان از سال ۱۳۹۸ تا کنون.',
-        en: 'Digital centre for Islamic sciences in Dari — serving Dari-speaking Muslims worldwide since 2019.',
-    },
-};
-
 const DEFAULT_STATS = [
     { icon: 'BookOpen',   value: '۳٬۵۰۰+', label: { da: 'کتاب دیجیتال',    en: 'Digital Books'    } },
     { icon: 'Headphones', value: '۱٬۲۰۰+', label: { da: 'فایل صوتی',       en: 'Audio Files'      } },
     { icon: 'Video',      value: '۸۰۰+',   label: { da: 'ویدیو آموزشی',    en: 'Videos'           } },
-    { icon: 'FileText',   value: '۵۰۰+',   label: { da: 'مقاله علمی',      en: 'Articles'         } },
     { icon: 'Users',      value: '۲۵٬۰۰۰+',label: { da: 'کاربر فعال',      en: 'Active Users'     } },
     { icon: 'Globe',      value: '۴۵+',    label: { da: 'کشور پوشش داده',  en: 'Countries Covered'} },
 ];
@@ -72,11 +63,10 @@ interface ML       { da: string; en: string; ar?: string; tg?: string }
 interface Stat     { icon: string; value: string; label: ML }
 interface Value    { icon: string; title: ML; body: ML }
 interface TeamMember { name: string; role: ML; bio: ML; gradient: string }
-interface AboutHero  { title: ML; subtitle: ML }
 interface AboutIntro { title: ML; body: ML }
 interface SharedProps {
     siteSettings?: {
-        about_hero?:   AboutHero;
+        about_hero_image?: string | null;
         about_stats?:  Stat[];
         about_stats_hidden?: boolean;
         about_intro?: AboutIntro;
@@ -103,7 +93,7 @@ export function AboutContent() {
 
     const settings = usePage<SharedProps>().props.siteSettings ?? {};
 
-    const hero    = settings.about_hero   ?? DEFAULT_HERO;
+    const heroImage = settings.about_hero_image ?? null;
     const stats   = settings.about_stats  ?? DEFAULT_STATS;
     const statsHidden = !!settings.about_stats_hidden;
     const intro   = settings.about_intro;
@@ -117,16 +107,23 @@ export function AboutContent() {
     return (
         <div className="space-y-10">
             {/* Hero banner */}
-            <div className="bg-gradient-to-br from-[#1a252f] to-[#0d3320] rounded-2xl p-8 text-white relative overflow-hidden">
-                <div className="absolute inset-0 opacity-5"
-                    style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #27ae60 1px, transparent 1px), radial-gradient(circle at 80% 20%, #27ae60 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
-                    <img src="/falogo.png" alt="کتابخانه رسالت" className="h-24 w-auto object-contain drop-shadow-xl" />
-                    <div>
-                        <h1 className="text-[24px] font-bold mb-2">{l(hero.title)}</h1>
-                        <p className="text-white/80 text-[14px] leading-relaxed max-w-lg">{l(hero.subtitle)}</p>
-                    </div>
-                </div>
+            <div className="bg-gradient-to-br from-[#1a252f] to-[#0d3320] rounded-2xl relative overflow-hidden aspect-[16/5]">
+                {heroImage ? (
+                    <img
+                        src={`/storage/${heroImage}`}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                ) : (
+                    <div
+                        className="absolute inset-0 opacity-5"
+                        style={{
+                            backgroundImage:
+                                'radial-gradient(circle at 20% 50%, #27ae60 1px, transparent 1px), radial-gradient(circle at 80% 20%, #27ae60 1px, transparent 1px)',
+                            backgroundSize: '40px 40px',
+                        }}
+                    />
+                )}
             </div>
 
             {/* Custom intro (admin-managed, shown after Hero, before Stats) */}

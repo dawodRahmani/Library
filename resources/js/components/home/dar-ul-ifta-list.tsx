@@ -1,4 +1,4 @@
-import { BookMarked, Clock, User, ChevronLeft } from 'lucide-react';
+import { BookMarked, Clock, User, ChevronLeft, FileText, Music, Video, Play, Headphones } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -8,16 +8,24 @@ function getLocale(lang: string): Locale {
     return (['da', 'en', 'ar', 'tg'] as const).includes(lang as Locale) ? lang as Locale : 'da';
 }
 
+type FatwaType = 'text' | 'audio' | 'video';
+
 /* ── Types ───────────────────────────────────────────────── */
 interface FatwaItem {
     id: number;
     title: string;
     description: string;
+    body: string;
     author: string;
     date: string;
     category: string;
     categorySlug: string;
     thumbnail: string | null;
+    type: FatwaType;
+    media_source: 'link' | 'upload' | null;
+    media_url: string | null;
+    has_file: boolean;
+    stream_url: string | null;
 }
 
 interface Category {
@@ -46,10 +54,8 @@ const getGradient = (category: string, id: number): string => {
         'from-cyan-900 to-teal-800',
         'from-amber-900 to-yellow-800',
     ];
-    // Use category hash to pick gradient
     const hash = category.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const index = (hash + id) % gradients.length;
-
     return gradients[index];
 };
 
@@ -59,19 +65,36 @@ const CAT_COLORS: Record<string, string> = {
     'قضایای سیاسی':   'bg-violet-100  text-violet-700',
     'احکام شرعی عام': 'bg-blue-100    text-blue-700',
     'بیانیه‌ها':       'bg-amber-100   text-amber-700',
-    // default fallback
     'default': 'bg-gray-100 text-gray-700',
 };
+
+const TYPE_META: Record<FatwaType, { icon: React.ElementType; color: string }> = {
+    text:  { icon: FileText, color: 'bg-gray-100 text-gray-700' },
+    audio: { icon: Music,    color: 'bg-blue-100 text-blue-700' },
+    video: { icon: Video,    color: 'bg-purple-100 text-purple-700' },
+};
+
+function youtubeEmbedUrl(url: string): string | null {
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+    return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+}
 
 /* ── Card ────────────────────────────────────────────────── */
 function FatwaCard({ item, onOpen, locale }: { item: FatwaItem; onOpen: () => void; locale: Locale }) {
     const gradient = getGradient(item.category, item.id);
     const catClass = CAT_COLORS[item.category] ?? CAT_COLORS.default;
+    const typeMeta = TYPE_META[item.type];
+    const TypeIcon = typeMeta.icon;
+
+    const typeLabel: string = {
+        text:  { da: 'متن', en: 'Text',  ar: 'نص',   tg: 'Матн'  }[locale],
+        audio: { da: 'صوت', en: 'Audio', ar: 'صوت',  tg: 'Аудио' }[locale],
+        video: { da: 'ویدیو', en: 'Video', ar: 'فيديو', tg: 'Видео' }[locale],
+    }[item.type];
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
-            {/* Thumbnail */}
-            <div className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden`}>
+            <button onClick={onOpen} className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden text-start w-full`}>
                 {item.thumbnail && (
                     <img
                         src={item.thumbnail.startsWith('http') ? item.thumbnail : `/storage/${item.thumbnail}`}
@@ -79,16 +102,28 @@ function FatwaCard({ item, onOpen, locale }: { item: FatwaItem; onOpen: () => vo
                         className="absolute inset-0 w-full h-full object-cover"
                     />
                 )}
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                {!item.thumbnail && (
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />
+                {!item.thumbnail && item.type === 'text' && (
                     <BookMarked className="relative z-10 w-12 h-12 text-white/60 group-hover:text-white/90 transition-colors" />
+                )}
+                {/* Play overlay for audio/video */}
+                {(item.type === 'audio' || item.type === 'video') && (
+                    <div className="relative z-10 w-14 h-14 rounded-full bg-white/30 border-2 border-white/50 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                        {item.type === 'audio'
+                            ? <Headphones className="w-6 h-6 text-white" />
+                            : <Play className="w-6 h-6 text-white ms-0.5" fill="currentColor" />
+                        }
+                    </div>
                 )}
                 <span className={`absolute top-3 end-3 text-[11px] font-bold px-2 py-0.5 rounded-full ${catClass}`}>
                     {item.category}
                 </span>
-            </div>
+                <span className={`absolute top-3 start-3 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${typeMeta.color}`}>
+                    <TypeIcon className="w-3 h-3" />
+                    {typeLabel}
+                </span>
+            </button>
 
-            {/* Body */}
             <div className="p-4 flex flex-col flex-1">
                 <h3 className="font-bold text-[14px] text-gray-900 leading-snug mb-2 line-clamp-2 group-hover:text-[#27ae60] transition-colors">
                     <button onClick={onOpen} className="text-start hover:text-[#27ae60] transition-colors">
@@ -109,7 +144,6 @@ function FatwaCard({ item, onOpen, locale }: { item: FatwaItem; onOpen: () => vo
                 </div>
             </div>
 
-            {/* CTA */}
             <button
                 onClick={onOpen}
                 className="flex items-center justify-between px-4 py-2.5 bg-[#f0faf5] text-[#27ae60] text-[12px] font-bold hover:bg-[#27ae60] hover:text-white transition-colors border-t border-gray-100 w-full"
@@ -135,6 +169,13 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
 
     const allCategories = [{ slug: 'all', name: allLabel }, ...categories];
 
+    const typeLabels: Record<'all' | FatwaType, string> = {
+        all:   allLabel,
+        text:  { da: 'متن', en: 'Text',  ar: 'نص',   tg: 'Матн'  }[locale],
+        audio: { da: 'صوت', en: 'Audio', ar: 'صوت',  tg: 'Аудио' }[locale],
+        video: { da: 'ویدیو', en: 'Video', ar: 'فيديو', tg: 'Видео' }[locale],
+    };
+
     const [activeSlug, setActiveSlug] = useState<string>(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
@@ -143,9 +184,22 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
         return 'all';
     });
 
+    const [activeType, setActiveType] = useState<'all' | FatwaType>(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const t = params.get('type');
+            return t === 'text' || t === 'audio' || t === 'video' ? t : 'all';
+        }
+        return 'all';
+    });
+
     const [selected, setSelected] = useState<FatwaItem | null>(null);
 
-    const filtered = activeSlug === 'all' ? fatwas : fatwas.filter((item) => item.categorySlug === activeSlug);
+    const filtered = fatwas.filter((item) => {
+        const catOk  = activeSlug === 'all' || item.categorySlug === activeSlug;
+        const typeOk = activeType === 'all' || item.type === activeType;
+        return catOk && typeOk;
+    });
 
     const catClass = selected ? (CAT_COLORS[selected.category] ?? CAT_COLORS.default) : '';
 
@@ -163,7 +217,7 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
             </div>
 
             {/* Category filter */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-3">
                 {allCategories.map((cat) => (
                     <button
                         key={cat.slug}
@@ -177,6 +231,28 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
                         {cat.name}
                     </button>
                 ))}
+            </div>
+
+            {/* Type sub-filter */}
+            <div className="flex flex-wrap gap-1.5 mb-6 bg-gray-50 border border-gray-100 rounded-xl p-1.5 w-fit">
+                {(['all', 'text', 'audio', 'video'] as const).map((t) => {
+                    const Icon = t === 'all' ? null : TYPE_META[t].icon;
+                    const active = activeType === t;
+                    return (
+                        <button
+                            key={t}
+                            onClick={() => setActiveType(t)}
+                            className={`inline-flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                                active
+                                    ? 'bg-white shadow-sm text-[#27ae60]'
+                                    : 'text-gray-500 hover:text-gray-800'
+                            }`}
+                        >
+                            {Icon && <Icon className="w-3.5 h-3.5" />}
+                            {typeLabels[t]}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Grid */}
@@ -195,34 +271,86 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
 
             {/* Detail modal */}
             <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-                <DialogContent className="max-w-lg w-full" dir="rtl">
-                    {selected && (
-                        <>
-                            <DialogHeader className="text-start">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${catClass}`}>
-                                        {selected.category}
+                <DialogContent className="max-w-2xl w-full" dir="rtl">
+                    {selected && (() => {
+                        const TypeIcon = TYPE_META[selected.type].icon;
+                        const audioSrc = selected.type === 'audio'
+                            ? (selected.media_source === 'upload' ? selected.stream_url : selected.media_url)
+                            : null;
+                        const videoEmbed = selected.type === 'video' && selected.media_source === 'link' && selected.media_url
+                            ? youtubeEmbedUrl(selected.media_url)
+                            : null;
+                        const videoFile = selected.type === 'video' && selected.media_source === 'upload'
+                            ? selected.stream_url
+                            : null;
+                        const videoLink = selected.type === 'video' && selected.media_source === 'link' && !videoEmbed
+                            ? selected.media_url
+                            : null;
+
+                        return (
+                            <>
+                                <DialogHeader className="text-start">
+                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${catClass}`}>
+                                            {selected.category}
+                                        </span>
+                                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${TYPE_META[selected.type].color}`}>
+                                            <TypeIcon className="w-3 h-3" />
+                                            {typeLabels[selected.type]}
+                                        </span>
+                                    </div>
+                                    <DialogTitle className="text-[16px] font-bold text-gray-900 leading-snug">
+                                        {selected.title}
+                                    </DialogTitle>
+                                </DialogHeader>
+
+                                {/* Media player */}
+                                {audioSrc && (
+                                    <audio controls src={audioSrc} className="w-full mt-3">
+                                        Your browser does not support audio.
+                                    </audio>
+                                )}
+                                {videoEmbed && (
+                                    <div className="mt-3 aspect-video rounded-lg overflow-hidden bg-black">
+                                        <iframe src={videoEmbed} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen />
+                                    </div>
+                                )}
+                                {videoFile && (
+                                    <video controls src={videoFile} className="w-full mt-3 rounded-lg bg-black" />
+                                )}
+                                {videoLink && (
+                                    <a href={videoLink} target="_blank" rel="noreferrer"
+                                        className="mt-3 inline-flex items-center gap-1.5 text-[13px] text-[#27ae60] hover:underline" dir="ltr">
+                                        {videoLink}
+                                    </a>
+                                )}
+
+                                {/* Short description */}
+                                {selected.description && (
+                                    <p className="mt-3 text-[13px] text-gray-600 leading-relaxed">{selected.description}</p>
+                                )}
+
+                                {/* Body (text type) */}
+                                {selected.type === 'text' && (
+                                    <div className="mt-3 text-[13px] text-gray-700 leading-relaxed">
+                                        {selected.body
+                                            ? <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: selected.body.replace(/\n/g, '<br />') }} />
+                                            : !selected.description && <span className="text-gray-400">{noContent}</span>
+                                        }
+                                    </div>
+                                )}
+
+                                <div className="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100 text-[12px] text-gray-400">
+                                    <span className="flex items-center gap-1">
+                                        <User className="w-3.5 h-3.5" /> {selected.author}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-3.5 h-3.5" /> {selected.date}
                                     </span>
                                 </div>
-                                <DialogTitle className="text-[16px] font-bold text-gray-900 leading-snug">
-                                    {selected.title}
-                                </DialogTitle>
-                            </DialogHeader>
-
-                            <div className="mt-3 text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">
-                                {selected.description || <span className="text-gray-400">{noContent}</span>}
-                            </div>
-
-                            <div className="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100 text-[12px] text-gray-400">
-                                <span className="flex items-center gap-1">
-                                    <User className="w-3.5 h-3.5" /> {selected.author}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5" /> {selected.date}
-                                </span>
-                            </div>
-                        </>
-                    )}
+                            </>
+                        );
+                    })()}
                 </DialogContent>
             </Dialog>
         </div>

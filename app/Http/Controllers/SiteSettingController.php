@@ -151,4 +151,35 @@ class SiteSettingController extends Controller
 
         return back()->with('success', 'تصویر QR حذف شد.');
     }
+
+    public function uploadAboutHero(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ]);
+
+        $existing = SiteSetting::get('about_hero_image');
+        if ($existing && Storage::disk('public')->exists($existing)) {
+            Storage::disk('public')->delete($existing);
+        }
+
+        $path = $request->file('image')->store('about', 'public');
+        SiteSetting::set('about_hero_image', $path, 'about');
+        Cache::forget('site_setting:about_hero_image');
+
+        return back()->with('success', 'تصویر بنر با موفقیت آپلود شد.');
+    }
+
+    public function removeAboutHero(): RedirectResponse
+    {
+        $existing = SiteSetting::get('about_hero_image');
+        if ($existing && Storage::disk('public')->exists($existing)) {
+            Storage::disk('public')->delete($existing);
+        }
+
+        SiteSetting::set('about_hero_image', null, 'about');
+        Cache::forget('site_setting:about_hero_image');
+
+        return back()->with('success', 'تصویر بنر حذف شد.');
+    }
 }

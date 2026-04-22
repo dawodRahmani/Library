@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TopBar }     from '@/components/home/top-bar';
 import { MainNav }    from '@/components/home/main-nav';
 import { HomeFooter } from '@/components/home/home-footer';
+import { useDir }     from '@/hooks/use-dir';
 import { Download, ArrowRight, Newspaper } from 'lucide-react';
 
 type Locale = 'da' | 'en' | 'ar' | 'tg';
@@ -23,6 +24,7 @@ interface Props {
 export default function MagazineReader({ magazine }: Props) {
     const { i18n } = useTranslation();
     const locale = getLocale(i18n.language);
+    const dir = useDir();
 
     const L = {
         back:     { da: 'بازگشت به مجله', en: 'Back to Magazine',  ar: 'العودة إلى المجلة',      tg: 'Бозгашт ба маҷалла' }[locale],
@@ -33,7 +35,7 @@ export default function MagazineReader({ magazine }: Props) {
     };
 
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans flex flex-col">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans flex flex-col">
             <Head title={`${magazine.title} — ${L.reading}`} />
             <TopBar />
             <MainNav />

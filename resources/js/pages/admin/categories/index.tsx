@@ -16,7 +16,7 @@ interface CategoryItem {
     id: number; name: { da: string; en?: string; ar?: string; tg?: string }; slug: string; type: string; sort_order: number;
 }
 
-const TYPE_LABELS: Record<string, string> = { book: 'کتاب', video: 'ویدیو', audio: 'صوت', fatwa: 'فتوا', article: 'مقاله', magazine: 'مجله' };
+const TYPE_LABELS: Record<string, string> = { book: 'کتاب', video: 'ویدیو', audio: 'صوت', fatwa: 'فتوا', magazine: 'مجله' };
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'دسته‌بندی‌ها', href: '/admin/categories' }];
 const emptyForm = { name: { da: '', en: '', ar: '', tg: '' }, slug: '', type: 'book', sort_order: 0 };
 

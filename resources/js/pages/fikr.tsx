@@ -6,10 +6,12 @@ import { PageHeader } from '@/components/home/page-header';
 import { FikrList }   from '@/components/home/fikr-list';
 import { HomeSidebar } from '@/components/home/home-sidebar';
 import { HomeFooter } from '@/components/home/home-footer';
+import { useDir }     from '@/hooks/use-dir';
 
 export default function Fikr() {
+    const dir = useDir();
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="فکر و عقیده — کتابخانه رسالت" />
 
             <TopBar />

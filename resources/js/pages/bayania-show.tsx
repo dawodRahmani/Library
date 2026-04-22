@@ -6,6 +6,7 @@ import { NewsTicker }  from '@/components/home/news-ticker';
 import { PageHeader }  from '@/components/home/page-header';
 import { HomeSidebar } from '@/components/home/home-sidebar';
 import { HomeFooter }  from '@/components/home/home-footer';
+import { useDir }      from '@/hooks/use-dir';
 import { CalendarDays, ArrowRight, FileText, Music, Video } from 'lucide-react';
 
 type StatementType = 'text' | 'audio' | 'video';
@@ -61,6 +62,7 @@ function typeIcon(type: StatementType) {
 export default function BayaniaShow({ statement }: Props) {
     const { i18n, t } = useTranslation();
     const locale = ['da', 'en', 'ar', 'tg'].includes(i18n.language) ? i18n.language : 'da';
+    const dir = useDir();
 
     const TypeIcon = typeIcon(statement.type);
 
@@ -73,7 +75,7 @@ export default function BayaniaShow({ statement }: Props) {
     const ytEmbed      = videoSrcLink ? youtubeEmbedUrl(videoSrcLink) : null;
 
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title={`${statement.title} — کتابخانه رسالت`} />
 
             <TopBar />

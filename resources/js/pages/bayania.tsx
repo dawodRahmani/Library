@@ -7,6 +7,7 @@ import { NewsTicker }  from '@/components/home/news-ticker';
 import { PageHeader }  from '@/components/home/page-header';
 import { HomeSidebar } from '@/components/home/home-sidebar';
 import { HomeFooter }  from '@/components/home/home-footer';
+import { useDir }      from '@/hooks/use-dir';
 import { FileText, Music, Video, CalendarDays, ArrowLeft } from 'lucide-react';
 
 type StatementType = 'text' | 'audio' | 'video';
@@ -57,6 +58,7 @@ function StatementCard({ item, locale }: { item: StatementItem; locale: string }
     const Icon = typeIcon(item.type);
     const tintBg = item.type === 'audio' ? 'bg-blue-50' : item.type === 'video' ? 'bg-purple-50' : 'bg-[#27ae60]/10';
     const tintFg = item.type === 'audio' ? 'text-blue-600' : item.type === 'video' ? 'text-purple-600' : 'text-[#27ae60]';
+    const thumbSrc = item.thumbnail ? (item.thumbnail.startsWith('http') ? item.thumbnail : `/storage/${item.thumbnail}`) : null;
 
     return (
         <Link
@@ -65,12 +67,21 @@ function StatementCard({ item, locale }: { item: StatementItem; locale: string }
         >
             <div className="p-5">
                 <div className="flex items-start gap-4">
-                    <div className={`shrink-0 w-10 h-10 rounded-lg ${tintBg} flex items-center justify-center mt-0.5`}>
-                        <Icon className={`w-5 h-5 ${tintFg}`} />
-                    </div>
+                    {thumbSrc ? (
+                        <img
+                            src={thumbSrc}
+                            alt={item.title}
+                            className="shrink-0 w-16 h-16 rounded-lg object-cover border border-gray-200 mt-0.5"
+                        />
+                    ) : (
+                        <div className={`shrink-0 w-10 h-10 rounded-lg ${tintBg} flex items-center justify-center mt-0.5`}>
+                            <Icon className={`w-5 h-5 ${tintFg}`} />
+                        </div>
+                    )}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                             <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${tintBg} ${tintFg}`}>
+                                <Icon className="w-3 h-3" />
                                 {typeLabel(item.type, locale)}
                             </span>
                         </div>
@@ -94,6 +105,7 @@ function StatementCard({ item, locale }: { item: StatementItem; locale: string }
 export default function Bayania({ statements }: Props) {
     const { i18n, t } = useTranslation();
     const locale = ['da', 'en', 'ar', 'tg'].includes(i18n.language) ? i18n.language : 'da';
+    const dir = useDir();
 
     const urlType = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('type') : null;
     const initial = urlType === 'text' || urlType === 'audio' || urlType === 'video' ? urlType : 'all';
@@ -118,7 +130,7 @@ export default function Bayania({ statements }: Props) {
     ];
 
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title={`${t('nav.statements', 'بیانیه‌ها')} — کتابخانه رسالت`} />
 
             <TopBar />

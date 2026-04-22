@@ -285,39 +285,50 @@ export default function StatementEditor({ statement }: Props) {
                                     </div>
                                 )}
 
-                                {/* Thumbnail (optional) */}
-                                <div>
-                                    <Label className="text-xs text-muted-foreground">تصویر شاخص (اختیاری)</Label>
-                                    <input
-                                        ref={thumbInputRef}
-                                        type="file"
-                                        accept="image/png,image/jpeg,image/webp"
-                                        className="hidden"
-                                        onChange={onThumbChange}
-                                    />
-                                    <div className="flex items-start gap-3 mt-1">
-                                        <div className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
-                                            {thumbPreview ? (
-                                                <img src={thumbPreview} alt="" className="w-full h-full object-cover" />
-                                            ) : statement?.thumbnail ? (
-                                                <img src={`/storage/${statement.thumbnail}`} alt="" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <ImageIcon className="w-6 h-6 text-gray-400" />
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <Button type="button" variant="outline" size="sm" onClick={() => thumbInputRef.current?.click()}>
-                                                <Upload className="w-4 h-4 me-1.5" />انتخاب تصویر
-                                            </Button>
-                                            {newThumb && (
-                                                <button type="button" onClick={() => { setNewThumb(null); setThumbPreview(null); if (thumbInputRef.current) thumbInputRef.current.value = ''; }}
-                                                    className="ms-2 text-xs text-red-500 hover:underline">لغو</button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         )}
+
+                        {/* Thumbnail — available for all statement types */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+                            <div>
+                                <Label className="text-sm font-semibold">تصویر شاخص (Thumbnail)</Label>
+                                <p className="text-xs text-muted-foreground mt-0.5">تصویری که در لیست بیانیه‌ها نمایش داده می‌شود (اختیاری)</p>
+                            </div>
+                            <input
+                                ref={thumbInputRef}
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp"
+                                className="hidden"
+                                onChange={onThumbChange}
+                            />
+                            <div className="flex items-start gap-3">
+                                <div className="w-28 h-28 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                                    {thumbPreview ? (
+                                        <img src={thumbPreview} alt="" className="w-full h-full object-cover" />
+                                    ) : statement?.thumbnail ? (
+                                        <img src={`/storage/${statement.thumbnail}`} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <ImageIcon className="w-7 h-7 text-gray-400" />
+                                    )}
+                                </div>
+                                <div className="flex-1 space-y-1.5">
+                                    <Button type="button" variant="outline" size="sm" onClick={() => thumbInputRef.current?.click()}>
+                                        <Upload className="w-4 h-4 me-1.5" />
+                                        {(statement?.thumbnail || newThumb) ? 'تغییر تصویر' : 'انتخاب تصویر'}
+                                    </Button>
+                                    {newThumb && (
+                                        <div className="text-xs text-gray-600">
+                                            {newThumb.name} — {formatBytes(newThumb.size)}
+                                            <button type="button" onClick={() => { setNewThumb(null); setThumbPreview(null); if (thumbInputRef.current) thumbInputRef.current.value = ''; }}
+                                                className="ms-2 text-red-500 hover:underline">
+                                                <X className="w-3 h-3 inline" /> لغو
+                                            </button>
+                                        </div>
+                                    )}
+                                    <p className="text-xs text-muted-foreground">JPG, PNG, WebP — حداکثر ۵ مگابایت.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* ── Sidebar (1/3) ─────────────────────────────── */}

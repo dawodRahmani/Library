@@ -7,6 +7,7 @@ import { PageHeader }      from '@/components/home/page-header';
 import { DarUlIftaList }   from '@/components/home/dar-ul-ifta-list';
 import { HomeSidebar }     from '@/components/home/home-sidebar';
 import { HomeFooter }      from '@/components/home/home-footer';
+import { useDir }          from '@/hooks/use-dir';
 
 type Locale = 'da' | 'en' | 'ar' | 'tg';
 function getLocale(lang: string): Locale {
@@ -17,10 +18,17 @@ interface FatwaItem {
     id: number;
     title: string;
     description: string;
+    body: string;
     author: string;
     category: string;
     categorySlug: string;
     date: string;
+    thumbnail: string | null;
+    type: 'text' | 'audio' | 'video';
+    media_source: 'link' | 'upload' | null;
+    media_url: string | null;
+    has_file: boolean;
+    stream_url: string | null;
 }
 
 interface Category {
@@ -36,6 +44,7 @@ interface PageProps {
 export default function DarUlIfta({ fatwas, categories }: PageProps) {
     const { i18n } = useTranslation();
     const locale = getLocale(i18n.language);
+    const dir = useDir();
 
     const L = {
         pageTitle: { da: 'دارالإفتاء', en: 'Dar ul-Ifta', ar: 'دار الإفتاء', tg: 'Дорул-ифто' }[locale],
@@ -43,7 +52,7 @@ export default function DarUlIfta({ fatwas, categories }: PageProps) {
     };
 
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
 
             <TopBar />

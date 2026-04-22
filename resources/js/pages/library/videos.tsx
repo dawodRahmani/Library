@@ -6,6 +6,7 @@ import { MainNav }    from '@/components/home/main-nav';
 import { NewsTicker } from '@/components/home/news-ticker';
 import { PageHeader } from '@/components/home/page-header';
 import { HomeFooter } from '@/components/home/home-footer';
+import { useDir }     from '@/hooks/use-dir';
 import { Search, Play, Clock, Eye, Filter, MonitorPlay, X, Download, ExternalLink, Youtube, Link as LinkIcon, Upload } from 'lucide-react';
 
 type Locale = 'da' | 'en' | 'ar' | 'tg';
@@ -304,6 +305,7 @@ function VideoCard({ video, onPlay, locale }: { video: VideoItem; onPlay: (v: Vi
 
 export default function VideosIndex({ videos, categories }: PageProps) {
     const { i18n } = useTranslation();
+    const dir = useDir();
     const locale = getLocale(i18n.language);
 
     const L = {
@@ -348,7 +350,7 @@ export default function VideosIndex({ videos, categories }: PageProps) {
     });
 
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
             <TopBar />
             <MainNav />

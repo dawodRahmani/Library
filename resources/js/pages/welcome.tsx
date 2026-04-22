@@ -6,6 +6,7 @@ import { HomeHero, type HeroItem } from '@/components/home/home-hero';
 import { HomeMainColumn } from '@/components/home/home-main-column';
 import { HomeSidebar }    from '@/components/home/home-sidebar';
 import { HomeFooter }     from '@/components/home/home-footer';
+import { useDir }         from '@/hooks/use-dir';
 
 export type { HeroItem };
 
@@ -32,14 +33,14 @@ interface ContentItem {
 interface PageProps {
     heroItems: HeroItem[];
     recentVideos: RecentVideo[];
-    recentArticles: ContentItem[];
     recentAudios: ContentItem[];
     recentBooks: ContentItem[];
 }
 
-export default function Welcome({ heroItems, recentVideos, recentArticles, recentAudios, recentBooks }: PageProps) {
+export default function Welcome({ heroItems, recentVideos, recentAudios, recentBooks }: PageProps) {
+    const dir = useDir();
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="کتابخانه رسالت" />
             <TopBar />
             <MainNav />
@@ -50,7 +51,6 @@ export default function Welcome({ heroItems, recentVideos, recentArticles, recen
                     <div className="lg:col-span-2">
                         <HomeMainColumn
                             recentVideos={recentVideos}
-                            recentArticles={recentArticles}
                             recentAudios={recentAudios}
                             recentBooks={recentBooks}
                         />

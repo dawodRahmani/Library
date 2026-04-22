@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
 use App\Models\Audio;
 use App\Models\Book;
 use App\Models\Video;
@@ -17,17 +16,6 @@ class HomeController extends Controller
 
         // Hero: only items that have a real image
         $heroItems = collect()
-            ->merge(
-                Article::where('is_active', true)->whereNotNull('cover_image')->latest()->limit(3)->get()
-                    ->map(fn ($a) => [
-                        'type'       => 'article',
-                        'title'      => $a->title[$locale] ?? $a->title['da'] ?? '',
-                        'category'   => ['da' => 'مقاله', 'en' => 'Article'],
-                        'link'       => '/articles',
-                        'image'      => '/storage/' . $a->cover_image,
-                        'created_at' => $a->created_at,
-                    ])
-            )
             ->merge(
                 Book::where('is_active', true)->whereNotNull('cover_image')->latest()->limit(2)->get()
                     ->map(fn ($b) => [
@@ -96,19 +84,6 @@ class HomeController extends Controller
             ])
             ->toArray();
 
-        $recentArticles = Article::where('is_active', true)
-            ->latest()
-            ->limit(5)
-            ->get()
-            ->map(fn ($a) => [
-                'id'          => $a->id,
-                'title'       => $a->title[$locale] ?? $a->title['da'] ?? '',
-                'author'      => $a->author ?? '',
-                'date'        => $a->created_at->format('Y-m-d'),
-                'cover_image' => $a->cover_image,
-            ])
-            ->toArray();
-
         $recentAudios = Audio::where('is_active', true)
             ->latest()
             ->limit(4)
@@ -138,7 +113,6 @@ class HomeController extends Controller
         return Inertia::render('welcome', [
             'heroItems'      => $heroItems,
             'recentVideos'   => $recentVideos,
-            'recentArticles' => $recentArticles,
             'recentAudios'   => $recentAudios,
             'recentBooks'    => $recentBooks,
         ]);

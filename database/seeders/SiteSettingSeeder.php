@@ -28,7 +28,6 @@ class SiteSettingSeeder extends Seeder
             // ── News ticker ──────────────────────────────────────────
             ['key' => 'ticker_items', 'group' => 'ticker', 'value' => [
                 ['da' => 'آخرین کتاب‌های اضافه شده به کتابخانه',       'en' => 'Latest books added to the library'],
-                ['da' => 'مقاله جدید: تاریخچه خط و کتابت در افغانستان', 'en' => 'New article: History of writing in Afghanistan'],
                 ['da' => 'سخنرانی ویدیویی جدید بارگذاری شد',           'en' => 'New video lecture uploaded'],
                 ['da' => 'کتاب‌های دیجیتال جدید در دسته‌بندی فقه',      'en' => 'New digital books in the Fiqh category'],
                 ['da' => 'صوت‌های تازه در بخش شرح حدیث',              'en' => 'New audio in the Hadith commentary section'],

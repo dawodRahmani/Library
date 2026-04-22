@@ -37,7 +37,7 @@ class CategoryController extends Controller
             'name.ar'    => ['nullable', 'string', 'max:255'],
             'name.tg'    => ['nullable', 'string', 'max:255'],
             'slug'       => ['required', 'string', 'max:255'],
-            'type'       => ['required', 'string', 'in:book,video,audio,fatwa,article,magazine'],
+            'type'       => ['required', 'string', 'in:book,video,audio,fatwa,magazine'],
             'sort_order' => ['integer'],
         ]);
 
@@ -55,7 +55,7 @@ class CategoryController extends Controller
             'name.ar'    => ['nullable', 'string', 'max:255'],
             'name.tg'    => ['nullable', 'string', 'max:255'],
             'slug'       => ['required', 'string', 'max:255'],
-            'type'       => ['required', 'string', 'in:book,video,audio,fatwa,article,magazine'],
+            'type'       => ['required', 'string', 'in:book,video,audio,fatwa,magazine'],
             'sort_order' => ['integer'],
         ]);
 

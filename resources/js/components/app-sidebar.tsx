@@ -57,9 +57,6 @@ export function AppSidebar() {
         contentItems.push({ title: t('sidebar.fatwas'), href: '/admin/fatwas', icon: MessageSquare });
         contentItems.push({ title: 'بیانیه‌ها', href: '/admin/statements', icon: FileText });
     }
-    if (can('articles.view')) {
-        contentItems.push({ title: t('sidebar.articles'), href: '/admin/articles', icon: FileText });
-    }
     if (can('magazines.view')) {
         contentItems.push({ title: t('sidebar.magazines'), href: '/admin/magazines', icon: Newspaper });
     }

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AudioController;
@@ -31,8 +30,7 @@ Route::get('/audio', [AudioController::class, 'index'])->name('audio');
 Route::get('/audio/{audio}/stream', [AudioController::class, 'stream'])->name('audio.stream');
 Route::get('/audio/{audio}/download', [AudioController::class, 'download'])->name('audio.download');
 Route::get('/dar-ul-ifta', [FatwaController::class, 'index'])->name('dar-ul-ifta');
-Route::get('/articles', [ArticleController::class, 'index'])->name('articles');
-Route::get('/articles/{slug}', fn ($slug) => inertia('articles'))->name('articles.show');
+Route::get('/dar-ul-ifta/{fatwa}/stream', [FatwaController::class, 'stream'])->name('fatwas.stream');
 Route::get('/majalla', [MagazineController::class, 'index'])->name('majalla');
 Route::get('/majalla/{magazine}/reader', [MagazineController::class, 'reader'])->name('majalla.reader');
 Route::get('/majalla/{magazine}/read', [MagazineController::class, 'read'])->name('majalla.read');
@@ -91,17 +89,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('admin/fatwas/{fatwa}', [FatwaController::class, 'destroy'])->middleware('permission:fatwas.delete')->name('admin.fatwas.destroy');
     });
 
-    // ── Articles ───────────────────────────────────────────────
-    Route::middleware('permission:articles.view')->group(function () {
-        Route::get('admin/articles', [ArticleController::class, 'adminIndex'])->name('admin.articles.index');
-        Route::get('admin/articles/create', [ArticleController::class, 'create'])->middleware('permission:articles.create')->name('admin.articles.create');
-        Route::get('admin/articles/{article}/edit', [ArticleController::class, 'editForm'])->middleware('permission:articles.edit')->name('admin.articles.edit');
-        Route::post('admin/articles', [ArticleController::class, 'store'])->middleware('permission:articles.create')->name('admin.articles.store');
-        Route::post('admin/articles/upload-image', [ArticleController::class, 'uploadImage'])->middleware('permission:articles.create')->name('admin.articles.upload-image');
-        Route::put('admin/articles/{article}', [ArticleController::class, 'update'])->middleware('permission:articles.edit')->name('admin.articles.update');
-        Route::delete('admin/articles/{article}', [ArticleController::class, 'destroy'])->middleware('permission:articles.delete')->name('admin.articles.destroy');
-    });
-
     // ── Statements (بیانیه) ────────────────────────────────────
     Route::middleware('permission:fatwas.view')->group(function () {
         Route::get('admin/statements', [StatementController::class, 'adminIndex'])->name('admin.statements.index');
@@ -128,6 +115,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('admin/site-settings/logo', [SiteSettingController::class, 'removeLogo'])->name('admin.site-settings.logo.remove');
         Route::post('admin/site-settings/contact-qr', [SiteSettingController::class, 'uploadContactQr'])->name('admin.site-settings.contact-qr');
         Route::delete('admin/site-settings/contact-qr', [SiteSettingController::class, 'removeContactQr'])->name('admin.site-settings.contact-qr.remove');
+        Route::post('admin/site-settings/about-hero', [SiteSettingController::class, 'uploadAboutHero'])->name('admin.site-settings.about-hero');
+        Route::delete('admin/site-settings/about-hero', [SiteSettingController::class, 'removeAboutHero'])->name('admin.site-settings.about-hero.remove');
     });
 
     // ── Backup / Export ────────────────────────────────────────

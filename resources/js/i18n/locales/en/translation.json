@@ -77,7 +77,6 @@
         "videos": "Videos",
         "audios": "Audio",
         "fatwas": "Dar-ul-Ifta",
-        "articles": "Articles",
         "magazines": "Magazine",
         "categories": "Categories",
         "contentManagement": "Content Management"
@@ -86,7 +85,6 @@
         "about": "About Us",
         "sitemap": "Sitemap",
         "recentBooks": "Recent Books",
-        "recentArticles": "Recent Articles",
         "copyright": "All rights reserved",
         "home": "Home",
         "faq": "FAQ",
@@ -814,7 +812,6 @@
             "video": "Video",
             "audio": "Audio",
             "fatwa": "Fatwa",
-            "article": "Article",
             "magazine": "Magazine",
             "statement": "Statement"
         }

@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search, Upload, FileText, X, Download, Tags, BookOpen } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, FileText, X, Download, Tags, BookOpen, ImagePlus } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 
 type Category = CategoryItem;
@@ -74,9 +74,11 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
     const [editing, setEditing] = useState<Book | null>(null);
     const [form, setForm] = useState(emptyForm);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const thumbRef = useRef<HTMLInputElement>(null);
 
     const filtered = books.filter(
         (b) =>
@@ -89,6 +91,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
         setEditing(null);
         setForm(emptyForm);
         setSelectedFile(null);
+        setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
     }
@@ -111,6 +114,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
             is_active: book.is_active,
         });
         setSelectedFile(null);
+        setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
     }
@@ -118,35 +122,42 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
     function submit() {
         setProcessing(true);
 
-        const payload: Record<string, unknown> = {
-            ...form,
-            category_id: Number(form.category_id),
-            year: form.year ? Number(form.year) : null,
-            pages: form.pages ? Number(form.pages) : null,
+        const buildFd = (withMethod?: string) => {
+            const fd = new FormData();
+            if (withMethod) fd.append('_method', withMethod);
+            fd.append('title[da]', form.title.da);
+            fd.append('title[en]', form.title.en ?? '');
+            fd.append('title[ar]', form.title.ar ?? '');
+            fd.append('title[tg]', form.title.tg ?? '');
+            fd.append('author', form.author);
+            fd.append('category_id', String(form.category_id));
+            fd.append('year', form.year ? String(Number(form.year)) : '');
+            fd.append('isbn', form.isbn);
+            fd.append('copies', String(form.copies));
+            fd.append('available', String(form.available));
+            fd.append('rating', String(form.rating));
+            fd.append('description[da]', form.description.da);
+            fd.append('description[en]', form.description.en ?? '');
+            fd.append('description[ar]', form.description.ar ?? '');
+            fd.append('description[tg]', form.description.tg ?? '');
+            fd.append('pages', form.pages ? String(Number(form.pages)) : '');
+            fd.append('publisher', form.publisher);
+            fd.append('file_url', form.file_url);
+            fd.append('is_active', form.is_active ? '1' : '0');
+            if (selectedFile) fd.append('file', selectedFile);
+            if (selectedThumbnail) fd.append('cover_image', selectedThumbnail);
+            return fd;
         };
 
-        if (selectedFile) {
-            payload.file = selectedFile;
-        }
-
         const url = editing ? `/admin/books/${editing.id}` : '/admin/books';
+        const payload = buildFd(editing ? 'PUT' : undefined);
 
-        if (editing) {
-            // Laravel requires _method spoofing for PUT with FormData
-            router.post(url, { ...payload, _method: 'PUT' }, {
-                forceFormData: true,
-                onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); },
-                onError: (errs) => setErrors(errs),
-                onFinish: () => setProcessing(false),
-            });
-        } else {
-            router.post(url, payload, {
-                forceFormData: !!selectedFile,
-                onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); },
-                onError: (errs) => setErrors(errs),
-                onFinish: () => setProcessing(false),
-            });
-        }
+        router.post(url, payload, {
+            forceFormData: true,
+            onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); setSelectedThumbnail(null); },
+            onError: (errs) => setErrors(errs),
+            onFinish: () => setProcessing(false),
+        });
     }
 
     function destroy(book: Book) {
@@ -204,6 +215,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-10">#</TableHead>
+                                <TableHead className="w-16">تصویر</TableHead>
                                 <TableHead>عنوان</TableHead>
                                 <TableHead>نویسنده</TableHead>
                                 <TableHead>دسته‌بندی</TableHead>
@@ -215,7 +227,7 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                         <TableBody>
                             {filtered.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                                         هیچ کتابی یافت نشد
                                     </TableCell>
                                 </TableRow>
@@ -223,6 +235,15 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                             {filtered.map((book, i) => (
                                 <TableRow key={book.id}>
                                     <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                                    <TableCell>
+                                        {book.cover_image ? (
+                                            <img src={book.cover_image.startsWith('http') ? book.cover_image : `/storage/${book.cover_image}`} alt={book.title?.da} className="w-10 h-14 object-cover rounded border border-gray-200" />
+                                        ) : (
+                                            <div className="w-10 h-14 rounded border border-gray-200 bg-gray-50 flex items-center justify-center">
+                                                <BookOpen className="w-4 h-4 text-gray-300" />
+                                            </div>
+                                        )}
+                                    </TableCell>
                                     <TableCell className="font-medium">{book.title?.da}</TableCell>
                                     <TableCell>{book.author}</TableCell>
                                     <TableCell><Badge variant="secondary">{book.category}</Badge></TableCell>
@@ -376,6 +397,30 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
                                 rows={3}
                                 dir="ltr"
                             />
+                        </div>
+
+                        {/* Cover Image / Thumbnail */}
+                        <div>
+                            <Label className="mb-2 block">تصویر جلد (Thumbnail)</Label>
+                            {editing?.cover_image && !selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-gray-200">
+                                    <img src={editing.cover_image.startsWith('http') ? editing.cover_image : `/storage/${editing.cover_image}`} alt="cover" className="w-full h-40 object-cover" />
+                                    <p className="text-xs text-gray-400 px-2 py-1">تصویر فعلی — آپلود جدید جایگزین می‌شود</p>
+                                </div>
+                            )}
+                            {selectedThumbnail && (
+                                <div className="mb-2 rounded-lg overflow-hidden border border-emerald-200 relative">
+                                    <img src={URL.createObjectURL(selectedThumbnail)} alt="preview" className="w-full h-40 object-cover" />
+                                    <button type="button" onClick={() => { setSelectedThumbnail(null); if (thumbRef.current) thumbRef.current.value = ''; }} className="absolute top-1 end-1 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center text-white"><X className="w-3 h-3" /></button>
+                                </div>
+                            )}
+                            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors" onClick={() => thumbRef.current?.click()}>
+                                <ImagePlus className="w-5 h-5 mx-auto mb-1.5 text-gray-400" />
+                                <p className="text-sm text-gray-500">برای آپلود تصویر کلیک کنید</p>
+                                <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP — حداکثر ۵ مگابایت</p>
+                            </div>
+                            <input ref={thumbRef} type="file" className="hidden" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => setSelectedThumbnail(e.target.files?.[0] ?? null)} />
+                            <InputError message={errors.cover_image} />
                         </div>
 
                         {/* External URL */}

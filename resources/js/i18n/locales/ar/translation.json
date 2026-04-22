@@ -77,7 +77,6 @@
         "videos": "المرئيات",
         "audios": "المسموعات",
         "fatwas": "دار الإفتاء",
-        "articles": "المقالات",
         "magazines": "المجلة",
         "categories": "التصنيفات",
         "contentManagement": "إدارة المحتوى"
@@ -86,7 +85,6 @@
         "about": "من نحن",
         "sitemap": "خريطة الموقع",
         "recentBooks": "أحدث الكتب",
-        "recentArticles": "المقالات",
         "copyright": "جميع الحقوق محفوظة",
         "home": "الرئيسية",
         "faq": "الأسئلة الشائعة",
@@ -813,7 +811,6 @@
             "video": "مرئي",
             "audio": "مسموع",
             "fatwa": "فتوى",
-            "article": "مقالة",
             "magazine": "مجلة",
             "statement": "بيان"
         }

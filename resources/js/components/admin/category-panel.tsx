@@ -17,7 +17,7 @@ export interface CategoryItem {
 
 interface Props {
     categories: CategoryItem[];
-    type: 'book' | 'video' | 'audio' | 'fatwa' | 'article' | 'magazine';
+    type: 'book' | 'video' | 'audio' | 'fatwa' | 'magazine';
 }
 
 const emptyForm = { name: { da: '', en: '', ar: '', tg: '' }, slug: '', sort_order: 0 };

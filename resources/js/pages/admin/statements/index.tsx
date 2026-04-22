@@ -115,6 +115,7 @@ export default function StatementsIndex({ statements }: Props) {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50 text-right">
+                                    <th className="px-4 py-3 font-semibold text-gray-600 w-16">تصویر</th>
                                     <th className="px-4 py-3 font-semibold text-gray-600 w-24">نوع</th>
                                     <th className="px-4 py-3 font-semibold text-gray-600">عنوان</th>
                                     <th className="px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">تاریخ انتشار</th>
@@ -129,6 +130,19 @@ export default function StatementsIndex({ statements }: Props) {
                                     const typeColor = s.type === 'audio' ? 'bg-blue-50 text-blue-700' : s.type === 'video' ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700';
                                     return (
                                     <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-3">
+                                            {s.thumbnail ? (
+                                                <img
+                                                    src={s.thumbnail.startsWith('http') ? s.thumbnail : `/storage/${s.thumbnail}`}
+                                                    alt={s.title?.da}
+                                                    className="w-10 h-10 object-cover rounded border border-gray-200"
+                                                />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded border border-gray-200 bg-gray-50 flex items-center justify-center">
+                                                    <TypeIcon className="w-4 h-4 text-gray-300" />
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3">
                                             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${typeColor}`}>
                                                 <TypeIcon className="w-3 h-3" />

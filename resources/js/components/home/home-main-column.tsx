@@ -1,5 +1,5 @@
 import { SectionHeader } from './section-header';
-import { BookOpen, Headphones, FileText, PlayCircle, Play, Youtube, Link as LinkIcon, Upload } from 'lucide-react';
+import { BookOpen, Headphones, PlayCircle, Play, Youtube, Link as LinkIcon, Upload } from 'lucide-react';
 
 function extractYoutubeId(url: string | null): string | null {
     if (!url) return null;
@@ -167,25 +167,15 @@ function Section<T extends ContentItem>({
 
 interface HomeMainColumnProps {
     recentVideos: RecentVideo[];
-    recentArticles: ContentItem[];
     recentAudios: ContentItem[];
     recentBooks: ContentItem[];
 }
 
-export function HomeMainColumn({ recentVideos, recentArticles, recentAudios, recentBooks }: HomeMainColumnProps) {
+export function HomeMainColumn({ recentVideos, recentAudios, recentBooks }: HomeMainColumnProps) {
     const videosWithThumb = recentVideos.filter(v => getVideoThumbnail(v) !== null);
 
     return (
         <div>
-            <Section
-                title="پست‌های جدید"
-                items={recentArticles}
-                icon={FileText}
-                href="/articles"
-                category="مقاله"
-                itemHref="/articles"
-            />
-
             {videosWithThumb.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
                     <div className="flex items-center gap-2 mb-1">

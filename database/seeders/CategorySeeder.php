@@ -42,14 +42,6 @@ class CategorySeeder extends Seeder
             ['name' => ['da' => 'احکام شرعی عام',    'en' => 'General Rulings',       'ar' => 'الأحكام الشرعية العامة', 'tg' => 'Аҳкоми Шаръии Умумӣ'],    'slug' => 'rulings',    'type' => 'fatwa',   'sort_order' => 4],
             ['name' => ['da' => 'بیانیه‌ها',          'en' => 'Statements',            'ar' => 'البيانات',               'tg' => 'Баёнияҳо'],                 'slug' => 'statements', 'type' => 'fatwa',   'sort_order' => 5],
 
-            // Articles
-            ['name' => ['da' => 'تفسیر',   'en' => 'Tafseer',   'ar' => 'التفسير',  'tg' => 'Тафсир'],    'slug' => 'tafseer',   'type' => 'article', 'sort_order' => 1],
-            ['name' => ['da' => 'تاریخ',   'en' => 'History',   'ar' => 'التاريخ',  'tg' => 'Таърих'],    'slug' => 'history',   'type' => 'article', 'sort_order' => 2],
-            ['name' => ['da' => 'فقه',     'en' => 'Fiqh',      'ar' => 'الفقه',    'tg' => 'Фиқҳ'],      'slug' => 'fiqh',      'type' => 'article', 'sort_order' => 3],
-            ['name' => ['da' => 'عقیده',   'en' => 'Aqeedah',   'ar' => 'العقيدة',  'tg' => 'Ақида'],     'slug' => 'aqeedah',   'type' => 'article', 'sort_order' => 4],
-            ['name' => ['da' => 'تحلیل',   'en' => 'Analysis',  'ar' => 'التحليل',  'tg' => 'Таҳлил'],    'slug' => 'analysis',  'type' => 'article', 'sort_order' => 5],
-            ['name' => ['da' => 'قرآن',    'en' => 'Quran',     'ar' => 'القرآن',   'tg' => 'Қуръон'],    'slug' => 'quran',     'type' => 'article', 'sort_order' => 6],
-
             // Magazine
             ['name' => ['da' => 'مجله',    'en' => 'Magazine',  'ar' => 'المجلة',   'tg' => 'Маҷалла'],   'slug' => 'magazine',  'type' => 'magazine', 'sort_order' => 1],
         ];

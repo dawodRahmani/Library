@@ -220,13 +220,20 @@ class BookController extends Controller
             'is_active'   => ['boolean'],
             'file_url'    => ['nullable', 'url', 'max:2048'],
             'file'        => ['nullable', 'file', 'max:51200', 'mimes:pdf,epub,doc,docx'],
+            'cover_image' => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
         if ($request->hasFile('file')) {
             $data = array_merge($data, $this->storeFile($request->file('file')));
         }
-
         unset($data['file']);
+
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image'] = $request->file('cover_image')->store('books/covers', 'public');
+        } else {
+            unset($data['cover_image']);
+        }
+
         Book::create($data);
 
         return back();
@@ -257,6 +264,7 @@ class BookController extends Controller
             'is_active'      => ['boolean'],
             'file_url'       => ['nullable', 'url', 'max:2048'],
             'file'           => ['nullable', 'file', 'max:51200', 'mimes:pdf,epub,doc,docx'],
+            'cover_image'    => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
         if ($request->hasFile('file')) {
@@ -266,8 +274,17 @@ class BookController extends Controller
             }
             $data = array_merge($data, $this->storeFile($request->file('file')));
         }
-
         unset($data['file']);
+
+        if ($request->hasFile('cover_image')) {
+            if ($book->cover_image) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $data['cover_image'] = $request->file('cover_image')->store('books/covers', 'public');
+        } else {
+            unset($data['cover_image']);
+        }
+
         $book->update($data);
 
         return back();

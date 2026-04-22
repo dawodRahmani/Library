@@ -230,47 +230,42 @@ class StatementController extends Controller
             'is_active'      => ['boolean'],
         ]);
 
-        // For text type, clear media fields
+        // For text type, clear only the media fields (audio/video file + media url).
+        // Thumbnail is allowed for all types and handled below.
         if ($type === 'text') {
             if ($existing?->file_path) {
                 Storage::disk('public')->delete($existing->file_path);
-            }
-            if ($existing?->thumbnail) {
-                Storage::disk('public')->delete($existing->thumbnail);
             }
             $data['media_source'] = 'link';
             $data['media_url']    = null;
             $data['file_path']    = null;
             $data['file_size']    = null;
-            $data['thumbnail']    = null;
-            unset($data['file']);
-            return $data;
-        }
-
-        $source = $data['media_source'] ?? 'link';
-
-        if ($source === 'upload' && $request->hasFile('file')) {
-            if ($existing?->file_path) {
-                Storage::disk('public')->delete($existing->file_path);
-            }
-            $file = $request->file('file');
-            $dir  = $type === 'video' ? 'statements/videos' : 'statements/audios';
-            $data['file_path'] = $file->store($dir, 'public');
-            $data['file_size'] = $file->getSize();
-            $data['media_url'] = null;
-        } elseif ($source === 'upload') {
-            $data['file_path'] = $existing?->file_path;
-            $data['file_size'] = $existing?->file_size;
         } else {
-            // link — clear any stored file
-            if ($existing?->file_path) {
-                Storage::disk('public')->delete($existing->file_path);
+            $source = $data['media_source'] ?? 'link';
+
+            if ($source === 'upload' && $request->hasFile('file')) {
+                if ($existing?->file_path) {
+                    Storage::disk('public')->delete($existing->file_path);
+                }
+                $file = $request->file('file');
+                $dir  = $type === 'video' ? 'statements/videos' : 'statements/audios';
+                $data['file_path'] = $file->store($dir, 'public');
+                $data['file_size'] = $file->getSize();
+                $data['media_url'] = null;
+            } elseif ($source === 'upload') {
+                $data['file_path'] = $existing?->file_path;
+                $data['file_size'] = $existing?->file_size;
+            } else {
+                // link — clear any stored file
+                if ($existing?->file_path) {
+                    Storage::disk('public')->delete($existing->file_path);
+                }
+                $data['file_path'] = null;
+                $data['file_size'] = null;
             }
-            $data['file_path'] = null;
-            $data['file_size'] = null;
         }
 
-        // Thumbnail (video only, but allow for audio too)
+        // Thumbnail — available for all statement types
         if ($request->hasFile('thumbnail')) {
             if ($existing?->thumbnail) {
                 Storage::disk('public')->delete($existing->thumbnail);

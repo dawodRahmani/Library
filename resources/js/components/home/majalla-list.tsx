@@ -11,14 +11,14 @@ interface Issue {
     id: number;
     number: number;
     title: string;
-    theme: string;
+    theme: string | null;
     date: string;
     year: string;
     articleCount: number;
     description: string;
     featured: boolean;
-    articles: string[];
-    cover_image?: string;
+    articles: string[] | null;
+    cover_image?: string | null;
     has_file: boolean;
     file_size: number | null;
 }
@@ -27,7 +27,7 @@ interface MajallaListProps {
     magazines: Issue[];
 }
 
-const getGradient = (theme: string, id: number): string => {
+const getGradient = (theme: string | null | undefined, id: number): string => {
     const gradients = [
         'from-indigo-900 via-blue-900 to-teal-900',
         'from-amber-900 via-orange-900 to-red-900',
@@ -42,7 +42,7 @@ const getGradient = (theme: string, id: number): string => {
         'from-teal-900 via-cyan-900 to-blue-900',
         'from-orange-900 via-red-900 to-rose-900',
     ];
-    const hash = theme.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = (theme ?? '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return gradients[(hash + id) % gradients.length];
 };
 

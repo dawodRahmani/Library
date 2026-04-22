@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             VideoSeeder::class,
             AudioSeeder::class,
             FatwaSeeder::class,
-            ArticleSeeder::class,
             MagazineSeeder::class,
             SiteSettingSeeder::class,
         ]);

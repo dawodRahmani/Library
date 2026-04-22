@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
 use App\Models\Audio;
 use App\Models\Book;
 use App\Models\Fatwa;
@@ -91,23 +90,6 @@ class SearchController extends Controller
                 $title = $fatwa->title[$lang] ?? $fatwa->title['da'] ?? '';
                 if ($title) {
                     $results[] = ['type' => 'fatwa', 'title' => $title, 'url' => '/dar-ul-ifta'];
-                }
-            });
-
-        // ── Articles ─────────────────────────────────────────────────────────
-        // Articles have title + excerpt + author (no separate description column).
-        Article::where('is_active', true)
-            ->where(function ($q) use ($matchJson, $like) {
-                $q->where($matchJson('title'))
-                  ->orWhere($matchJson('excerpt'))
-                  ->orWhere('author', 'LIKE', $like);
-            })
-            ->limit($limit)
-            ->get(['id', 'title', 'slug', 'cover_image'])
-            ->each(function ($article) use (&$results, $lang) {
-                $title = $article->title[$lang] ?? $article->title['da'] ?? '';
-                if ($title) {
-                    $results[] = ['type' => 'article', 'title' => $title, 'url' => "/articles/{$article->slug}", 'image' => $article->cover_image];
                 }
             });
 

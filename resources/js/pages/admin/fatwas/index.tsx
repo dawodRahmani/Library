@@ -10,19 +10,58 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search, Tags, MessageSquare, ImagePlus, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Tags, MessageSquare, ImagePlus, X, FileText, Music, Video, Upload, LinkIcon } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 import { CategoryPanel } from '@/components/admin/category-panel';
 import type { CategoryItem } from '@/components/admin/category-panel';
 
 type Category = CategoryItem;
+type FatwaType = 'text' | 'audio' | 'video';
+type MediaSource = 'link' | 'upload';
+
 interface FatwaItem {
-    id: number; title: { da: string; en?: string; ar?: string; tg?: string }; description: { da: string; en?: string; ar?: string; tg?: string } | null; author: string;
-    category_id: number; category: string; thumbnail: string | null; is_active: boolean; created_at: string;
+    id: number;
+    title: { da: string; en?: string; ar?: string; tg?: string };
+    description: { da: string; en?: string; ar?: string; tg?: string } | null;
+    body: { da: string; en?: string; ar?: string; tg?: string } | null;
+    author: string;
+    category_id: number;
+    category: string;
+    thumbnail: string | null;
+    type: FatwaType;
+    media_source: MediaSource | null;
+    media_url: string | null;
+    file_path: string | null;
+    file_size: number | null;
+    is_active: boolean;
+    created_at: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'دارالإفتاء', href: '/admin/fatwas' }];
-const emptyForm = { title: { da: '', en: '', ar: '', tg: '' }, description: { da: '', en: '', ar: '', tg: '' }, author: '', category_id: '', is_active: true };
+
+const emptyForm = {
+    title:        { da: '', en: '', ar: '', tg: '' },
+    description:  { da: '', en: '', ar: '', tg: '' },
+    body:         { da: '', en: '', ar: '', tg: '' },
+    author:       '',
+    category_id:  '',
+    type:         'text' as FatwaType,
+    media_source: 'link' as MediaSource,
+    media_url:    '',
+    is_active:    true,
+};
+
+const TYPE_META: Record<FatwaType, { label: string; icon: React.ElementType; color: string }> = {
+    text:  { label: 'متن',    icon: FileText, color: 'bg-gray-100 text-gray-700' },
+    audio: { label: 'صوت',   icon: Music,    color: 'bg-blue-100 text-blue-700' },
+    video: { label: 'ویدیو', icon: Video,    color: 'bg-purple-100 text-purple-700' },
+};
+
+function formatBytes(bytes: number | null | undefined): string {
+    if (!bytes) return '';
+    const mb = bytes / (1024 * 1024);
+    return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
+}
 
 export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[]; categories: Category[] }) {
     const [tab, setTab] = useState<'fatwas' | 'categories'>('fatwas');
@@ -31,17 +70,44 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
     const [editing, setEditing] = useState<FatwaItem | null>(null);
     const [form, setForm] = useState(emptyForm);
     const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
     const thumbRef = useRef<HTMLInputElement>(null);
+    const fileRef = useRef<HTMLInputElement>(null);
 
-    const filtered = fatwas.filter((f) => (f.title?.da ?? '').includes(search) || f.author.includes(search) || f.category.includes(search));
+    const filtered = fatwas.filter((f) =>
+        (f.title?.da ?? '').includes(search) ||
+        f.author.includes(search) ||
+        f.category.includes(search),
+    );
 
-    function openCreate() { setEditing(null); setForm(emptyForm); setSelectedThumbnail(null); setErrors({}); setOpen(true); }
+    function openCreate() {
+        setEditing(null);
+        setForm(emptyForm);
+        setSelectedThumbnail(null);
+        setSelectedFile(null);
+        setErrors({});
+        setOpen(true);
+    }
+
     function openEdit(f: FatwaItem) {
         setEditing(f);
-        setForm({ title: { da: f.title?.da ?? '', en: f.title?.en ?? '', ar: f.title?.ar ?? '', tg: f.title?.tg ?? '' }, description: { da: f.description?.da ?? '', en: f.description?.en ?? '', ar: f.description?.ar ?? '', tg: f.description?.tg ?? '' }, author: f.author, category_id: String(f.category_id), is_active: f.is_active });
-        setSelectedThumbnail(null); setErrors({}); setOpen(true);
+        setForm({
+            title:        { da: f.title?.da ?? '', en: f.title?.en ?? '', ar: f.title?.ar ?? '', tg: f.title?.tg ?? '' },
+            description:  { da: f.description?.da ?? '', en: f.description?.en ?? '', ar: f.description?.ar ?? '', tg: f.description?.tg ?? '' },
+            body:         { da: f.body?.da ?? '', en: f.body?.en ?? '', ar: f.body?.ar ?? '', tg: f.body?.tg ?? '' },
+            author:       f.author,
+            category_id:  String(f.category_id),
+            type:         f.type ?? 'text',
+            media_source: f.media_source ?? 'link',
+            media_url:    f.media_url ?? '',
+            is_active:    f.is_active,
+        });
+        setSelectedThumbnail(null);
+        setSelectedFile(null);
+        setErrors({});
+        setOpen(true);
     }
 
     function submit() {
@@ -56,15 +122,31 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
         fd.append('description[en]', form.description?.en ?? '');
         fd.append('description[ar]', form.description?.ar ?? '');
         fd.append('description[tg]', form.description?.tg ?? '');
+        fd.append('body[da]', form.body?.da ?? '');
+        fd.append('body[en]', form.body?.en ?? '');
+        fd.append('body[ar]', form.body?.ar ?? '');
+        fd.append('body[tg]', form.body?.tg ?? '');
         fd.append('author', form.author);
         fd.append('category_id', form.category_id);
+        fd.append('type', form.type);
+        fd.append('media_source', form.media_source);
+        fd.append('media_url', form.media_url ?? '');
         fd.append('is_active', form.is_active ? '1' : '0');
         if (selectedThumbnail) fd.append('thumbnail', selectedThumbnail);
+        if (selectedFile) fd.append('file', selectedFile);
+
         const url = editing ? `/admin/fatwas/${editing.id}` : '/admin/fatwas';
-        router.post(url, fd, { forceFormData: true, onSuccess: () => { setOpen(false); setErrors({}); setSelectedThumbnail(null); }, onError: (e) => setErrors(e), onFinish: () => setProcessing(false) });
+        router.post(url, fd, {
+            forceFormData: true,
+            onSuccess: () => { setOpen(false); setErrors({}); setSelectedThumbnail(null); setSelectedFile(null); },
+            onError: (e) => setErrors(e),
+            onFinish: () => setProcessing(false),
+        });
     }
 
     function destroy(f: FatwaItem) { if (confirm('آیا مطمئن هستید؟')) router.delete(`/admin/fatwas/${f.id}`); }
+
+    const showMedia = form.type === 'audio' || form.type === 'video';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -88,20 +170,46 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                 <div className="border rounded-lg overflow-hidden">
                     <Table>
                         <TableHeader><TableRow>
-                            <TableHead className="w-10">#</TableHead><TableHead>عنوان</TableHead><TableHead>نویسنده</TableHead><TableHead>دسته‌بندی</TableHead><TableHead>تاریخ</TableHead><TableHead className="w-24">عملیات</TableHead>
+                            <TableHead className="w-10">#</TableHead>
+                            <TableHead className="w-16">تصویر</TableHead>
+                            <TableHead>عنوان</TableHead>
+                            <TableHead className="w-24">نوع</TableHead>
+                            <TableHead>نویسنده</TableHead>
+                            <TableHead>دسته‌بندی</TableHead>
+                            <TableHead>تاریخ</TableHead>
+                            <TableHead className="w-24">عملیات</TableHead>
                         </TableRow></TableHeader>
                         <TableBody>
-                            {filtered.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">هیچ موردی یافت نشد</TableCell></TableRow>}
-                            {filtered.map((f, i) => (
-                                <TableRow key={f.id}>
-                                    <TableCell className="text-muted-foreground">{i + 1}</TableCell>
-                                    <TableCell className="font-medium">{f.title?.da}</TableCell>
-                                    <TableCell>{f.author}</TableCell>
-                                    <TableCell><Badge variant="secondary">{f.category}</Badge></TableCell>
-                                    <TableCell className="text-muted-foreground">{f.created_at?.split(' ')[0]}</TableCell>
-                                    <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => openEdit(f)}><Pencil className="w-4 h-4" /></Button><Button variant="ghost" size="icon" onClick={() => destroy(f)}><Trash2 className="w-4 h-4 text-destructive" /></Button></div></TableCell>
-                                </TableRow>
-                            ))}
+                            {filtered.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">هیچ موردی یافت نشد</TableCell></TableRow>}
+                            {filtered.map((f, i) => {
+                                const meta = TYPE_META[f.type ?? 'text'];
+                                const TypeIcon = meta.icon;
+                                return (
+                                    <TableRow key={f.id}>
+                                        <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                                        <TableCell>
+                                            {f.thumbnail ? (
+                                                <img src={f.thumbnail.startsWith('http') ? f.thumbnail : `/storage/${f.thumbnail}`} alt="" className="w-10 h-10 object-cover rounded border border-gray-200" />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded border border-gray-200 bg-gray-50 flex items-center justify-center">
+                                                    <TypeIcon className="w-4 h-4 text-gray-300" />
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="font-medium">{f.title?.da}</TableCell>
+                                        <TableCell>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${meta.color}`}>
+                                                <TypeIcon className="w-3 h-3" />
+                                                {meta.label}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>{f.author}</TableCell>
+                                        <TableCell><Badge variant="secondary">{f.category}</Badge></TableCell>
+                                        <TableCell className="text-muted-foreground">{f.created_at?.split(' ')[0]}</TableCell>
+                                        <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => openEdit(f)}><Pencil className="w-4 h-4" /></Button><Button variant="ghost" size="icon" onClick={() => destroy(f)}><Trash2 className="w-4 h-4 text-destructive" /></Button></div></TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 </div>
@@ -111,6 +219,29 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                 <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle>{editing ? 'ویرایش فتوا' : 'افزودن فتوای جدید'}</DialogTitle></DialogHeader>
                     <div className="space-y-4 py-2">
+
+                        {/* Type picker */}
+                        <div>
+                            <Label className="mb-2 block">نوع فتوا *</Label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {(['text', 'audio', 'video'] as FatwaType[]).map((t) => {
+                                    const Icon = TYPE_META[t].icon;
+                                    const active = form.type === t;
+                                    return (
+                                        <button
+                                            key={t}
+                                            type="button"
+                                            onClick={() => setForm({ ...form, type: t })}
+                                            className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-colors ${active ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}
+                                        >
+                                            <Icon className="w-4 h-4" />
+                                            <span className="text-sm font-medium">{TYPE_META[t].label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
                         <div><Label>عنوان (دری) *</Label><Input value={form.title.da} onChange={(e) => setForm({ ...form, title: { ...form.title, da: e.target.value } })} placeholder="دری" /><InputError message={errors['title.da']} /></div>
                         <div><Label>عنوان (English)</Label><Input value={form.title.en ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, en: e.target.value } })} placeholder="English" dir="ltr" /></div>
                         <div><Label>عنوان (العربية)</Label><Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" /></div>
@@ -118,11 +249,72 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                         <div><Label>نویسنده *</Label><Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /><InputError message={errors.author} /></div>
                         <div><Label>دسته‌بندی *</Label>
                             <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}><SelectTrigger><SelectValue placeholder="انتخاب" /></SelectTrigger><SelectContent>{categories.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name.da}</SelectItem>)}</SelectContent></Select>
-                            <InputError message={errors.category_id} /></div>
-                        <div><Label>توضیحات (دری)</Label><Textarea value={form.description.da} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={4} /></div>
-                        <div><Label>توضیحات (English)</Label><Textarea value={form.description.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={4} dir="ltr" /></div>
-                        <div><Label>توضیحات (العربية)</Label><Textarea value={form.description.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={4} /></div>
-                        <div><Label>توضیحات (Тоҷикӣ)</Label><Textarea value={form.description.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={4} dir="ltr" /></div>
+                            <InputError message={errors.category_id} />
+                        </div>
+
+                        <div><Label>توضیحات کوتاه (دری)</Label><Textarea value={form.description.da} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={3} /></div>
+                        <div><Label>توضیحات کوتاه (English)</Label><Textarea value={form.description.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={3} dir="ltr" /></div>
+                        <div><Label>توضیحات کوتاه (العربية)</Label><Textarea value={form.description.ar ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, ar: e.target.value } })} rows={3} /></div>
+                        <div><Label>توضیحات کوتاه (Тоҷикӣ)</Label><Textarea value={form.description.tg ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, tg: e.target.value } })} rows={3} dir="ltr" /></div>
+
+                        {/* Rich body — mainly useful for text type */}
+                        {form.type === 'text' && (
+                            <>
+                                <div><Label>متن کامل (دری)</Label><Textarea value={form.body?.da ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, da: e.target.value } })} rows={6} /></div>
+                                <div><Label>متن کامل (English)</Label><Textarea value={form.body?.en ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, en: e.target.value } })} rows={6} dir="ltr" /></div>
+                                <div><Label>متن کامل (العربية)</Label><Textarea value={form.body?.ar ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, ar: e.target.value } })} rows={6} /></div>
+                                <div><Label>متن کامل (Тоҷикӣ)</Label><Textarea value={form.body?.tg ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, tg: e.target.value } })} rows={6} dir="ltr" /></div>
+                            </>
+                        )}
+
+                        {/* Media for audio/video */}
+                        {showMedia && (
+                            <div className="space-y-3 p-4 rounded-lg border border-gray-200 bg-gray-50">
+                                <Label className="text-sm font-semibold">{form.type === 'audio' ? 'فایل صوتی' : 'فایل ویدیویی'}</Label>
+                                <div className="flex gap-2">
+                                    {(['link', 'upload'] as MediaSource[]).map((src) => (
+                                        <button
+                                            key={src}
+                                            type="button"
+                                            onClick={() => setForm({ ...form, media_source: src })}
+                                            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm rounded-lg border-2 transition-colors ${form.media_source === src ? 'border-emerald-500 bg-white text-emerald-700' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}
+                                        >
+                                            {src === 'link' ? <LinkIcon className="w-3.5 h-3.5" /> : <Upload className="w-3.5 h-3.5" />}
+                                            {src === 'link' ? 'لینک خارجی' : 'آپلود فایل'}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {form.media_source === 'link' ? (
+                                    <div>
+                                        <Label className="text-xs text-muted-foreground">لینک {form.type === 'audio' ? 'صوت' : 'ویدیو'}</Label>
+                                        <Input value={form.media_url ?? ''} onChange={(e) => setForm({ ...form, media_url: e.target.value })} placeholder="https://..." dir="ltr" className="mt-1" />
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <input ref={fileRef} type="file" accept={form.type === 'audio' ? 'audio/*' : 'video/*'} className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                                                <Upload className="w-4 h-4 me-1.5" />انتخاب فایل
+                                            </Button>
+                                            {selectedFile && (
+                                                <span className="text-xs text-gray-600">{selectedFile.name} — {formatBytes(selectedFile.size)}</span>
+                                            )}
+                                            {!selectedFile && editing?.file_path && (
+                                                <span className="text-xs text-gray-500">فایل فعلی موجود است {editing.file_size ? `(${formatBytes(editing.file_size)})` : ''}</span>
+                                            )}
+                                            {selectedFile && (
+                                                <button type="button" onClick={() => { setSelectedFile(null); if (fileRef.current) fileRef.current.value = ''; }} className="text-xs text-red-500 hover:underline">
+                                                    <X className="w-3 h-3 inline" /> لغو
+                                                </button>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mt-1">حداکثر ۵۰۰ مگابایت.</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Thumbnail */}
                         <div>
                             <Label className="mb-2 block">تصویر (Thumbnail)</Label>

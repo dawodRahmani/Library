@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 
 const languages = [
-    { code: 'da', label: 'دری', dir: 'rtl' },
+    { code: 'da', label: 'فارسی', dir: 'rtl' },
     { code: 'en', label: 'English', dir: 'ltr' },
     { code: 'ar', label: 'العربية', dir: 'rtl' },
     { code: 'tg', label: 'Тоҷикӣ', dir: 'ltr' },

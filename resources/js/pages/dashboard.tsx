@@ -1,7 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import {
-    BookOpen, FileText, Headphones, Users, PlayCircle,
-    BookMarked, Library, MessageSquare, Newspaper, Plus, ArrowLeft,
+    BookOpen, Headphones, Users, PlayCircle,
+    BookMarked, Library, MessageSquare, Newspaper, Plus, ArrowLeft, ScrollText,
     TrendingUp, Clock, Settings, Database, Image as ImageIcon, Video as VideoIcon, Download,
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
@@ -15,7 +15,6 @@ interface AuthUser {
 
 interface Stats {
     books: number;
-    articles: number;
     audios: number;
     videos: number;
     fatwas: number;
@@ -25,7 +24,7 @@ interface Stats {
 }
 
 interface RecentItem {
-    type: 'book' | 'article' | 'video' | 'audio' | 'fatwa';
+    type: 'book' | 'video' | 'audio' | 'fatwa';
     title: string;
     date: string;
     href: string;
@@ -40,7 +39,6 @@ interface PageProps {
 
 const TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string; bg: string }> = {
     book:    { label: 'کتاب',    icon: BookOpen,       color: 'text-emerald-600', bg: 'bg-emerald-100' },
-    article: { label: 'مقاله',   icon: FileText,       color: 'text-blue-600',    bg: 'bg-blue-100' },
     video:   { label: 'ویدیو',   icon: PlayCircle,     color: 'text-rose-600',    bg: 'bg-rose-100' },
     audio:   { label: 'صوت',     icon: Headphones,     color: 'text-violet-600',  bg: 'bg-violet-100' },
     fatwa:   { label: 'فتوا',    icon: MessageSquare,  color: 'text-amber-600',   bg: 'bg-amber-100' },
@@ -87,7 +85,6 @@ export default function Dashboard() {
     const statCards = [
 
         { label: 'کتاب‌های ثبت‌شده', value: stats.books,      icon: BookOpen,      bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', href: '/admin/books' },
-        { label: 'مقاله‌ها',          value: stats.articles,   icon: FileText,      bg: 'bg-blue-50',    text: 'text-blue-600',    border: 'border-blue-200',    href: '/admin/articles' },
         { label: 'فایل‌های صوتی',    value: stats.audios,     icon: Headphones,    bg: 'bg-violet-50',  text: 'text-violet-600',  border: 'border-violet-200',  href: '/admin/audios' },
         { label: 'ویدیوها',           value: stats.videos,     icon: PlayCircle,    bg: 'bg-rose-50',    text: 'text-rose-600',    border: 'border-rose-200',    href: '/admin/videos' },
         { label: 'فتاوی',             value: stats.fatwas,     icon: MessageSquare, bg: 'bg-amber-50',   text: 'text-amber-600',   border: 'border-amber-200',   href: '/admin/fatwas' },
@@ -98,14 +95,14 @@ export default function Dashboard() {
 
     const quickActions = [
         { label: 'افزودن کتاب',   icon: BookOpen,      color: 'bg-emerald-600 hover:bg-emerald-700', href: '/admin/books' },
-        { label: 'افزودن مقاله',  icon: FileText,      color: 'bg-blue-600    hover:bg-blue-700',    href: '/admin/articles' },
         { label: 'افزودن صوت',    icon: Headphones,    color: 'bg-violet-600  hover:bg-violet-700',  href: '/admin/audios' },
         { label: 'افزودن ویدیو',  icon: PlayCircle,    color: 'bg-rose-600    hover:bg-rose-700',    href: '/admin/videos' },
         { label: 'افزودن فتوا',   icon: MessageSquare, color: 'bg-amber-600   hover:bg-amber-700',   href: '/admin/fatwas' },
         { label: 'افزودن مجله',   icon: Newspaper,     color: 'bg-pink-600    hover:bg-pink-700',    href: '/admin/magazines' },
+        { label: 'افزودن بیانیه', icon: ScrollText,    color: 'bg-teal-600    hover:bg-teal-700',    href: '/admin/statements' },
     ];
 
-    const totalContent = stats.books + stats.articles + stats.audios + stats.videos + stats.fatwas + stats.magazines;
+    const totalContent = stats.books + stats.audios + stats.videos + stats.fatwas + stats.magazines;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -306,7 +303,6 @@ export default function Dashboard() {
                     <div className="flex flex-col gap-3">
                         {[
                             { label: 'کتاب‌ها',    value: stats.books,     total: totalContent, color: 'bg-emerald-500' },
-                            { label: 'مقاله‌ها',   value: stats.articles,  total: totalContent, color: 'bg-blue-500' },
                             { label: 'صوتی‌ها',    value: stats.audios,    total: totalContent, color: 'bg-violet-500' },
                             { label: 'ویدیوها',    value: stats.videos,    total: totalContent, color: 'bg-rose-500' },
                             { label: 'فتاوی',      value: stats.fatwas,    total: totalContent, color: 'bg-amber-500' },

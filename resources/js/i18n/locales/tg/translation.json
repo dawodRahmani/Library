@@ -78,7 +78,6 @@
         "videos": "Видеоҳо",
         "audios": "Аудиоҳо",
         "fatwas": "Дорул-ифтоъ",
-        "articles": "Мақолаҳо",
         "magazines": "Маҷаллаҳо",
         "categories": "Гурӯҳбандиҳо",
         "contentManagement": "Идораи мӯҳтаво"
@@ -87,7 +86,6 @@
         "about": "Дар бораи мо",
         "sitemap": "Харитаи сайт",
         "recentBooks": "Китобҳои охирин",
-        "recentArticles": "Мақолаҳо",
         "copyright": "Ҳамаи ҳуқуқҳо маҳфуз аст",
         "home": "Асосӣ",
         "faq": "Саволҳои зуд-зуд",
@@ -814,7 +812,6 @@
             "video": "Видео",
             "audio": "Аудио",
             "fatwa": "Фатво",
-            "article": "Мақола",
             "magazine": "Маҷалла",
             "statement": "Баёния"
         }

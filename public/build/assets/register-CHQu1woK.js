@@ -1,1 +1,0 @@
-import{c as i,j as s}from"./app-DZJvi4dW.js";/* empty css            */function c(){const t=i.c(1);let e;return t[0]===Symbol.for("react.memo_cache_sentinel")?(e=s.jsx("div",{className:"flex min-h-svh items-center justify-center",children:s.jsx("p",{children:"Registration is disabled."})}),t[0]=e):e=t[0],e}export{c as default};

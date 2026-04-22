@@ -6,6 +6,7 @@ import { PageHeader }  from '@/components/home/page-header';
 import { MajallaList } from '@/components/home/majalla-list';
 import { HomeSidebar } from '@/components/home/home-sidebar';
 import { HomeFooter }  from '@/components/home/home-footer';
+import { useDir }      from '@/hooks/use-dir';
 
 interface MagazineItem {
     id: number;
@@ -28,8 +29,9 @@ interface PageProps {
 }
 
 export default function Majalla({ magazines }: PageProps) {
+    const dir = useDir();
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="مجله — کتابخانه رسالت" />
 
             <TopBar />

@@ -10,8 +10,14 @@ class Fatwa extends Model
     protected $fillable = [
         'title',
         'description',
+        'body',
         'author',
         'category_id',
+        'type',
+        'media_source',
+        'media_url',
+        'file_path',
+        'file_size',
         'is_active',
         'thumbnail',
     ];
@@ -21,7 +27,9 @@ class Fatwa extends Model
         return [
             'title'       => 'array',
             'description' => 'array',
+            'body'        => 'array',
             'is_active'   => 'boolean',
+            'file_size'   => 'integer',
         ];
     }
 

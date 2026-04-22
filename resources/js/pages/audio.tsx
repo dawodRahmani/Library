@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/home/page-header';
 import { AudioList }  from '@/components/home/audio-list';
 import { HomeSidebar } from '@/components/home/home-sidebar';
 import { HomeFooter } from '@/components/home/home-footer';
+import { useDir }     from '@/hooks/use-dir';
 
 interface AudioItem {
     id: number;
@@ -34,8 +35,9 @@ interface PageProps {
 }
 
 export default function Audio({ audios, categories }: PageProps) {
+    const dir = useDir();
     return (
-        <div dir="rtl" className="min-h-screen bg-[#f0f2f5] font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
             <Head title="صوت‌ها — کتابخانه رسالت" />
 
             <TopBar />
