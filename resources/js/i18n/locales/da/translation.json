@@ -838,5 +838,45 @@
         "all": "همه",
         "print": "چاپ",
         "clear": "پاک کردن"
+    },
+    "pageTitles": {
+        "contact": "تماس با ما",
+        "siteName": "کتابخانه رسالت"
+    },
+    "contact": {
+        "sendMessage": "ارسال پیام",
+        "messageSent": "پیام شما ارسال شد!",
+        "willGetBack": "به زودی با شما تماس خواهیم گرفت.",
+        "sendAnother": "ارسال پیام دیگر",
+        "fullName": "نام و نام خانوادگی",
+        "email": "ایمیل",
+        "subject": "موضوع",
+        "message": "پیام",
+        "namePlaceholder": "نام شما",
+        "subjectPlaceholder": "موضوع پیام",
+        "messagePlaceholder": "پیام خود را بنویسید...",
+        "send": "ارسال پیام",
+        "sending": "در حال ارسال...",
+        "errors": {
+            "nameRequired": "نام الزامی است.",
+            "nameMin": "نام باید حداقل ۲ کاراکتر باشد.",
+            "nameMax": "نام بیش از حد طولانی است.",
+            "nameInvalid": "نام شامل کاراکترهای غیرمجاز است.",
+            "emailRequired": "ایمیل الزامی است.",
+            "emailInvalid": "آدرس ایمیل معتبر وارد کنید.",
+            "subjectRequired": "موضوع الزامی است.",
+            "subjectMin": "موضوع باید حداقل ۳ کاراکتر باشد.",
+            "subjectMax": "موضوع بیش از حد طولانی است.",
+            "messageRequired": "پیام الزامی است.",
+            "messageMin": "پیام باید حداقل ۱۰ کاراکتر باشد.",
+            "messageMax": "پیام بیش از حد طولانی است (حداکثر ۲۰۰۰ کاراکتر).",
+            "messageNoLinks": "لینک در پیام مجاز نیست.",
+            "messageSpam": "پیام شما به اسپم شباهت دارد."
+        }
+    },
+    "bayania": {
+        "noStatements": "هیچ بیانیه‌ای منتشر نشده است.",
+        "audioUnsupported": "مرورگر شما پخش صوت را پشتیبانی نمی‌کند.",
+        "noContent": "محتوایی موجود نیست."
     }
 }

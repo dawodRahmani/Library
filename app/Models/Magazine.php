@@ -10,6 +10,7 @@ class Magazine extends Model
         'number',
         'title',
         'theme',
+        'author',
         'year',
         'article_count',
         'description',

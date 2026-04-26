@@ -6,7 +6,10 @@
       "Bash(/c/Users/Rahmani/.config/herd/bin/php82.bat -l app/Http/Controllers/FatwaController.php)",
       "Bash(/c/Users/Rahmani/.config/herd/bin/php82.bat -l app/Models/Fatwa.php)",
       "Bash(/c/Users/Rahmani/.config/herd/bin/php82.bat -l \"database/migrations/2026_04_22_000001_add_type_and_media_to_fatwas_table.php\")",
-      "Bash(/c/Users/Rahmani/.config/herd/bin/php82.bat artisan *)"
+      "Bash(/c/Users/Rahmani/.config/herd/bin/php82.bat artisan *)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"['da','en','ar','tg'].forEach\\(l => { const d = require\\('./resources/js/i18n/locales/'+l+'/translation.json'\\); console.log\\(l, 'contact:', !!d.contact, 'pageTitles:', !!d.pageTitles, 'bayania:', !!d.bayania\\); }\\);\")",
+      "Bash(npx eslint *)"
     ]
   }
 }

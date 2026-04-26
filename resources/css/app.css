@@ -17,6 +17,17 @@
 .ProseMirror pre { background: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
 .ProseMirror hr { border-color: #e5e7eb; margin: 1.5rem 0; }
 
+/* Preserve empty paragraphs (used for visual spacing after images, etc.) */
+.ProseMirror p:empty::before,
+.statement-body p:empty::before,
+.prose p:empty::before {
+    content: '\00a0';
+}
+.statement-body p:empty,
+.prose p:empty {
+    min-height: 1em;
+}
+
 @import 'tw-animate-css';
 
 /* ── Home page: news ticker ──────────────────────────────── */

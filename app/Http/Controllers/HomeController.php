@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Audio;
 use App\Models\Book;
+use App\Models\Fatwa;
+use App\Models\Magazine;
+use App\Models\Statement;
 use App\Models\Video;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -59,6 +62,39 @@ class HomeController extends Controller
                         'link'       => '/audio',
                         'image'      => '/storage/' . $a->thumbnail,
                         'created_at' => $a->created_at,
+                    ])
+            )
+            ->merge(
+                Fatwa::where('is_active', true)->whereNotNull('thumbnail')->latest()->limit(2)->get()
+                    ->map(fn ($f) => [
+                        'type'       => 'fatwa',
+                        'title'      => $f->title[$locale] ?? $f->title['da'] ?? '',
+                        'category'   => ['da' => 'فتوا', 'en' => 'Fatwa'],
+                        'link'       => '/dar-ul-ifta',
+                        'image'      => '/storage/' . $f->thumbnail,
+                        'created_at' => $f->created_at,
+                    ])
+            )
+            ->merge(
+                Statement::where('is_active', true)->whereNotNull('thumbnail')->latest()->limit(2)->get()
+                    ->map(fn ($s) => [
+                        'type'       => 'statement',
+                        'title'      => $s->title[$locale] ?? $s->title['da'] ?? '',
+                        'category'   => ['da' => 'بیانیه', 'en' => 'Statement'],
+                        'link'       => '/bayania',
+                        'image'      => '/storage/' . $s->thumbnail,
+                        'created_at' => $s->created_at,
+                    ])
+            )
+            ->merge(
+                Magazine::where('is_active', true)->whereNotNull('cover_image')->latest()->limit(2)->get()
+                    ->map(fn ($m) => [
+                        'type'       => 'magazine',
+                        'title'      => $m->title[$locale] ?? $m->title['da'] ?? '',
+                        'category'   => ['da' => 'مجله', 'en' => 'Magazine'],
+                        'link'       => '/majalla',
+                        'image'      => '/storage/' . $m->cover_image,
+                        'created_at' => $m->created_at,
                     ])
             )
             ->filter()

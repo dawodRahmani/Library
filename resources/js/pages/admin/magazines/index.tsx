@@ -18,6 +18,7 @@ interface MagazineItem {
     number: number;
     title: { da: string; en?: string; ar?: string; tg?: string };
     theme: string | null;
+    author: string | null;
     year: string;
     article_count: number;
     description: { da: string; en?: string; ar?: string; tg?: string } | null;
@@ -38,7 +39,7 @@ function formatBytes(b: number): string {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'داشبورد', href: '/dashboard' }, { title: 'مجله', href: '/admin/magazines' }];
 
 const emptyForm = {
-    number: '', title: { da: '', en: '', ar: '', tg: '' }, theme: '', year: '', article_count: 0,
+    number: '', title: { da: '', en: '', ar: '', tg: '' }, theme: '', author: '', year: '', article_count: 0,
     description: { da: '', en: '', ar: '', tg: '' }, featured: false, is_active: true,
 };
 
@@ -71,6 +72,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
             number: String(m.number),
             title: { da: m.title?.da ?? '', en: m.title?.en ?? '', ar: m.title?.ar ?? '', tg: m.title?.tg ?? '' },
             theme: m.theme ?? '',
+            author: m.author ?? '',
             year: m.year,
             article_count: m.article_count,
             description: { da: m.description?.da ?? '', en: m.description?.en ?? '', ar: m.description?.ar ?? '', tg: m.description?.tg ?? '' },
@@ -93,6 +95,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
         fd.append('title[ar]', form.title.ar ?? '');
         fd.append('title[tg]', form.title.tg ?? '');
         fd.append('theme', form.theme);
+        fd.append('author', form.author);
         fd.append('year', form.year);
         fd.append('article_count', String(form.article_count));
         fd.append('description[da]', form.description?.da ?? '');
@@ -133,6 +136,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
                             <TableHead className="w-10">#</TableHead>
                             <TableHead>شماره</TableHead>
                             <TableHead>عنوان</TableHead>
+                            <TableHead>نویسنده</TableHead>
                             <TableHead>سال</TableHead>
                             <TableHead>PDF</TableHead>
                             <TableHead>ویژه</TableHead>
@@ -140,13 +144,14 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
                         </TableRow></TableHeader>
                         <TableBody>
                             {filtered.length === 0 && (
-                                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">هیچ شماره‌ای یافت نشد</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">هیچ شماره‌ای یافت نشد</TableCell></TableRow>
                             )}
                             {filtered.map((m, i) => (
                                 <TableRow key={m.id}>
                                     <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                                     <TableCell className="font-medium">{m.number}</TableCell>
                                     <TableCell>{m.title?.da}</TableCell>
+                                    <TableCell className="text-muted-foreground">{m.author ?? '—'}</TableCell>
                                     <TableCell>{m.year}</TableCell>
                                     <TableCell>
                                         {m.file_path ? (
@@ -194,6 +199,7 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
                         <div><Label>عنوان (العربية)</Label><Input value={form.title.ar ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, ar: e.target.value } })} placeholder="العربية" /></div>
                         <div><Label>عنوان (Тоҷикӣ)</Label><Input value={form.title.tg ?? ''} onChange={(e) => setForm({ ...form, title: { ...form.title, tg: e.target.value } })} placeholder="Тоҷикӣ" dir="ltr" /></div>
                         <div><Label>موضوع</Label><Input value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} /></div>
+                        <div><Label>نویسنده</Label><Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /><InputError message={errors.author} /></div>
                         <div><Label>تعداد مقالات</Label><Input type="number" value={form.article_count} onChange={(e) => setForm({ ...form, article_count: Number(e.target.value) })} /></div>
                         <div><Label>توضیحات (دری)</Label><Textarea value={form.description?.da ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, da: e.target.value } })} rows={3} /></div>
                         <div><Label>توضیحات (English)</Label><Textarea value={form.description?.en ?? ''} onChange={(e) => setForm({ ...form, description: { ...form.description, en: e.target.value } })} rows={3} dir="ltr" /></div>

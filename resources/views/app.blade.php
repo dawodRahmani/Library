@@ -36,7 +36,7 @@
         <link rel="apple-touch-icon" href="/images/logo.png">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600|vazirmatn:400,500,600,700" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600|vazirmatn:400,500,600,700|amiri:400,700|amiri-quran:400|scheherazade-new:400,700|lateef:400|noto-naskh-arabic:400,700|reem-kufi:400,700|cairo:400,500,700|tajawal:400,500,700" rel="stylesheet" />
 
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Calendar, FileText, Newspaper, Star, Download, Eye } from 'lucide-react';
+import { BookOpen, Calendar, FileText, Newspaper, Star, Download, Eye, User } from 'lucide-react';
 
 type Locale = 'da' | 'en' | 'ar' | 'tg';
 function getLocale(lang: string): Locale {
@@ -12,6 +12,7 @@ interface Issue {
     number: number;
     title: string;
     theme: string | null;
+    author: string | null;
     date: string;
     year: string;
     articleCount: number;
@@ -83,6 +84,11 @@ function FeaturedCard({ issue, locale }: { issue: Issue; locale: Locale }) {
                         <span className="text-yellow-300 text-[11px] font-bold">{{ da: 'آخرین شماره', en: 'Latest Issue', ar: 'العدد الأخير', tg: 'Рақами охирин' }[locale]}</span>
                     </div>
                     <h2 className="text-white font-bold text-[20px] leading-snug mb-2">{issue.title}</h2>
+                    {issue.author && (
+                        <p className="flex items-center gap-1.5 text-white/85 text-[12px] mb-2">
+                            <User className="w-3.5 h-3.5" /> {issue.author}
+                        </p>
+                    )}
                     <span className="inline-block bg-white/20 text-white text-[11px] px-2.5 py-0.5 rounded-full mb-3">{issue.theme}</span>
                     <p className="text-white/80 text-[13px] leading-relaxed line-clamp-3">{issue.description}</p>
                 </div>
@@ -169,6 +175,11 @@ function IssueCard({ issue, locale }: { issue: Issue; locale: Locale }) {
                 <h3 className="font-bold text-[14px] text-gray-900 leading-snug mb-2 line-clamp-2 group-hover:text-[#27ae60] transition-colors">
                     {issue.title}
                 </h3>
+                {issue.author && (
+                    <p className="flex items-center gap-1 text-[11px] text-gray-500 mb-2">
+                        <User className="w-3 h-3" /> {issue.author}
+                    </p>
+                )}
                 <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2 mb-3 flex-1">
                     {issue.description}
                 </p>

@@ -13,9 +13,11 @@ interface Props { heroItems: HeroItem[] }
 function HeroCard({
     item, size, locale,
 }: { item: HeroItem; size: 'large' | 'medium'; locale: string }) {
-    const catLabel = locale === 'en'
-        ? (item.category.en || item.category.da)
-        : (item.category.da || item.category.en);
+    const { t } = useTranslation();
+    const knownTypes = ['book', 'video', 'audio', 'fatwa', 'magazine', 'statement'];
+    const catLabel = knownTypes.includes(item.type)
+        ? t(`search.types.${item.type}`)
+        : (locale === 'en' ? (item.category.en || item.category.da) : (item.category.da || item.category.en));
 
     return (
         <a

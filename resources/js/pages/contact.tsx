@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { TopBar }          from '@/components/home/top-bar';
 import { MainNav }         from '@/components/home/main-nav';
 import { NewsTicker }      from '@/components/home/news-ticker';
@@ -10,19 +11,22 @@ import { useDir }          from '@/hooks/use-dir';
 
 export default function Contact() {
     const dir = useDir();
+    const { t } = useTranslation();
+    const contactTitle = t('nav.contact');
+
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="تماس با ما — کتابخانه رسالت" />
+            <Head title={`${contactTitle} — ${t('pageTitles.siteName')}`} />
 
             <TopBar />
             <MainNav />
             <NewsTicker />
 
             <PageHeader
-                title="تماس با ما"
+                title={contactTitle}
                 breadcrumbs={[
-                    { label: 'خانه', href: '/' },
-                    { label: 'تماس با ما' },
+                    { label: t('nav.home'), href: '/' },
+                    { label: contactTitle },
                 ]}
             />
 

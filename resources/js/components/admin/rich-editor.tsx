@@ -7,6 +7,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
+import { FontFamily } from '@tiptap/extension-font-family';
 import { useRef } from 'react';
 import {
     Bold, Italic, UnderlineIcon, Strikethrough,
@@ -15,7 +16,21 @@ import {
     AlignLeft, AlignCenter, AlignRight,
     Link as LinkIcon, Image as ImageIcon,
     Undo, Redo, RemoveFormatting,
+    Type,
 } from 'lucide-react';
+
+const FONT_OPTIONS: { label: string; value: string }[] = [
+    { label: 'پیش‌فرض',                value: '' },
+    { label: 'Amiri Quran (قرآنی)',    value: '"Amiri Quran", serif' },
+    { label: 'Amiri (عربی)',           value: 'Amiri, serif' },
+    { label: 'Scheherazade (قرآنی)',   value: '"Scheherazade New", serif' },
+    { label: 'Lateef (عربی)',          value: 'Lateef, serif' },
+    { label: 'Noto Naskh Arabic',      value: '"Noto Naskh Arabic", serif' },
+    { label: 'Reem Kufi',              value: '"Reem Kufi", sans-serif' },
+    { label: 'Cairo',                  value: 'Cairo, sans-serif' },
+    { label: 'Tajawal',                value: 'Tajawal, sans-serif' },
+    { label: 'Vazirmatn (دری/فارسی)',  value: 'Vazirmatn, sans-serif' },
+];
 
 interface RichEditorProps {
     value: string;
@@ -65,6 +80,7 @@ export function RichEditor({
             Underline,
             TextStyle,
             Color,
+            FontFamily.configure({ types: ['textStyle'] }),
             ResizableImage.configure({ inline: false, allowBase64: true }),
             Link.configure({
                 openOnClick: false,
@@ -125,6 +141,28 @@ export function RichEditor({
                 {/* Undo / Redo */}
                 <ToolbarBtn onClick={() => editor.chain().focus().undo().run()} title="بازگشت"><Undo className="w-4 h-4" /></ToolbarBtn>
                 <ToolbarBtn onClick={() => editor.chain().focus().redo().run()} title="جلو"><Redo className="w-4 h-4" /></ToolbarBtn>
+                <Divider />
+
+                {/* Font family */}
+                <div className="flex items-center gap-1">
+                    <Type className="w-4 h-4 text-gray-500" />
+                    <select
+                        title="فونت"
+                        value={(editor.getAttributes('textStyle').fontFamily as string) ?? ''}
+                        onChange={(e) => {
+                            const v = e.target.value;
+                            if (v) editor.chain().focus().setFontFamily(v).run();
+                            else   editor.chain().focus().unsetFontFamily().run();
+                        }}
+                        className="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:border-emerald-400 max-w-[150px]"
+                    >
+                        {FONT_OPTIONS.map((f) => (
+                            <option key={f.label} value={f.value} style={{ fontFamily: f.value || undefined }}>
+                                {f.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <Divider />
 
                 {/* Headings */}

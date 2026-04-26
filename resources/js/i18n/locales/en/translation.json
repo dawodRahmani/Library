@@ -838,5 +838,45 @@
         "all": "All",
         "print": "Print",
         "clear": "Clear"
+    },
+    "pageTitles": {
+        "contact": "Contact Us",
+        "siteName": "Resalat Library"
+    },
+    "contact": {
+        "sendMessage": "Send a Message",
+        "messageSent": "Message sent!",
+        "willGetBack": "We will get back to you soon.",
+        "sendAnother": "Send another message",
+        "fullName": "Full Name",
+        "email": "Email",
+        "subject": "Subject",
+        "message": "Message",
+        "namePlaceholder": "Your name",
+        "subjectPlaceholder": "Message subject",
+        "messagePlaceholder": "Write your message...",
+        "send": "Send Message",
+        "sending": "Sending...",
+        "errors": {
+            "nameRequired": "Name is required.",
+            "nameMin": "Name must be at least 2 characters.",
+            "nameMax": "Name is too long.",
+            "nameInvalid": "Name contains invalid characters.",
+            "emailRequired": "Email is required.",
+            "emailInvalid": "Enter a valid email address.",
+            "subjectRequired": "Subject is required.",
+            "subjectMin": "Subject must be at least 3 characters.",
+            "subjectMax": "Subject is too long.",
+            "messageRequired": "Message is required.",
+            "messageMin": "Message must be at least 10 characters.",
+            "messageMax": "Message is too long (max 2000 characters).",
+            "messageNoLinks": "Links are not allowed in messages.",
+            "messageSpam": "Message appears to be spam."
+        }
+    },
+    "bayania": {
+        "noStatements": "No statements published yet.",
+        "audioUnsupported": "Your browser does not support audio playback.",
+        "noContent": "No content available."
     }
 }

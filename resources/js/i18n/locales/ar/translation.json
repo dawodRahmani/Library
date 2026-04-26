@@ -837,5 +837,45 @@
         "all": "الكل",
         "print": "طباعة",
         "clear": "مسح"
+    },
+    "pageTitles": {
+        "contact": "تواصل معنا",
+        "siteName": "مكتبة الرسالة"
+    },
+    "contact": {
+        "sendMessage": "إرسال رسالة",
+        "messageSent": "تم إرسال رسالتك!",
+        "willGetBack": "سنتواصل معك قريبًا.",
+        "sendAnother": "إرسال رسالة أخرى",
+        "fullName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "subject": "الموضوع",
+        "message": "الرسالة",
+        "namePlaceholder": "اسمك",
+        "subjectPlaceholder": "موضوع الرسالة",
+        "messagePlaceholder": "اكتب رسالتك...",
+        "send": "إرسال الرسالة",
+        "sending": "جاري الإرسال...",
+        "errors": {
+            "nameRequired": "الاسم مطلوب.",
+            "nameMin": "يجب أن يكون الاسم حرفين على الأقل.",
+            "nameMax": "الاسم طويل جدًا.",
+            "nameInvalid": "يحتوي الاسم على رموز غير مسموح بها.",
+            "emailRequired": "البريد الإلكتروني مطلوب.",
+            "emailInvalid": "أدخل بريدًا إلكترونيًا صالحًا.",
+            "subjectRequired": "الموضوع مطلوب.",
+            "subjectMin": "يجب أن يكون الموضوع 3 أحرف على الأقل.",
+            "subjectMax": "الموضوع طويل جدًا.",
+            "messageRequired": "الرسالة مطلوبة.",
+            "messageMin": "يجب أن تكون الرسالة 10 أحرف على الأقل.",
+            "messageMax": "الرسالة طويلة جدًا (الحد الأقصى 2000 حرف).",
+            "messageNoLinks": "الروابط غير مسموح بها في الرسائل.",
+            "messageSpam": "الرسالة تبدو كرسائل غير مرغوب فيها."
+        }
+    },
+    "bayania": {
+        "noStatements": "لم يتم نشر أي بيان بعد.",
+        "audioUnsupported": "متصفحك لا يدعم تشغيل الصوت.",
+        "noContent": "لا يوجد محتوى."
     }
 }

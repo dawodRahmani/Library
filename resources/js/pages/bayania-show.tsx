@@ -125,7 +125,7 @@ export default function BayaniaShow({ statement }: Props) {
                             {statement.type === 'audio' && audioSrc && (
                                 <div className="border-t border-gray-100 pt-5">
                                     <audio controls src={audioSrc} className="w-full" preload="metadata">
-                                        {locale === 'en' ? 'Your browser does not support audio playback.' : 'مرورگر شما پخش صوت را پشتیبانی نمی‌کند.'}
+                                        {t('bayania.audioUnsupported')}
                                     </audio>
                                 </div>
                             )}
@@ -158,12 +158,12 @@ export default function BayaniaShow({ statement }: Props) {
                             {/* Body text */}
                             {statement.body ? (
                                 <div
-                                    className="prose prose-sm max-w-none text-gray-700 leading-relaxed border-t border-gray-100 pt-5"
+                                    className="statement-body prose prose-sm max-w-none text-gray-700 leading-relaxed border-t border-gray-100 pt-5"
                                     dangerouslySetInnerHTML={{ __html: statement.body }}
                                 />
                             ) : statement.type === 'text' ? (
                                 <p className="text-gray-400 text-sm border-t border-gray-100 pt-5">
-                                    {locale === 'en' ? 'No content available.' : locale === 'ar' ? 'لا يوجد محتوى.' : 'محتوایی موجود نیست.'}
+                                    {t('bayania.noContent')}
                                 </p>
                             ) : null}
                         </div>

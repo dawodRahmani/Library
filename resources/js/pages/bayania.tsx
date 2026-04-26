@@ -170,7 +170,7 @@ export default function Bayania({ statements }: Props) {
                             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 flex flex-col items-center gap-4 text-center text-gray-400">
                                 <FileText className="w-10 h-10" />
                                 <p className="text-sm">
-                                    {locale === 'en' ? 'No statements published yet.' : 'هیچ بیانیه‌ای منتشر نشده است.'}
+                                    {t('bayania.noStatements')}
                                 </p>
                             </div>
                         ) : (

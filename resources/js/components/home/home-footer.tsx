@@ -50,6 +50,7 @@ export function HomeFooter() {
         { label: t('nav.darUlIfta'), href: '/dar-ul-ifta' },
         { label: t('nav.videos'),     href: '/library/videos' },
         { label: t('nav.audio'),      href: '/audio' },
+        { label: t('nav.statements'), href: '/bayania' },
         { label: t('nav.magazine'),   href: '/majalla' },
         { label: t('nav.about'),      href: '/about' },
         { label: t('nav.contact'),    href: '/contact' },

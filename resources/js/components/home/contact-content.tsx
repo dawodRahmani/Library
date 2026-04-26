@@ -25,7 +25,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 export function ContactContent() {
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
     const locale   = ['da', 'en', 'ar', 'tg'].includes(i18n.language) ? i18n.language : 'da';
 
     const settings    = usePage<SharedProps>().props.siteSettings ?? {};
@@ -47,34 +47,32 @@ export function ContactContent() {
 
     const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-    const isEn = locale === 'en';
-
     type FieldKey = 'name' | 'email' | 'subject' | 'message';
 
     function validate(field: FieldKey, value: string): string {
         const trimmed = value.trim();
         if (field === 'name') {
-            if (!trimmed) return isEn ? 'Name is required.' : 'نام الزامی است.';
-            if (trimmed.length < 2) return isEn ? 'Name must be at least 2 characters.' : 'نام باید حداقل ۲ کاراکتر باشد.';
-            if (trimmed.length > 80) return isEn ? 'Name is too long.' : 'نام بیش از حد طولانی است.';
-            if (/[<>{}\[\]\\|]/.test(trimmed)) return isEn ? 'Name contains invalid characters.' : 'نام شامل کاراکترهای غیرمجاز است.';
+            if (!trimmed) return t('contact.errors.nameRequired');
+            if (trimmed.length < 2) return t('contact.errors.nameMin');
+            if (trimmed.length > 80) return t('contact.errors.nameMax');
+            if (/[<>{}\[\]\\|]/.test(trimmed)) return t('contact.errors.nameInvalid');
         }
         if (field === 'email') {
-            if (!trimmed) return isEn ? 'Email is required.' : 'ایمیل الزامی است.';
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) return isEn ? 'Enter a valid email address.' : 'آدرس ایمیل معتبر وارد کنید.';
+            if (!trimmed) return t('contact.errors.emailRequired');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) return t('contact.errors.emailInvalid');
         }
         if (field === 'subject') {
-            if (!trimmed) return isEn ? 'Subject is required.' : 'موضوع الزامی است.';
-            if (trimmed.length < 3) return isEn ? 'Subject must be at least 3 characters.' : 'موضوع باید حداقل ۳ کاراکتر باشد.';
-            if (trimmed.length > 150) return isEn ? 'Subject is too long.' : 'موضوع بیش از حد طولانی است.';
+            if (!trimmed) return t('contact.errors.subjectRequired');
+            if (trimmed.length < 3) return t('contact.errors.subjectMin');
+            if (trimmed.length > 150) return t('contact.errors.subjectMax');
         }
         if (field === 'message') {
-            if (!trimmed) return isEn ? 'Message is required.' : 'پیام الزامی است.';
-            if (trimmed.length < 10) return isEn ? 'Message must be at least 10 characters.' : 'پیام باید حداقل ۱۰ کاراکتر باشد.';
-            if (trimmed.length > 2000) return isEn ? 'Message is too long (max 2000 characters).' : 'پیام بیش از حد طولانی است (حداکثر ۲۰۰۰ کاراکتر).';
-            if (/(https?:\/\/|www\.)/i.test(trimmed)) return isEn ? 'Links are not allowed in messages.' : 'لینک در پیام مجاز نیست.';
+            if (!trimmed) return t('contact.errors.messageRequired');
+            if (trimmed.length < 10) return t('contact.errors.messageMin');
+            if (trimmed.length > 2000) return t('contact.errors.messageMax');
+            if (/(https?:\/\/|www\.)/i.test(trimmed)) return t('contact.errors.messageNoLinks');
             const uniqueChars = new Set(trimmed.replace(/\s/g, '')).size;
-            if (uniqueChars < 4) return isEn ? 'Message appears to be spam.' : 'پیام شما به اسپم شباهت دارد.';
+            if (uniqueChars < 4) return t('contact.errors.messageSpam');
         }
         return '';
     }
@@ -113,7 +111,7 @@ export function ContactContent() {
         <div className="space-y-8">
             {/* Contact form */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                <SectionTitle>{locale === 'en' ? 'Send a Message' : 'ارسال پیام'}</SectionTitle>
+                <SectionTitle>{t('contact.sendMessage')}</SectionTitle>
 
                 {submitted ? (
                     <div className="flex flex-col items-center gap-3 py-10 text-center">
@@ -121,16 +119,16 @@ export function ContactContent() {
                             <Send className="w-6 h-6 text-[#27ae60]" />
                         </div>
                         <p className="font-bold text-[16px] text-gray-800">
-                            {locale === 'en' ? 'Message sent!' : 'پیام شما ارسال شد!'}
+                            {t('contact.messageSent')}
                         </p>
                         <p className="text-[13px] text-gray-500">
-                            {locale === 'en' ? 'We will get back to you soon.' : 'به زودی با شما تماس خواهیم گرفت.'}
+                            {t('contact.willGetBack')}
                         </p>
                         <button
                             onClick={() => reset()}
                             className="mt-2 text-[13px] text-[#27ae60] hover:underline"
                         >
-                            {locale === 'en' ? 'Send another message' : 'ارسال پیام دیگر'}
+                            {t('contact.sendAnother')}
                         </button>
                     </div>
                 ) : (
@@ -138,21 +136,21 @@ export function ContactContent() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                    {isEn ? 'Full Name' : 'نام و نام خانوادگی'} <span className="text-red-500">*</span>
+                                    {t('contact.fullName')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.name}
                                     onChange={(e) => { setData('name', e.target.value); touch('name'); }}
                                     onBlur={() => touch('name')}
-                                    placeholder={isEn ? 'Your name' : 'نام شما'}
+                                    placeholder={t('contact.namePlaceholder')}
                                     className={`w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none transition-colors ${fieldError('name') ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#27ae60]'}`}
                                 />
                                 {fieldError('name') && <p className="text-red-500 text-[11px] mt-1">{fieldError('name')}</p>}
                             </div>
                             <div>
                                 <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                    {isEn ? 'Email' : 'ایمیل'} <span className="text-red-500">*</span>
+                                    {t('contact.email')} <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -169,14 +167,14 @@ export function ContactContent() {
 
                         <div>
                             <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                {isEn ? 'Subject' : 'موضوع'} <span className="text-red-500">*</span>
+                                {t('contact.subject')} <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 value={data.subject}
                                 onChange={(e) => { setData('subject', e.target.value); touch('subject'); }}
                                 onBlur={() => touch('subject')}
-                                placeholder={isEn ? 'Message subject' : 'موضوع پیام'}
+                                placeholder={t('contact.subjectPlaceholder')}
                                 className={`w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none transition-colors ${fieldError('subject') ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#27ae60]'}`}
                             />
                             {fieldError('subject') && <p className="text-red-500 text-[11px] mt-1">{fieldError('subject')}</p>}
@@ -184,14 +182,14 @@ export function ContactContent() {
 
                         <div>
                             <label className="block text-[12px] font-bold text-gray-700 mb-1.5">
-                                {isEn ? 'Message' : 'پیام'} <span className="text-red-500">*</span>
+                                {t('contact.message')} <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 rows={5}
                                 value={data.message}
                                 onChange={(e) => { setData('message', e.target.value); touch('message'); }}
                                 onBlur={() => touch('message')}
-                                placeholder={isEn ? 'Write your message...' : 'پیام خود را بنویسید...'}
+                                placeholder={t('contact.messagePlaceholder')}
                                 className={`w-full border rounded-lg px-3 py-2.5 text-[13px] focus:outline-none transition-colors resize-none ${fieldError('message') ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#27ae60]'}`}
                             />
                             <div className="flex items-start justify-between mt-1">
@@ -211,10 +209,7 @@ export function ContactContent() {
                             className="flex items-center gap-2 bg-[#27ae60] hover:bg-[#219a52] disabled:opacity-60 text-white font-bold text-[13px] px-6 py-2.5 rounded-lg transition-colors"
                         >
                             <Send className="w-4 h-4" />
-                            {processing
-                                ? (isEn ? 'Sending...' : 'در حال ارسال...')
-                                : (isEn ? 'Send Message' : 'ارسال پیام')
-                            }
+                            {processing ? t('contact.sending') : t('contact.send')}
                         </button>
                     </form>
                 )}

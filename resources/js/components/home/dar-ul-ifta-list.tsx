@@ -271,7 +271,10 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
 
             {/* Detail modal */}
             <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-                <DialogContent className="max-w-2xl w-full" dir="rtl">
+                <DialogContent
+                    className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto"
+                    dir="rtl"
+                >
                     {selected && (() => {
                         const TypeIcon = TYPE_META[selected.type].icon;
                         const audioSrc = selected.type === 'audio'
@@ -299,10 +302,21 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
                                             {typeLabels[selected.type]}
                                         </span>
                                     </div>
-                                    <DialogTitle className="text-[16px] font-bold text-gray-900 leading-snug">
+                                    <DialogTitle className="text-[18px] sm:text-[20px] font-bold text-gray-900 leading-snug">
                                         {selected.title}
                                     </DialogTitle>
                                 </DialogHeader>
+
+                                {/* Thumbnail */}
+                                {selected.thumbnail && (
+                                    <div className="mt-3 rounded-lg overflow-hidden bg-gray-100 max-h-[420px] flex items-center justify-center">
+                                        <img
+                                            src={selected.thumbnail.startsWith('http') ? selected.thumbnail : `/storage/${selected.thumbnail}`}
+                                            alt={selected.title}
+                                            className="w-full h-auto max-h-[420px] object-contain"
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Media player */}
                                 {audioSrc && (
@@ -327,14 +341,14 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
 
                                 {/* Short description */}
                                 {selected.description && (
-                                    <p className="mt-3 text-[13px] text-gray-600 leading-relaxed">{selected.description}</p>
+                                    <p className="mt-4 text-[14px] text-gray-600 leading-relaxed">{selected.description}</p>
                                 )}
 
                                 {/* Body (text type) */}
                                 {selected.type === 'text' && (
-                                    <div className="mt-3 text-[13px] text-gray-700 leading-relaxed">
+                                    <div className="mt-4 text-[14px] text-gray-700 leading-relaxed">
                                         {selected.body
-                                            ? <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: selected.body.replace(/\n/g, '<br />') }} />
+                                            ? <div className="prose prose-base max-w-none" dangerouslySetInnerHTML={{ __html: selected.body.replace(/\n/g, '<br />') }} />
                                             : !selected.description && <span className="text-gray-400">{noContent}</span>
                                         }
                                     </div>

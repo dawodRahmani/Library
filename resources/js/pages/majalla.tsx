@@ -13,6 +13,7 @@ interface MagazineItem {
     number: number;
     title: string;
     theme: string;
+    author: string | null;
     year: string;
     articleCount: number;
     description: string;
