@@ -111,32 +111,33 @@ export default function StatementEditor({ statement }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={isEdit ? 'ویرایش بیانیه' : 'بیانیه جدید'} />
 
-            <div className="p-6 max-w-5xl" dir="rtl">
+            <div className="p-3 sm:p-6 max-w-5xl" dir="rtl">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <a
                             href="/admin/statements"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-500 transition-colors"
+                            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-500 transition-colors"
                         >
                             <ArrowRight className="w-4 h-4" />
                         </a>
-                        <div>
-                            <h1 className="text-xl font-bold">
+                        <div className="min-w-0">
+                            <h1 className="text-lg sm:text-xl font-bold truncate">
                                 {isEdit ? 'ویرایش بیانیه' : 'بیانیه جدید'}
                             </h1>
-                            <p className="text-sm text-muted-foreground mt-0.5">
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 hidden sm:block">
                                 محتوا را به زبان دری و سایر زبان‌ها وارد کنید
                             </p>
                         </div>
                     </div>
-                    <Button onClick={save} disabled={processing}>
+                    <Button onClick={save} disabled={processing} size="sm" className="shrink-0">
                         <Save className="w-4 h-4 me-1.5" />
-                        {processing ? 'در حال ذخیره...' : 'ذخیره بیانیه'}
+                        <span className="hidden sm:inline">{processing ? 'در حال ذخیره...' : 'ذخیره بیانیه'}</span>
+                        <span className="sm:hidden">{processing ? 'ذخیره...' : 'ذخیره'}</span>
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* ── Main editor (2/3) ─────────────────────────── */}
                     <div className="lg:col-span-2 space-y-5">
 

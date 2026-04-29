@@ -150,9 +150,9 @@ export default function AudiosIndex({ audios, categories }: { audios: AudioItem[
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="مدیریت صوتی‌ها" />
-            <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-bold">مدیریت صوتی‌ها</h1>
+            <div className="p-3 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                    <h1 className="text-lg sm:text-xl font-bold">مدیریت صوتی‌ها</h1>
                     {tab === 'audios' && <Button onClick={openCreate} size="sm"><Plus className="w-4 h-4 me-1" /> افزودن صوت</Button>}
                 </div>
                 <div className="flex gap-1 border-b border-gray-200">

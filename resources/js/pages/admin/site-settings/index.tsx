@@ -330,17 +330,18 @@ export default function SiteSettingsIndex({ settings }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="تنظیمات سایت" />
-            <div className="p-6 space-y-5 max-w-4xl" dir="rtl">
+            <div className="p-3 sm:p-6 space-y-4 sm:space-y-5 max-w-4xl" dir="rtl">
 
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold">تنظیمات سایت</h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">محتوای سایت را از اینجا مدیریت کنید</p>
+                <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <h1 className="text-lg sm:text-xl font-bold">تنظیمات سایت</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">محتوای سایت را از اینجا مدیریت کنید</p>
                     </div>
-                    <Button onClick={save} disabled={processing}>
+                    <Button onClick={save} disabled={processing} size="sm" className="shrink-0">
                         <Save className="w-4 h-4 me-1.5" />
-                        {processing ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
+                        <span className="hidden sm:inline">{processing ? 'در حال ذخیره...' : 'ذخیره تغییرات'}</span>
+                        <span className="sm:hidden">{processing ? 'ذخیره...' : 'ذخیره'}</span>
                     </Button>
                 </div>
 

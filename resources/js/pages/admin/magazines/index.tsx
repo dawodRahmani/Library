@@ -121,9 +121,9 @@ export default function MagazinesIndex({ magazines }: { magazines: MagazineItem[
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="مدیریت مجله" />
-            <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-bold">مدیریت مجله</h1>
+            <div className="p-3 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                    <h1 className="text-lg sm:text-xl font-bold">مدیریت مجله</h1>
                     <Button onClick={openCreate} size="sm"><Plus className="w-4 h-4 me-1" /> افزودن شماره</Button>
                 </div>
                 <div className="relative max-w-sm">

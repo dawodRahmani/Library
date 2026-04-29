@@ -107,7 +107,7 @@ export function AboutContent() {
     return (
         <div className="space-y-10">
             {/* Hero banner */}
-            <div className="bg-gradient-to-br from-[#1a252f] to-[#0d3320] rounded-2xl relative overflow-hidden aspect-[16/5]">
+            <div className="bg-gradient-to-br from-[#1a252f] to-[#0d3320] rounded-2xl relative overflow-hidden h-[60vh] min-h-[400px] lg:h-[80vh]">
                 {heroImage ? (
                     <img
                         src={`/storage/${heroImage}`}

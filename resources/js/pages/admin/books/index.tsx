@@ -169,9 +169,9 @@ export default function BooksIndex({ books, categories }: { books: Book[]; categ
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="مدیریت کتاب‌ها" />
 
-            <div className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-bold">مدیریت کتاب‌ها</h1>
+            <div className="p-3 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                    <h1 className="text-lg sm:text-xl font-bold">مدیریت کتاب‌ها</h1>
                     {tab === 'books' && (
                         <Button onClick={openCreate} size="sm">
                             <Plus className="w-4 h-4 me-1" /> افزودن کتاب

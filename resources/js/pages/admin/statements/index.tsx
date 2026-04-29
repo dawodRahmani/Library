@@ -67,21 +67,59 @@ export default function StatementsIndex({ statements }: Props) {
         return new Date(dt).toLocaleDateString('fa-IR', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
+    function renderActions(s: StatementItem) {
+        return (
+            <div className="flex items-center gap-1">
+                {(s.body?.da || s.body?.en) && (
+                    <button
+                        onClick={() => setPreview(s)}
+                        title="پیش‌نمایش"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                    >
+                        <Eye className="w-4 h-4" />
+                    </button>
+                )}
+                <a
+                    href={`/admin/statements/${s.id}/edit`}
+                    title="ویرایش"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
+                >
+                    <Pencil className="w-4 h-4" />
+                </a>
+                <button
+                    onClick={() => toggleActive(s)}
+                    title={s.is_active ? 'تبدیل به پیش‌نویس' : 'انتشار'}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-amber-600 transition-colors"
+                >
+                    {s.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+                <button
+                    onClick={() => destroy(s)}
+                    title="حذف"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+            </div>
+        );
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="مدیریت بیانیه‌ها" />
-            <div className="p-6 space-y-5 max-w-5xl" dir="rtl">
+            <div className="p-3 sm:p-6 space-y-4 sm:space-y-5 max-w-5xl" dir="rtl">
 
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold">بیانیه‌ها</h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">{statements.length} بیانیه</p>
+                <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <h1 className="text-lg sm:text-xl font-bold">بیانیه‌ها</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{statements.length} بیانیه</p>
                     </div>
-                    <Button asChild>
+                    <Button asChild size="sm" className="shrink-0">
                         <a href="/admin/statements/create">
                             <Plus className="w-4 h-4 me-1.5" />
-                            بیانیه جدید
+                            <span className="hidden sm:inline">بیانیه جدید</span>
+                            <span className="sm:hidden">جدید</span>
                         </a>
                     </Button>
                 </div>
@@ -97,120 +135,140 @@ export default function StatementsIndex({ statements }: Props) {
                     <FileText className="absolute inset-y-0 end-3 my-auto w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
 
-                {/* Table */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    {filtered.length === 0 ? (
-                        <div className="flex flex-col items-center gap-3 py-16 text-gray-400">
-                            <FileText className="w-10 h-10" />
-                            <p className="text-sm">{search ? 'نتیجه‌ای یافت نشد' : 'هیچ بیانیه‌ای وجود ندارد'}</p>
-                            {!search && (
-                                <Button asChild size="sm" variant="outline">
-                                    <a href="/admin/statements/create">
-                                        <Plus className="w-3.5 h-3.5 me-1.5" />افزودن اولین بیانیه
-                                    </a>
-                                </Button>
-                            )}
-                        </div>
-                    ) : (
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-gray-100 bg-gray-50 text-right">
-                                    <th className="px-4 py-3 font-semibold text-gray-600 w-16">تصویر</th>
-                                    <th className="px-4 py-3 font-semibold text-gray-600 w-24">نوع</th>
-                                    <th className="px-4 py-3 font-semibold text-gray-600">عنوان</th>
-                                    <th className="px-4 py-3 font-semibold text-gray-600 hidden md:table-cell">تاریخ انتشار</th>
-                                    <th className="px-4 py-3 font-semibold text-gray-600">وضعیت</th>
-                                    <th className="px-4 py-3 font-semibold text-gray-600 w-32">عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map((s) => {
-                                    const typeLabel = s.type === 'audio' ? 'صوت' : s.type === 'video' ? 'ویدیو' : 'متن';
-                                    const TypeIcon  = s.type === 'audio' ? Music : s.type === 'video' ? Video : FileText;
-                                    const typeColor = s.type === 'audio' ? 'bg-blue-50 text-blue-700' : s.type === 'video' ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700';
-                                    return (
-                                    <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                        <td className="px-4 py-3">
+                {/* Empty state */}
+                {filtered.length === 0 ? (
+                    <div className="bg-white rounded-xl border border-gray-200 flex flex-col items-center gap-3 py-12 sm:py-16 text-gray-400 px-4 text-center">
+                        <FileText className="w-10 h-10" />
+                        <p className="text-sm">{search ? 'نتیجه‌ای یافت نشد' : 'هیچ بیانیه‌ای وجود ندارد'}</p>
+                        {!search && (
+                            <Button asChild size="sm" variant="outline">
+                                <a href="/admin/statements/create">
+                                    <Plus className="w-3.5 h-3.5 me-1.5" />افزودن اولین بیانیه
+                                </a>
+                            </Button>
+                        )}
+                    </div>
+                ) : (
+                    <>
+                        {/* Mobile card list */}
+                        <div className="md:hidden space-y-3">
+                            {filtered.map((s) => {
+                                const typeLabel = s.type === 'audio' ? 'صوت' : s.type === 'video' ? 'ویدیو' : 'متن';
+                                const TypeIcon  = s.type === 'audio' ? Music : s.type === 'video' ? Video : FileText;
+                                const typeColor = s.type === 'audio' ? 'bg-blue-50 text-blue-700' : s.type === 'video' ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700';
+                                return (
+                                    <div key={s.id} className="bg-white rounded-xl border border-gray-200 p-3 space-y-3">
+                                        <div className="flex items-start gap-3">
                                             {s.thumbnail ? (
                                                 <img
                                                     src={s.thumbnail.startsWith('http') ? s.thumbnail : `/storage/${s.thumbnail}`}
                                                     alt={s.title?.da}
-                                                    className="w-10 h-10 object-cover rounded border border-gray-200"
+                                                    className="shrink-0 w-12 h-12 object-cover rounded border border-gray-200"
                                                 />
                                             ) : (
-                                                <div className="w-10 h-10 rounded border border-gray-200 bg-gray-50 flex items-center justify-center">
-                                                    <TypeIcon className="w-4 h-4 text-gray-300" />
+                                                <div className="shrink-0 w-12 h-12 rounded border border-gray-200 bg-gray-50 flex items-center justify-center">
+                                                    <TypeIcon className="w-5 h-5 text-gray-300" />
                                                 </div>
                                             )}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${typeColor}`}>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-900 line-clamp-2 text-sm leading-snug">{s.title?.da}</p>
+                                                {s.title?.en && (
+                                                    <p className="text-xs text-gray-400 mt-0.5 line-clamp-1" dir="ltr">{s.title.en}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-medium ${typeColor}`}>
                                                 <TypeIcon className="w-3 h-3" />
                                                 {typeLabel}
                                             </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <p className="font-medium text-gray-900 line-clamp-1">{s.title?.da}</p>
-                                            {s.title?.en && (
-                                                <p className="text-xs text-gray-400 mt-0.5 line-clamp-1" dir="ltr">{s.title.en}</p>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500 hidden md:table-cell">
-                                            {formatDate(s.published_at)}
-                                        </td>
-                                        <td className="px-4 py-3">
                                             <Badge className={s.is_active
-                                                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
-                                                : 'bg-gray-100 text-gray-500 hover:bg-gray-100'
+                                                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100 text-[11px] px-2 py-0'
+                                                : 'bg-gray-100 text-gray-500 hover:bg-gray-100 text-[11px] px-2 py-0'
                                             }>
                                                 {s.is_active ? 'منتشر شده' : 'پیش‌نویس'}
                                             </Badge>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-1">
-                                                {/* Preview body */}
-                                                {(s.body?.da || s.body?.en) && (
-                                                    <button
-                                                        onClick={() => setPreview(s)}
-                                                        title="پیش‌نمایش"
-                                                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
-                                                    >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                    </button>
-                                                )}
-                                                {/* Edit — full page editor */}
-                                                <a
-                                                    href={`/admin/statements/${s.id}/edit`}
-                                                    title="ویرایش"
-                                                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
-                                                >
-                                                    <Pencil className="w-3.5 h-3.5" />
-                                                </a>
-                                                {/* Toggle published */}
-                                                <button
-                                                    onClick={() => toggleActive(s)}
-                                                    title={s.is_active ? 'تبدیل به پیش‌نویس' : 'انتشار'}
-                                                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-amber-600 transition-colors"
-                                                >
-                                                    {s.is_active ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                                                </button>
-                                                {/* Delete */}
-                                                <button
-                                                    onClick={() => destroy(s)}
-                                                    title="حذف"
-                                                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        </td>
+                                            {s.published_at && (
+                                                <span className="text-gray-400">{formatDate(s.published_at)}</span>
+                                            )}
+                                        </div>
+
+                                        <div className="flex justify-end border-t border-gray-100 pt-2 -mb-1">
+                                            {renderActions(s)}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Desktop table */}
+                        <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-gray-100 bg-gray-50 text-right">
+                                        <th className="px-4 py-3 font-semibold text-gray-600 w-16">تصویر</th>
+                                        <th className="px-4 py-3 font-semibold text-gray-600 w-24">نوع</th>
+                                        <th className="px-4 py-3 font-semibold text-gray-600">عنوان</th>
+                                        <th className="px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell">تاریخ انتشار</th>
+                                        <th className="px-4 py-3 font-semibold text-gray-600">وضعیت</th>
+                                        <th className="px-4 py-3 font-semibold text-gray-600 w-36">عملیات</th>
                                     </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((s) => {
+                                        const typeLabel = s.type === 'audio' ? 'صوت' : s.type === 'video' ? 'ویدیو' : 'متن';
+                                        const TypeIcon  = s.type === 'audio' ? Music : s.type === 'video' ? Video : FileText;
+                                        const typeColor = s.type === 'audio' ? 'bg-blue-50 text-blue-700' : s.type === 'video' ? 'bg-purple-50 text-purple-700' : 'bg-gray-50 text-gray-700';
+                                        return (
+                                        <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                            <td className="px-4 py-3">
+                                                {s.thumbnail ? (
+                                                    <img
+                                                        src={s.thumbnail.startsWith('http') ? s.thumbnail : `/storage/${s.thumbnail}`}
+                                                        alt={s.title?.da}
+                                                        className="w-10 h-10 object-cover rounded border border-gray-200"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded border border-gray-200 bg-gray-50 flex items-center justify-center">
+                                                        <TypeIcon className="w-4 h-4 text-gray-300" />
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${typeColor}`}>
+                                                    <TypeIcon className="w-3 h-3" />
+                                                    {typeLabel}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <p className="font-medium text-gray-900 line-clamp-1">{s.title?.da}</p>
+                                                {s.title?.en && (
+                                                    <p className="text-xs text-gray-400 mt-0.5 line-clamp-1" dir="ltr">{s.title.en}</p>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500 hidden lg:table-cell whitespace-nowrap">
+                                                {formatDate(s.published_at)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <Badge className={s.is_active
+                                                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
+                                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-100'
+                                                }>
+                                                    {s.is_active ? 'منتشر شده' : 'پیش‌نویس'}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {renderActions(s)}
+                                            </td>
+                                        </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Preview modal — renders rich HTML */}
