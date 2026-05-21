@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { RichEditor } from '@/components/admin/rich-editor';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -260,10 +261,42 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                         {/* Rich body — mainly useful for text type */}
                         {form.type === 'text' && (
                             <>
-                                <div><Label>متن کامل (دری)</Label><Textarea value={form.body?.da ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, da: e.target.value } })} rows={6} /></div>
-                                <div><Label>متن کامل (English)</Label><Textarea value={form.body?.en ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, en: e.target.value } })} rows={6} dir="ltr" /></div>
-                                <div><Label>متن کامل (العربية)</Label><Textarea value={form.body?.ar ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, ar: e.target.value } })} rows={6} /></div>
-                                <div><Label>متن کامل (Тоҷикӣ)</Label><Textarea value={form.body?.tg ?? ''} onChange={(e) => setForm({ ...form, body: { ...form.body, tg: e.target.value } })} rows={6} dir="ltr" /></div>
+                                <div>
+                                    <Label className="mb-1.5 block">متن کامل (دری)</Label>
+                                    <RichEditor
+                                        value={form.body?.da ?? ''}
+                                        onChange={(html) => setForm({ ...form, body: { ...form.body, da: html } })}
+                                        placeholder="متن فتوا را اینجا بنویسید..."
+                                        dir="rtl"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="mb-1.5 block">متن کامل (English)</Label>
+                                    <RichEditor
+                                        value={form.body?.en ?? ''}
+                                        onChange={(html) => setForm({ ...form, body: { ...form.body, en: html } })}
+                                        placeholder="Write the fatwa body in English..."
+                                        dir="ltr"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="mb-1.5 block">متن کامل (العربية)</Label>
+                                    <RichEditor
+                                        value={form.body?.ar ?? ''}
+                                        onChange={(html) => setForm({ ...form, body: { ...form.body, ar: html } })}
+                                        placeholder="اكتب نص الفتوى هنا..."
+                                        dir="rtl"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="mb-1.5 block">متن کامل (Тоҷикӣ)</Label>
+                                    <RichEditor
+                                        value={form.body?.tg ?? ''}
+                                        onChange={(html) => setForm({ ...form, body: { ...form.body, tg: html } })}
+                                        placeholder="Матни фатворо дар ин ҷо нависед..."
+                                        dir="ltr"
+                                    />
+                                </div>
                             </>
                         )}
 

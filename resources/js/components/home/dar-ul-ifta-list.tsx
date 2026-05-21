@@ -307,8 +307,8 @@ export function DarUlIftaList({ fatwas, categories }: DarUlIftaListProps) {
                                     </DialogTitle>
                                 </DialogHeader>
 
-                                {/* Thumbnail */}
-                                {selected.thumbnail && (
+                                {/* Thumbnail — hidden for video (player renders below) */}
+                                {selected.thumbnail && selected.type !== 'video' && (
                                     <div className="mt-3 rounded-lg overflow-hidden bg-gray-100 max-h-[420px] flex items-center justify-center">
                                         <img
                                             src={selected.thumbnail.startsWith('http') ? selected.thumbnail : `/storage/${selected.thumbnail}`}
