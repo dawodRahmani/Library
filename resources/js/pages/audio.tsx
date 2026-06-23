@@ -38,7 +38,7 @@ export default function Audio({ audios, categories }: PageProps) {
     const dir = useDir();
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="صوت‌ها — کتابخانه رسالت" />
+            <Head title="صوت‌ها" />
 
             <TopBar />
             <MainNav />

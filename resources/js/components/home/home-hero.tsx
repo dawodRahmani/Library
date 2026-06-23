@@ -22,7 +22,7 @@ function HeroCard({
     return (
         <a
             href={item.link}
-            className={`relative block rounded-xl overflow-hidden group ${size === 'large' ? 'h-72 lg:h-full' : 'h-36'}`}
+            className="relative block rounded-xl overflow-hidden group aspect-video"
         >
             <img
                 src={item.image}
@@ -56,9 +56,7 @@ export function HomeHero({ heroItems }: Props) {
     if (sides.length === 0) {
         return (
             <div className="py-6">
-                <div className="h-72">
-                    <HeroCard item={main} size="large" locale={locale} />
-                </div>
+                <HeroCard item={main} size="large" locale={locale} />
             </div>
         );
     }
@@ -67,7 +65,7 @@ export function HomeHero({ heroItems }: Props) {
     if (sides.length <= 2) {
         return (
             <div className="py-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ minHeight: 288 }}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
                     <HeroCard item={main} size="large" locale={locale} />
                     <div className="flex flex-col gap-4">
                         {sides.map((card, i) => (
@@ -82,7 +80,7 @@ export function HomeHero({ heroItems }: Props) {
     // 4-5 items: large on left, 2×2 grid on right
     return (
         <div className="py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ minHeight: 288 }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
                 <HeroCard item={main} size="large" locale={locale} />
                 <div className="grid grid-cols-2 gap-4">
                     {sides.map((card, i) => (

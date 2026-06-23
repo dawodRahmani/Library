@@ -10,10 +10,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/input-error';
-import { Plus, Pencil, Trash2, Search, Tags, PlayCircle, Upload, Link, Youtube, X, FileVideo, Download, ImagePlus } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Tags, PlayCircle, Upload, Link, Youtube, X, Download, ImagePlus } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
 import { CategoryPanel } from '@/components/admin/category-panel';
 import type { CategoryItem } from '@/components/admin/category-panel';
+import { ChunkedFileUploader } from '@/components/chunked-file-uploader';
 
 type Category = CategoryItem;
 type VideoSource = 'link' | 'youtube' | 'upload';
@@ -80,11 +81,10 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<VideoItem | null>(null);
     const [form, setForm] = useState(emptyForm);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploadedTempPath, setUploadedTempPath] = useState<string | null>(null);
     const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const thumbInputRef = useRef<HTMLInputElement>(null);
 
     const filtered = videos.filter(
@@ -94,7 +94,7 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
     function openCreate() {
         setEditing(null);
         setForm(emptyForm);
-        setSelectedFile(null);
+        setUploadedTempPath(null);
         setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
@@ -115,7 +115,7 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
             video_url: v.video_url ?? '',
             is_active: v.is_active,
         });
-        setSelectedFile(null);
+        setUploadedTempPath(null);
         setSelectedThumbnail(null);
         setErrors({});
         setOpen(true);
@@ -129,27 +129,27 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
             category_id: Number(form.category_id),
             year: form.year ? Number(form.year) : null,
         };
-        if (form.video_source === 'upload' && selectedFile) {
-            payload.file = selectedFile;
+        if (form.video_source === 'upload' && uploadedTempPath) {
+            payload.temp_file_path = uploadedTempPath;
         }
         if (selectedThumbnail) {
             payload.thumbnail = selectedThumbnail;
         }
 
         const url = editing ? `/admin/videos/${editing.id}` : '/admin/videos';
-        const needsFormData = (form.video_source === 'upload' && !!selectedFile) || !!selectedThumbnail;
+        const needsFormData = !!selectedThumbnail;
 
         if (editing) {
             router.post(url, { ...payload, _method: 'PUT' }, {
                 forceFormData: needsFormData,
-                onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); },
+                onSuccess: () => { setOpen(false); setErrors({}); setUploadedTempPath(null); },
                 onError: (e) => setErrors(e),
                 onFinish: () => setProcessing(false),
             });
         } else {
             router.post(url, payload, {
                 forceFormData: needsFormData,
-                onSuccess: () => { setOpen(false); setErrors({}); setSelectedFile(null); },
+                onSuccess: () => { setOpen(false); setErrors({}); setUploadedTempPath(null); },
                 onError: (e) => setErrors(e),
                 onFinish: () => setProcessing(false),
             });
@@ -323,7 +323,7 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
                                     <button
                                         key={value}
                                         type="button"
-                                        onClick={() => { setForm({ ...form, video_source: value, video_url: '' }); setSelectedFile(null); }}
+                                        onClick={() => { setForm({ ...form, video_source: value, video_url: '' }); setUploadedTempPath(null); }}
                                         className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 text-sm font-medium transition-all ${
                                             form.video_source === value
                                                 ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
@@ -375,56 +375,19 @@ export default function VideosIndex({ videos, categories }: { videos: VideoItem[
                         )}
 
                         {form.video_source === 'upload' && (
-                            <div>
-                                <Label>فایل ویدیو (MP4, WebM, MOV)</Label>
-
-                                {/* Existing file info when editing */}
-                                {editing?.file_path && !selectedFile && (
-                                    <div className="flex items-center gap-2 p-2.5 rounded-lg border border-violet-200 bg-violet-50 mt-1.5 mb-2">
-                                        <FileVideo className="w-4 h-4 text-violet-600 shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-violet-700">فایل موجود</p>
-                                            <p className="text-xs text-violet-500">
-                                                {editing.file_size ? formatBytes(editing.file_size) : ''} — آپلود جدید جایگزین می‌شود
-                                            </p>
-                                        </div>
-                                        <a href={`/library/videos/${editing.id}/download`} className="text-violet-500 hover:text-violet-700" title="دانلود">
-                                            <Download className="w-4 h-4" />
-                                        </a>
-                                    </div>
-                                )}
-
-                                {/* Selected file preview */}
-                                {selectedFile && (
-                                    <div className="flex items-center gap-2 p-2.5 rounded-lg border border-blue-200 bg-blue-50 mt-1.5 mb-2">
-                                        <FileVideo className="w-4 h-4 text-blue-600 shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-blue-700 truncate">{selectedFile.name}</p>
-                                            <p className="text-xs text-blue-500">{formatBytes(selectedFile.size)}</p>
-                                        </div>
-                                        <button type="button" onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }} className="text-blue-400 hover:text-blue-700">
-                                            <X className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                )}
-
-                                <div
-                                    className="mt-1.5 border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <Upload className="w-5 h-5 mx-auto mb-1.5 text-gray-400" />
-                                    <p className="text-sm text-gray-500">برای آپلود کلیک کنید</p>
-                                    <p className="text-xs text-gray-400 mt-0.5">MP4, WebM, MOV, AVI, MKV — حداکثر ۵۰۰ مگابایت</p>
-                                </div>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    className="hidden"
-                                    accept=".mp4,.webm,.mov,.avi,.mkv"
-                                    onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-                                />
-                                <InputError message={errors.file} />
-                            </div>
+                            <ChunkedFileUploader
+                                label="فایل ویدیو (MP4, WebM, MOV, AVI, MKV)"
+                                variant="video"
+                                helperText="MP4, WebM, MOV, AVI, MKV — حداکثر ۱ گیگابایت (آپلود قطعه‌ای)"
+                                existing={editing?.file_path ? {
+                                    size: editing.file_size,
+                                    label: 'فایل موجود',
+                                    downloadHref: `/library/videos/${editing.id}/download`,
+                                } : null}
+                                onUploaded={(r) => setUploadedTempPath(r.temp_path)}
+                                onCleared={() => setUploadedTempPath(null)}
+                                error={errors.file || errors.temp_file_path}
+                            />
                         )}
 
                         <div>

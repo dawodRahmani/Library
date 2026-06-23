@@ -8,6 +8,7 @@ import InputError from '@/components/input-error';
 import { RichEditor } from '@/components/admin/rich-editor';
 import { ArrowRight, Save, FileText, Music, Video, Upload, X, Image as ImageIcon } from 'lucide-react';
 import type { BreadcrumbItem } from '@/types';
+import { ChunkedFileUploaderInline } from '@/components/chunked-file-uploader';
 
 type StatementType = 'text' | 'audio' | 'video';
 type MediaSource = 'link' | 'upload';
@@ -50,9 +51,8 @@ export default function StatementEditor({ statement }: Props) {
     const [processing, setProcessing] = useState(false);
     const [langTab, setLangTab]       = useState<'da' | 'en' | 'ar' | 'tg'>('da');
 
-    const fileInputRef  = useRef<HTMLInputElement>(null);
     const thumbInputRef = useRef<HTMLInputElement>(null);
-    const [newFile, setNewFile]   = useState<File | null>(null);
+    const [uploadedTempPath, setUploadedTempPath] = useState<string | null>(null);
     const [newThumb, setNewThumb] = useState<File | null>(null);
     const [thumbPreview, setThumbPreview] = useState<string | null>(null);
 
@@ -62,10 +62,6 @@ export default function StatementEditor({ statement }: Props) {
         { value: 'video', label: 'ویدیو', icon: Video    },
     ];
 
-    function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const f = e.target.files?.[0];
-        setNewFile(f ?? null);
-    }
     function onThumbChange(e: React.ChangeEvent<HTMLInputElement>) {
         const f = e.target.files?.[0];
         if (!f) { setNewThumb(null); setThumbPreview(null); return; }
@@ -85,7 +81,7 @@ export default function StatementEditor({ statement }: Props) {
         fd.append('media_url',    form.media_url ?? '');
         fd.append('published_at', form.published_at ?? '');
         fd.append('is_active',    form.is_active ? '1' : '0');
-        if (newFile)  fd.append('file', newFile);
+        if (uploadedTempPath) fd.append('temp_file_path', uploadedTempPath);
         if (newThumb) fd.append('thumbnail', newThumb);
 
         const url = isEdit ? `/admin/statements/${statement!.id}` : '/admin/statements';
@@ -253,37 +249,14 @@ export default function StatementEditor({ statement }: Props) {
                                         </p>
                                     </div>
                                 ) : (
-                                    <div>
-                                        <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept={form.type === 'audio' ? 'audio/*' : 'video/*'}
-                                            className="hidden"
-                                            onChange={onFileChange}
-                                        />
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                                                <Upload className="w-4 h-4 me-1.5" />انتخاب فایل
-                                            </Button>
-                                            {newFile && (
-                                                <span className="text-xs text-gray-600">
-                                                    {newFile.name} — {formatBytes(newFile.size)}
-                                                </span>
-                                            )}
-                                            {!newFile && statement?.file_path && (
-                                                <span className="text-xs text-gray-500">
-                                                    فایل فعلی موجود است {statement.file_size ? `(${formatBytes(statement.file_size)})` : ''}
-                                                </span>
-                                            )}
-                                            {newFile && (
-                                                <button type="button" onClick={() => { setNewFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                                                    className="text-xs text-red-500 hover:underline">
-                                                    <X className="w-3 h-3 inline" /> لغو
-                                                </button>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-muted-foreground mt-1">حداکثر ۵۰۰ مگابایت.</p>
-                                    </div>
+                                    <ChunkedFileUploaderInline
+                                        variant={form.type === 'audio' ? 'audio' : 'video'}
+                                        existing={statement?.file_path ? { size: statement.file_size } : null}
+                                        onUploaded={(r) => setUploadedTempPath(r.temp_path)}
+                                        onCleared={() => setUploadedTempPath(null)}
+                                        helperText="حداکثر ۱ گیگابایت — آپلود قطعه‌ای."
+                                        error={errors.file || errors.temp_file_path}
+                                    />
                                 )}
 
                             </div>

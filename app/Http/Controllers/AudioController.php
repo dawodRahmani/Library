@@ -119,10 +119,40 @@ class AudioController extends Controller
 
         $locale   = app()->getLocale();
         $title    = $audio->title[$locale] ?? $audio->title['da'] ?? 'audio';
-        $ext      = pathinfo($audio->file_path, PATHINFO_EXTENSION);
-        $filename = Str::slug($title) . '.' . $ext;
+        $ext      = pathinfo($audio->file_path, PATHINFO_EXTENSION) ?: 'mp3';
 
-        return Storage::disk('public')->download($audio->file_path, $filename);
+        $slug = Str::slug($title, '-');
+        if ($slug === '') {
+            $slug = preg_replace('/[\\\\\/\x00-\x1F\x7F<>:"|?*]+/u', '', $title) ?? '';
+            $slug = preg_replace('/\s+/u', '-', trim($slug)) ?? '';
+            $slug = trim($slug, '-');
+        }
+        if ($slug === '') {
+            $slug = 'audio-' . $audio->id;
+        }
+        $filename = mb_substr($slug, 0, 120) . '.' . $ext;
+
+        $path     = Storage::disk('public')->path($audio->file_path);
+        $fileSize = filesize($path);
+        $mimeType = mime_content_type($path) ?: 'application/octet-stream';
+
+        return response()->streamDownload(function () use ($path) {
+            @set_time_limit(0);
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) { @ob_end_clean(); }
+            }
+            $fp = fopen($path, 'rb');
+            if (! $fp) return;
+            while (! feof($fp) && ! connection_aborted()) {
+                echo fread($fp, 1024 * 256);
+                @flush();
+            }
+            fclose($fp);
+        }, $filename, [
+            'Content-Type'   => $mimeType,
+            'Content-Length' => $fileSize,
+            'Cache-Control'  => 'no-store',
+        ]);
     }
 
     /** Admin CRUD */

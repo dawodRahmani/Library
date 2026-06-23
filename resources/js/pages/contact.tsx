@@ -16,7 +16,7 @@ export default function Contact() {
 
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title={`${contactTitle} — ${t('pageTitles.siteName')}`} />
+            <Head title={contactTitle} />
 
             <TopBar />
             <MainNav />

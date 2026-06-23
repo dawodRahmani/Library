@@ -15,6 +15,7 @@ import { Plus, Pencil, Trash2, Search, Tags, MessageSquare, ImagePlus, X, FileTe
 import type { BreadcrumbItem } from '@/types';
 import { CategoryPanel } from '@/components/admin/category-panel';
 import type { CategoryItem } from '@/components/admin/category-panel';
+import { ChunkedFileUploaderInline } from '@/components/chunked-file-uploader';
 
 type Category = CategoryItem;
 type FatwaType = 'text' | 'audio' | 'video';
@@ -71,11 +72,10 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
     const [editing, setEditing] = useState<FatwaItem | null>(null);
     const [form, setForm] = useState(emptyForm);
     const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploadedTempPath, setUploadedTempPath] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
     const thumbRef = useRef<HTMLInputElement>(null);
-    const fileRef = useRef<HTMLInputElement>(null);
 
     const filtered = fatwas.filter((f) =>
         (f.title?.da ?? '').includes(search) ||
@@ -87,7 +87,7 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
         setEditing(null);
         setForm(emptyForm);
         setSelectedThumbnail(null);
-        setSelectedFile(null);
+        setUploadedTempPath(null);
         setErrors({});
         setOpen(true);
     }
@@ -106,7 +106,7 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
             is_active:    f.is_active,
         });
         setSelectedThumbnail(null);
-        setSelectedFile(null);
+        setUploadedTempPath(null);
         setErrors({});
         setOpen(true);
     }
@@ -134,12 +134,12 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
         fd.append('media_url', form.media_url ?? '');
         fd.append('is_active', form.is_active ? '1' : '0');
         if (selectedThumbnail) fd.append('thumbnail', selectedThumbnail);
-        if (selectedFile) fd.append('file', selectedFile);
+        if (uploadedTempPath) fd.append('temp_file_path', uploadedTempPath);
 
         const url = editing ? `/admin/fatwas/${editing.id}` : '/admin/fatwas';
         router.post(url, fd, {
             forceFormData: true,
-            onSuccess: () => { setOpen(false); setErrors({}); setSelectedThumbnail(null); setSelectedFile(null); },
+            onSuccess: () => { setOpen(false); setErrors({}); setSelectedThumbnail(null); setUploadedTempPath(null); },
             onError: (e) => setErrors(e),
             onFinish: () => setProcessing(false),
         });
@@ -324,26 +324,14 @@ export default function FatwasIndex({ fatwas, categories }: { fatwas: FatwaItem[
                                         <Input value={form.media_url ?? ''} onChange={(e) => setForm({ ...form, media_url: e.target.value })} placeholder="https://..." dir="ltr" className="mt-1" />
                                     </div>
                                 ) : (
-                                    <div>
-                                        <input ref={fileRef} type="file" accept={form.type === 'audio' ? 'audio/*' : 'video/*'} className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                                                <Upload className="w-4 h-4 me-1.5" />انتخاب فایل
-                                            </Button>
-                                            {selectedFile && (
-                                                <span className="text-xs text-gray-600">{selectedFile.name} — {formatBytes(selectedFile.size)}</span>
-                                            )}
-                                            {!selectedFile && editing?.file_path && (
-                                                <span className="text-xs text-gray-500">فایل فعلی موجود است {editing.file_size ? `(${formatBytes(editing.file_size)})` : ''}</span>
-                                            )}
-                                            {selectedFile && (
-                                                <button type="button" onClick={() => { setSelectedFile(null); if (fileRef.current) fileRef.current.value = ''; }} className="text-xs text-red-500 hover:underline">
-                                                    <X className="w-3 h-3 inline" /> لغو
-                                                </button>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-muted-foreground mt-1">حداکثر ۵۰۰ مگابایت.</p>
-                                    </div>
+                                    <ChunkedFileUploaderInline
+                                        variant={form.type === 'audio' ? 'audio' : 'video'}
+                                        existing={editing?.file_path ? { size: editing.file_size } : null}
+                                        onUploaded={(r) => setUploadedTempPath(r.temp_path)}
+                                        onCleared={() => setUploadedTempPath(null)}
+                                        helperText="حداکثر ۱ گیگابایت — آپلود قطعه‌ای."
+                                        error={errors.file || errors.temp_file_path}
+                                    />
                                 )}
                             </div>
                         )}

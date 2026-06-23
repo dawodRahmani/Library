@@ -244,7 +244,7 @@ function VideoCard({ video, onPlay, locale }: { video: VideoItem; onPlay: (v: Vi
             className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
             onClick={() => onPlay(video)}
         >
-            <div className={`relative h-36 bg-gradient-to-br ${getGradient(video.id)} flex items-center justify-center overflow-hidden`}>
+            <div className={`relative aspect-video bg-gradient-to-br ${getGradient(video.id)} flex items-center justify-center overflow-hidden`}>
                 {youtubeId ? (
                     <img
                         src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
@@ -351,7 +351,7 @@ export default function VideosIndex({ videos, categories }: PageProps) {
 
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
+            <Head title={L.pageTitle} />
             <TopBar />
             <MainNav />
             <NewsTicker />

@@ -76,7 +76,7 @@ export default function BayaniaShow({ statement }: Props) {
 
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title={`${statement.title} — کتابخانه رسالت`} />
+            <Head title={statement.title} />
 
             <TopBar />
             <MainNav />

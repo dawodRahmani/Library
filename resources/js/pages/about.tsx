@@ -12,7 +12,7 @@ export default function About() {
     const dir = useDir();
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="درباره ما — کتابخانه رسالت" />
+            <Head title="درباره ما" />
 
             <TopBar />
             <MainNav />

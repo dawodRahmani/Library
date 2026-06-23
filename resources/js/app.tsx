@@ -1,4 +1,4 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -16,16 +16,28 @@ configureEcho({
     forceTLS: true,
 });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Library';
+const fallbackAppName = import.meta.env.VITE_APP_NAME || 'Library';
+let currentAppName = fallbackAppName;
+
+const readAppName = (props: unknown): string => {
+    const name = (props as { appName?: unknown })?.appName;
+    return typeof name === 'string' && name !== '' ? name : fallbackAppName;
+};
+
+router.on('navigate', (event) => {
+    currentAppName = readAppName(event.detail.page.props);
+});
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => (title ? `${title} - ${currentAppName}` : currentAppName),
     resolve: (name) =>
         resolvePageComponent(
             `./pages/${name}.tsx`,
             import.meta.glob('./pages/**/*.tsx'),
         ),
     setup({ el, App, props }) {
+        currentAppName = readAppName(props.initialPage.props);
+
         const root = createRoot(el);
 
         root.render(

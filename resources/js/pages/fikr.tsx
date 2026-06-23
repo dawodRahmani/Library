@@ -12,7 +12,7 @@ export default function Fikr() {
     const dir = useDir();
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="فکر و عقیده — کتابخانه رسالت" />
+            <Head title="فکر و عقیده" />
 
             <TopBar />
             <MainNav />

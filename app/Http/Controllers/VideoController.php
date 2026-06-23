@@ -56,7 +56,7 @@ class VideoController extends Controller
         ]);
     }
 
-    /** Stream uploaded video file inline */
+    /** Stream uploaded video file inline with HTTP Range support */
     public function stream(Video $video): StreamedResponse
     {
         if ($video->video_source !== 'upload' || ! $video->file_path || ! Storage::disk('public')->exists($video->file_path)) {
@@ -65,13 +65,70 @@ class VideoController extends Controller
 
         $path     = Storage::disk('public')->path($video->file_path);
         $mimeType = mime_content_type($path) ?: 'video/mp4';
+        $fileSize = filesize($path);
         $filename = basename($video->file_path);
 
-        return response()->streamDownload(function () use ($path) {
-            readfile($path);
-        }, $filename, [
+        $rangeHeader = request()->header('Range');
+
+        if ($rangeHeader && preg_match('/bytes=(\d*)-(\d*)/', $rangeHeader, $matches)) {
+            $start  = $matches[1] !== '' ? (int) $matches[1] : 0;
+            $end    = $matches[2] !== '' ? (int) $matches[2] : $fileSize - 1;
+            $end    = min($end, $fileSize - 1);
+            $start  = max(0, $start);
+
+            if ($start > $end) {
+                return response()->stream(function () { /* empty body */ }, 416, [
+                    'Content-Range' => "bytes */{$fileSize}",
+                ]);
+            }
+
+            $length = $end - $start + 1;
+
+            return response()->stream(function () use ($path, $start, $length) {
+                @set_time_limit(0);
+                if (function_exists('ob_get_level')) {
+                    while (ob_get_level() > 0) { @ob_end_clean(); }
+                }
+                $fp = fopen($path, 'rb');
+                if (! $fp) return;
+                fseek($fp, $start);
+                $chunk = 1024 * 256; // 256 KiB
+                $sent  = 0;
+                while (! feof($fp) && $sent < $length && ! connection_aborted()) {
+                    $read = min($chunk, $length - $sent);
+                    echo fread($fp, $read);
+                    $sent += $read;
+                    @flush();
+                }
+                fclose($fp);
+            }, 206, [
+                'Content-Type'        => $mimeType,
+                'Content-Range'       => "bytes {$start}-{$end}/{$fileSize}",
+                'Content-Length'      => $length,
+                'Accept-Ranges'       => 'bytes',
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+                'Cache-Control'       => 'public, max-age=0',
+            ]);
+        }
+
+        return response()->stream(function () use ($path) {
+            @set_time_limit(0);
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) { @ob_end_clean(); }
+            }
+            $fp = fopen($path, 'rb');
+            if (! $fp) return;
+            while (! feof($fp) && ! connection_aborted()) {
+                echo fread($fp, 1024 * 256);
+                @flush();
+            }
+            fclose($fp);
+        }, 200, [
             'Content-Type'        => $mimeType,
+            'Content-Length'      => $fileSize,
+            'Accept-Ranges'       => 'bytes',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Cache-Control'       => 'public, max-age=0',
         ]);
     }
 
@@ -84,10 +141,49 @@ class VideoController extends Controller
 
         $locale   = app()->getLocale();
         $title    = $video->title[$locale] ?? $video->title['da'] ?? 'video';
-        $ext      = pathinfo($video->file_path, PATHINFO_EXTENSION);
-        $filename = Str::slug($title) . '.' . $ext;
+        $ext      = pathinfo($video->file_path, PATHINFO_EXTENSION) ?: 'mp4';
+        $filename = self::safeDownloadName($title, $ext, $video->id);
 
-        return Storage::disk('public')->download($video->file_path, $filename);
+        $path     = Storage::disk('public')->path($video->file_path);
+        $fileSize = filesize($path);
+        $mimeType = mime_content_type($path) ?: 'application/octet-stream';
+
+        return response()->streamDownload(function () use ($path) {
+            @set_time_limit(0);
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) { @ob_end_clean(); }
+            }
+            $fp = fopen($path, 'rb');
+            if (! $fp) return;
+            while (! feof($fp) && ! connection_aborted()) {
+                echo fread($fp, 1024 * 256);
+                @flush();
+            }
+            fclose($fp);
+        }, $filename, [
+            'Content-Type'   => $mimeType,
+            'Content-Length' => $fileSize,
+            'Cache-Control'  => 'no-store',
+        ]);
+    }
+
+    /**
+     * Build a download filename that is non-empty and safe for HTTP headers
+     * even when the title is Dari/Arabic (Str::slug would otherwise return '').
+     */
+    private static function safeDownloadName(string $title, string $ext, int $id): string
+    {
+        $slug = Str::slug($title, '-');
+        if ($slug === '') {
+            // Keep letters/digits/spaces/dashes/underscores; collapse the rest.
+            $slug = preg_replace('/[\\\\\/\x00-\x1F\x7F<>:"|?*]+/u', '', $title) ?? '';
+            $slug = preg_replace('/\s+/u', '-', trim($slug)) ?? '';
+            $slug = trim($slug, '-');
+        }
+        if ($slug === '') {
+            $slug = 'video-' . $id;
+        }
+        return mb_substr($slug, 0, 120) . '.' . $ext;
     }
 
     /** Admin listing */
@@ -177,21 +273,37 @@ class VideoController extends Controller
             'description.en'  => ['nullable', 'string'],
             'description.ar'  => ['nullable', 'string'],
             'description.tg'  => ['nullable', 'string'],
-            'video_source' => ['required', 'string', 'in:link,youtube,upload'],
-            'video_url'    => ['nullable', 'string', 'max:1000'],
-            'is_active'    => ['boolean'],
-            'file'         => ['nullable', 'file', 'max:512000', 'mimes:mp4,webm,mov,avi,mkv'],
-            'thumbnail'    => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
+            'video_source'   => ['required', 'string', 'in:link,youtube,upload'],
+            'video_url'      => ['nullable', 'string', 'max:1000'],
+            'is_active'      => ['boolean'],
+            'file'           => ['nullable', 'file', 'max:1048576', 'mimes:mp4,webm,mov,avi,mkv'],
+            'temp_file_path' => ['nullable', 'string', 'max:255'],
+            'thumbnail'      => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
 
-        if ($source === 'upload' && $request->hasFile('file')) {
-            // Delete old file if replacing
+        if ($source === 'upload' && $request->filled('temp_file_path')) {
+            $moved = ChunkUploadController::consumeTempFile($request->input('temp_file_path'), 'videos');
+            if (! $moved) {
+                abort(422, 'Uploaded file is invalid or missing.');
+            }
+            if ($existing?->file_path) {
+                Storage::disk('public')->delete($existing->file_path);
+            }
+            [$data['file_path'], $data['file_size']] = $moved;
+            $data['video_url'] = null;
+        } elseif ($source === 'upload' && $request->hasFile('file')) {
+            // Legacy single-shot upload (kept for backwards compatibility).
             if ($existing?->file_path) {
                 Storage::disk('public')->delete($existing->file_path);
             }
             $file = $request->file('file');
             $data['file_path'] = $file->store('videos', 'public');
             $data['file_size'] = $file->getSize();
+            $data['video_url'] = null;
+        } elseif ($source === 'upload') {
+            // Source is upload but no new file — keep existing file.
+            $data['file_path'] = $existing?->file_path;
+            $data['file_size'] = $existing?->file_size;
             $data['video_url'] = null;
         } elseif ($source === 'youtube') {
             $data['file_path'] = null;
@@ -212,7 +324,7 @@ class VideoController extends Controller
             unset($data['thumbnail']);
         }
 
-        unset($data['file']);
+        unset($data['file'], $data['temp_file_path']);
         return $data;
     }
 

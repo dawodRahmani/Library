@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 use Inertia\Middleware;
 use App\Models\Book;
 use App\Models\Category;
@@ -31,6 +32,31 @@ class HandleInertiaRequests extends Middleware
         } catch (\Throwable) {
             return [];
         }
+    }
+
+    private function resolveAppName(): string
+    {
+        try {
+            $value = SiteSetting::get('site_name');
+        } catch (\Throwable) {
+            $value = null;
+        }
+
+        $fallback = config('app.name', 'Library');
+
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        if (is_array($value)) {
+            $locale = app()->getLocale();
+            return $value[$locale]
+                ?? $value['da']
+                ?? $value['en']
+                ?? (collect($value)->first() ?: $fallback);
+        }
+
+        return $fallback;
     }
 
     private function getNavCategories(): array
@@ -71,9 +97,13 @@ class HandleInertiaRequests extends Middleware
 
         $user = $request->user();
 
+        $appName = $this->resolveAppName();
+        View::share('appName', $appName);
+
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => $appName,
+            'appName' => $appName,
             'locale' => fn () => app()->getLocale(),
             'locales' => ['da', 'en', 'ar', 'tg'],
             'auth' => [

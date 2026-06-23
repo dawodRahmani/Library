@@ -41,7 +41,7 @@ export default function Welcome({ heroItems, recentVideos, recentAudios, recentB
     const dir = useDir();
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="کتابخانه رسالت" />
+            <Head />
             <TopBar />
             <MainNav />
             <NewsTicker />

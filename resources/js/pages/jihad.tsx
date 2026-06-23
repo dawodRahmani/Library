@@ -12,7 +12,7 @@ export default function Jihad() {
     const dir = useDir();
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="جهاد و شهادت — کتابخانه رسالت" />
+            <Head title="جهاد و شهادت" />
 
             <TopBar />
             <MainNav />

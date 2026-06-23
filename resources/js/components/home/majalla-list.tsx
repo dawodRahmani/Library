@@ -143,7 +143,7 @@ function IssueCard({ issue, locale }: { issue: Issue; locale: Locale }) {
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Cover thumbnail */}
-            <div className={`h-40 bg-gradient-to-br ${gradient} relative flex flex-col items-center justify-center gap-2 overflow-hidden`}>
+            <div className={`aspect-video bg-gradient-to-br ${gradient} relative flex flex-col items-center justify-center gap-2 overflow-hidden`}>
                 {issue.cover_image ? (
                     <img
                         src={issue.cover_image.startsWith('http') ? issue.cover_image : `/storage/${issue.cover_image}`}

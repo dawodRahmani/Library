@@ -106,7 +106,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="داشبورد — کتابخانه رسالت" />
+            <Head title="داشبورد" />
 
             <div className="flex flex-col gap-6 p-6">
 

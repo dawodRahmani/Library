@@ -131,7 +131,7 @@ export default function Bayania({ statements }: Props) {
 
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title={`${t('nav.statements', 'بیانیه‌ها')} — کتابخانه رسالت`} />
+            <Head title={t('nav.statements', 'بیانیه‌ها')} />
 
             <TopBar />
             <MainNav />

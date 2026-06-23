@@ -53,7 +53,7 @@ export default function DarUlIfta({ fatwas, categories }: PageProps) {
 
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title={`${L.pageTitle} — کتابخانه رسالت`} />
+            <Head title={L.pageTitle} />
 
             <TopBar />
             <MainNav />

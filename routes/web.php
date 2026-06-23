@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ChunkUploadController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AudioController;
 use App\Http\Controllers\BookController;
@@ -47,6 +48,10 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.stor
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // ── Shared chunked upload endpoint (videos / audio) ────────
+    Route::post('admin/uploads/chunk', [ChunkUploadController::class, 'store'])
+        ->name('admin.uploads.chunk');
 
     // ── Users (admin only) ─────────────────────────────────────
     Route::middleware('permission:users.view')->group(function () {

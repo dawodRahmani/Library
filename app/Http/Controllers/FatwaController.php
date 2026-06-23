@@ -71,24 +71,35 @@ class FatwaController extends Controller
 
         $rangeHeader = request()->header('Range');
 
-        if ($rangeHeader) {
-            preg_match('/bytes=(\d*)-(\d*)/', $rangeHeader, $matches);
+        if ($rangeHeader && preg_match('/bytes=(\d*)-(\d*)/', $rangeHeader, $matches)) {
             $start  = $matches[1] !== '' ? (int) $matches[1] : 0;
             $end    = $matches[2] !== '' ? (int) $matches[2] : $fileSize - 1;
             $end    = min($end, $fileSize - 1);
+            $start  = max(0, $start);
+
+            if ($start > $end) {
+                return response()->stream(function () { /* empty body */ }, 416, [
+                    'Content-Range' => "bytes */{$fileSize}",
+                ]);
+            }
+
             $length = $end - $start + 1;
 
-            $fp = fopen($path, 'rb');
-            fseek($fp, $start);
-
-            return response()->stream(function () use ($fp, $length) {
-                $chunk = 1024 * 64;
+            return response()->stream(function () use ($path, $start, $length) {
+                @set_time_limit(0);
+                if (function_exists('ob_get_level')) {
+                    while (ob_get_level() > 0) { @ob_end_clean(); }
+                }
+                $fp = fopen($path, 'rb');
+                if (! $fp) return;
+                fseek($fp, $start);
+                $chunk = 1024 * 256;
                 $sent  = 0;
-                while (! feof($fp) && $sent < $length) {
+                while (! feof($fp) && $sent < $length && ! connection_aborted()) {
                     $read = min($chunk, $length - $sent);
                     echo fread($fp, $read);
                     $sent += $read;
-                    flush();
+                    @flush();
                 }
                 fclose($fp);
             }, 206, [
@@ -97,16 +108,28 @@ class FatwaController extends Controller
                 'Content-Length'      => $length,
                 'Accept-Ranges'       => 'bytes',
                 'Content-Disposition' => 'inline; filename="' . $filename . '"',
+                'Cache-Control'       => 'public, max-age=0',
             ]);
         }
 
         return response()->stream(function () use ($path) {
-            readfile($path);
+            @set_time_limit(0);
+            if (function_exists('ob_get_level')) {
+                while (ob_get_level() > 0) { @ob_end_clean(); }
+            }
+            $fp = fopen($path, 'rb');
+            if (! $fp) return;
+            while (! feof($fp) && ! connection_aborted()) {
+                echo fread($fp, 1024 * 256);
+                @flush();
+            }
+            fclose($fp);
         }, 200, [
             'Content-Type'        => $mimeType,
             'Content-Length'      => $fileSize,
             'Accept-Ranges'       => 'bytes',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Cache-Control'       => 'public, max-age=0',
         ]);
     }
 
@@ -189,7 +212,8 @@ class FatwaController extends Controller
             'type'           => ['required', 'string', 'in:text,audio,video'],
             'media_source'   => ['nullable', 'string', 'in:link,upload'],
             'media_url'      => ['nullable', 'string', 'max:1000'],
-            'file'           => ['nullable', 'file', 'max:512000'],
+            'file'           => ['nullable', 'file', 'max:1048576'],
+            'temp_file_path' => ['nullable', 'string', 'max:255'],
             'is_active'      => ['boolean'],
             'thumbnail'      => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png,webp'],
         ]);
@@ -206,12 +230,23 @@ class FatwaController extends Controller
         } else {
             $source = $data['media_source'] ?? 'link';
 
-            if ($source === 'upload' && $request->hasFile('file')) {
+            $dir = $type === 'video' ? 'fatwas/videos' : 'fatwas/audios';
+
+            if ($source === 'upload' && $request->filled('temp_file_path')) {
+                $moved = ChunkUploadController::consumeTempFile($request->input('temp_file_path'), $dir);
+                if (! $moved) {
+                    abort(422, 'Uploaded file is invalid or missing.');
+                }
+                if ($existing?->file_path) {
+                    Storage::disk('public')->delete($existing->file_path);
+                }
+                [$data['file_path'], $data['file_size']] = $moved;
+                $data['media_url'] = null;
+            } elseif ($source === 'upload' && $request->hasFile('file')) {
                 if ($existing?->file_path) {
                     Storage::disk('public')->delete($existing->file_path);
                 }
                 $file = $request->file('file');
-                $dir  = $type === 'video' ? 'fatwas/videos' : 'fatwas/audios';
                 $data['file_path'] = $file->store($dir, 'public');
                 $data['file_size'] = $file->getSize();
                 $data['media_url'] = null;
@@ -238,7 +273,7 @@ class FatwaController extends Controller
             $data['thumbnail'] = $existing?->thumbnail;
         }
 
-        unset($data['file']);
+        unset($data['file'], $data['temp_file_path']);
         return $data;
     }
 

@@ -33,7 +33,7 @@ export default function Majalla({ magazines }: PageProps) {
     const dir = useDir();
     return (
         <div dir={dir} className="min-h-screen bg-[#f0f2f5] font-sans">
-            <Head title="مجله — کتابخانه رسالت" />
+            <Head title="مجله" />
 
             <TopBar />
             <MainNav />
