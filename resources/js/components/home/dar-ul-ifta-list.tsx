@@ -94,7 +94,7 @@ function FatwaCard({ item, onOpen, locale }: { item: FatwaItem; onOpen: () => vo
 
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
-            <button onClick={onOpen} className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden text-start w-full`}>
+            <button onClick={onOpen} className={`aspect-video bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden text-start w-full`}>
                 {item.thumbnail && (
                     <img
                         src={item.thumbnail.startsWith('http') ? item.thumbnail : `/storage/${item.thumbnail}`}

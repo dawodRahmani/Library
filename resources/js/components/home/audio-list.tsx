@@ -189,7 +189,7 @@ function AudioCard({ item, onPlay, locale }: { item: AudioItem; onPlay: (a: Audi
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
             {/* Thumbnail */}
-            <div className={`h-36 bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden`}>
+            <div className={`aspect-video bg-gradient-to-br ${gradient} relative flex items-center justify-center overflow-hidden`}>
                 {item.thumbnail && (
                     <img
                         src={item.thumbnail.startsWith('http') ? item.thumbnail : `/storage/${item.thumbnail}`}
